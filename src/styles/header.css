@@ -1,0 +1,146 @@
+@reference "../index.css";
+
+/* Header Container */
+.site-header {
+  @apply sticky top-0 z-50 w-full bg-cream border-b border-sand/40 shadow-sm transition-all;
+}
+
+.header-container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4;
+}
+
+/* Brand Section */
+.header-brand {
+  @apply flex items-center gap-3 select-none no-underline;
+}
+
+.brand-icon-box {
+  @apply w-10 h-10 rounded-lg bg-forest flex items-center justify-center text-cream shadow-md transition-transform hover:scale-105;
+}
+
+.brand-title {
+  @apply text-xl font-bold tracking-tight text-forest leading-none;
+}
+
+.brand-badge {
+  @apply text-[11px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider border;
+}
+
+/* Role-specific badge color variations */
+.brand-badge-teacher {
+  @apply bg-forest/10 text-forest border-forest/20;
+}
+
+.brand-badge-student {
+  @apply bg-sage/20 text-forest border-sage/40;
+}
+
+.brand-badge-parent {
+  @apply bg-sand/30 text-forest border-sand/60;
+}
+
+/* Navigation Links */
+.header-nav {
+  @apply hidden md:flex items-center gap-1 lg:gap-2;
+}
+
+.nav-item {
+  @apply px-3 py-2 rounded-md text-sm font-medium transition-colors text-forest/75 hover:text-forest hover:bg-sand/20;
+}
+
+.nav-item-active {
+  @apply text-forest bg-sand/35 font-semibold shadow-xs;
+}
+
+/* Actions Section */
+.header-actions {
+  @apply flex items-center gap-3 relative;
+}
+
+/* Notification Button */
+.notification-btn {
+  @apply relative p-2 rounded-full text-forest/80 hover:text-forest hover:bg-sand/20 transition-colors focus:outline-none focus:ring-2 focus:ring-sand;
+}
+
+.notification-dot {
+  @apply absolute top-1 right-1 w-2.5 h-2.5 bg-forest rounded-full ring-2 ring-cream;
+}
+
+/* User Profile Trigger */
+.user-menu-trigger {
+  @apply flex items-center gap-2 p-1.5 rounded-full md:rounded-lg hover:bg-sand/20 transition-all cursor-pointer focus:outline-none border border-transparent hover:border-sand/40;
+}
+
+.user-avatar {
+  @apply w-9 h-9 rounded-full bg-forest text-cream flex items-center justify-center font-bold text-xs shadow-sm ring-2 ring-sand/50;
+}
+
+.user-info {
+  @apply hidden md:flex flex-col text-left;
+}
+
+.user-name {
+  @apply text-xs font-bold text-forest leading-tight;
+}
+
+.user-role-label {
+  @apply text-[10px] text-forest/70 font-medium;
+}
+
+/* Dropdown Menu */
+.user-dropdown {
+  @apply absolute right-0 top-12 mt-2 w-64 bg-white rounded-xl shadow-xl border border-sand/40 py-2 z-50 text-forest;
+}
+
+.dropdown-header {
+  @apply px-4 py-3 border-b border-sand/25 bg-cream/30;
+}
+
+.dropdown-title {
+  @apply font-bold text-sm text-forest;
+}
+
+.dropdown-subtitle {
+  @apply text-xs text-forest/70 truncate;
+}
+
+.dropdown-meta {
+  @apply mt-1.5 inline-block text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-sand/25 text-forest;
+}
+
+.dropdown-divider {
+  @apply my-1 border-t border-sand/20;
+}
+
+.dropdown-section-title {
+  @apply px-4 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-forest/50;
+}
+
+.dropdown-link {
+  @apply flex items-center justify-between px-4 py-2 text-xs text-forest/80 hover:bg-cream hover:text-forest transition-colors w-full text-left;
+}
+
+.dropdown-link-active {
+  @apply bg-sand/20 text-forest font-semibold;
+}
+
+.dropdown-logout-btn {
+  @apply w-full flex items-center gap-2 px-4 py-2.5 text-xs text-red-700 hover:bg-red-50 transition-colors font-medium border-t border-sand/20 mt-1;
+}
+
+/* Mobile Nav Toggle */
+.mobile-nav-toggle {
+  @apply md:hidden p-2 rounded-lg text-forest hover:bg-sand/20 transition-colors focus:outline-none;
+}
+
+.mobile-menu-drawer {
+  @apply md:hidden bg-cream border-b border-sand/40 px-4 py-3 flex flex-col gap-1;
+}
+
+.mobile-menu-item {
+  @apply px-3 py-2 rounded-md text-sm font-medium text-forest hover:bg-sand/20 transition-colors;
+}
+
+.mobile-menu-item-active {
+  @apply bg-sand/35 font-semibold text-forest;
+}
