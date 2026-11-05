@@ -1,8 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
-import TeacherHome from "./pages/teacher/Home";
-import StudentHome from "./pages/student/Home";
-import ParentHome from "./pages/parent/Home";
+import TeacherHome from "./pages/teacher/TeacherHome";
+import StudentHome from "./pages/student/StudentHome";
+import ParentHome from "./pages/parent/ParentHome";
 
 export default function App() {
   return (

@@ -1,0 +1,62 @@
+
+@reference "../index.css";
+
+.login-page {
+  @apply min-h-screen flex items-center justify-center bg-sage/30 p-4;
+}
+
+.login-card {
+  @apply grid md:grid-cols-2 w-full max-w-5xl md:h-[28rem] rounded-xl overflow-hidden shadow-xl;
+}
+
+.login-left {
+  @apply hidden md:flex items-center justify-center bg-white p-8;
+}
+
+.login-img {
+  @apply max-h-full max-w-full object-contain;
+}
+
+.login-right {
+  @apply flex flex-col items-center justify-center bg-cream p-8;
+}
+
+.login-title {
+  @apply text-3xl text-forest font-semibold;
+}
+
+.login-subtitle {
+  @apply text-sm text-forest/70 mt-1;
+}
+
+.login-form {
+  @apply mt-6 w-full max-w-xs bg-white rounded-md p-5 shadow-sm;
+}
+
+.login-label {
+  @apply block text-xs text-forest;
+}
+
+.login-row {
+  @apply flex justify-between text-xs text-forest;
+}
+
+.login-link {
+  @apply text-sage font-medium hover:underline;
+}
+
+.login-input {
+  @apply mt-1 mb-4 w-full rounded bg-cream/60 border border-sage/30 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sand;
+}
+
+.login-error {
+  @apply text-xs text-red-600 mb-3;
+}
+
+.login-button {
+  @apply w-full rounded bg-forest text-cream py-2 text-sm font-medium hover:bg-sage transition-colors;
+}
+
+.login-footer {
+  @apply text-xs text-center text-forest/70 mt-4;
+}
