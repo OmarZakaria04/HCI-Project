@@ -38,10 +38,11 @@ const ROLE_CONFIG = {
     meta: "Parent of Ahmed Ehab",
     navItems: [
       { label: "Dashboard", path: "/parent" },
-      { label: "Student Progress", path: "/parent/progress" },
-      { label: "Attendance", path: "/parent/attendance" },
-      { label: "Fees & Invoices", path: "/parent/fees" },
-      { label: "Messages", path: "/parent/messages" },
+      { label: "Grades & Exams", path: "/parent/grades" },
+      { label: "Teachers & Meetings", path: "/parent/teachers" },
+      { label: "Messages", path: "/parent/chat" },
+      { label: "Behavior", path: "/parent/behavior" },
+      { label: "Emergency", path: "/parent/emergency" },
     ],
   },
 };
