@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { users } from "../data/users";
+import loginIllustration from "../assets/login-illustration.png";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -30,10 +31,10 @@ export default function Login() {
         {/* Left panel: illustration */}
         <div className="hidden md:flex items-center justify-center bg-white p-8">
           <img
-            src="/login-illustration.svg"
-            alt="Students learning"
-            className="max-h-full max-w-full object-contain"
-          />
+  src={loginIllustration}
+  alt="Students learning"
+  className="max-h-full max-w-full object-contain"
+/>
         </div>
 
         {/* Right panel: form */}
