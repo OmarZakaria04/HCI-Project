@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local Agent Customizations
+.agents/
+skills-lock.json
+
