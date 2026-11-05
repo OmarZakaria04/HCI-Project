@@ -1,0 +1,113 @@
+@reference "../index.css";
+
+/* Student Layout & Page Wrapper */
+.student-page-wrapper {
+  @apply min-h-screen bg-cream/35 text-forest flex flex-col pb-16;
+}
+
+.student-container {
+  @apply max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-4 flex-1;
+}
+
+
+
+/* Standard Hero Card matching Wireframe Big Top Card */
+.wireframe-hero-card {
+  @apply bg-white border border-sand/50 rounded-2xl p-6 shadow-sm relative overflow-hidden text-center flex flex-col items-center justify-center min-h-[140px];
+}
+
+.wireframe-hero-title {
+  @apply text-2xl sm:text-3xl font-extrabold text-forest tracking-tight;
+}
+
+.wireframe-hero-subtitle {
+  @apply text-xs sm:text-sm text-forest/70 mt-1 max-w-md;
+}
+
+/* Carousel Control Arrows */
+.carousel-nav-btn {
+  @apply w-9 h-9 rounded-full bg-cream hover:bg-sand/30 border border-sand/50 text-forest flex items-center justify-center font-bold text-base transition-all cursor-pointer shadow-2xs active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed;
+}
+
+/* Card Sections */
+.student-card {
+  @apply bg-white rounded-2xl border border-sand/40 p-5 sm:p-6 shadow-xs;
+}
+
+.student-card-header {
+  @apply flex items-center justify-between pb-3.5 mb-4 border-b border-sand/30;
+}
+
+.student-card-title {
+  @apply text-base sm:text-lg font-bold text-forest flex items-center gap-2;
+}
+
+/* Pending Assessment Row */
+.assessment-row {
+  @apply p-4 rounded-xl border border-sand/40 bg-cream/20 hover:bg-cream/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3;
+}
+
+.assessment-type-badge {
+  @apply px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider;
+}
+
+.badge-quiz {
+  @apply bg-forest text-cream;
+}
+
+.badge-hw {
+  @apply bg-sage text-cream;
+}
+
+.badge-exam {
+  @apply bg-sand text-forest;
+}
+
+/* Grades Table */
+.grades-history-table {
+  @apply w-full text-left text-xs sm:text-sm border-collapse;
+}
+
+.grades-th {
+  @apply py-3 px-4 text-xs font-bold text-forest uppercase tracking-wider bg-sand/20 border-b border-sand/40 text-center first:text-left;
+}
+
+.grades-td {
+  @apply py-3.5 px-4 text-forest border-b border-sand/25 text-center first:text-left font-medium;
+}
+
+/* Chat Panel */
+.student-chat-box {
+  @apply bg-cream/40 rounded-xl p-4 border border-sand/40 flex flex-col gap-3 min-h-[220px] max-h-[340px] overflow-y-auto;
+}
+
+.chat-bubble-student {
+  @apply bg-forest text-cream p-3.5 rounded-2xl rounded-tr-xs max-w-[80%] shadow-xs ml-auto text-xs sm:text-sm;
+}
+
+.chat-bubble-teacher {
+  @apply bg-white text-forest p-3.5 rounded-2xl rounded-tl-xs max-w-[80%] shadow-xs border border-sand/30 text-xs sm:text-sm;
+}
+
+/* Teachers Card in Carousel */
+.teacher-profile-card {
+  @apply bg-white border border-sand/50 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col items-center text-center cursor-pointer min-w-[200px] w-full max-w-xs;
+}
+
+/* Standard HCI Buttons */
+.btn-primary {
+  @apply h-10 px-4 rounded-xl bg-forest hover:bg-forest/90 active:scale-98 text-cream font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-sand disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply h-10 px-4 rounded-xl bg-white hover:bg-cream border border-sand/60 active:scale-98 text-forest font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-sand disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-ghost {
+  @apply h-10 px-4 rounded-xl bg-sand/20 hover:bg-sand/35 text-forest font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-sand;
+}
+
+.suggestion-chip {
+  @apply px-3 py-1.5 rounded-lg text-xs font-semibold bg-sand/20 hover:bg-sand/35 text-forest border border-sand/50 transition-all cursor-pointer select-none active:scale-95;
+}
+

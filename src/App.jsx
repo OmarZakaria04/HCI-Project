@@ -2,6 +2,9 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import TeacherHome from "./pages/teacher/TeacherHome";
 import StudentHome from "./pages/student/StudentHome";
+import StudentGrades from "./pages/student/StudentGrades";
+import StudentTeachers from "./pages/student/StudentTeachers";
+import StudentAnnouncements from "./pages/student/StudentAnnouncements";
 import ParentHome from "./pages/parent/ParentHome";
 import ParentTeachers from "./pages/parent/ParentTeachers";
 import ParentChat from "./pages/parent/ParentChat";
@@ -15,6 +18,11 @@ export default function App() {
       <Route path="/" element={<Login />} />
       <Route path="/teacher" element={<TeacherHome />} />
       <Route path="/student" element={<StudentHome />} />
+      <Route path="/student/grades" element={<StudentGrades />} />
+      <Route path="/student/grades/:subjectId" element={<StudentGrades />} />
+      <Route path="/student/teachers" element={<StudentTeachers />} />
+      <Route path="/student/teachers/:teacherId" element={<StudentTeachers />} />
+      <Route path="/student/announcements" element={<StudentAnnouncements />} />
       <Route path="/parent" element={<ParentHome />} />
       <Route path="/parent/teachers" element={<ParentTeachers />} />
       <Route path="/parent/chat" element={<ParentChat />} />

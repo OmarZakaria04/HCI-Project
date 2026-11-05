@@ -62,10 +62,27 @@ return (
 
           <button type="submit" className="login-button">Login</button>
 
-          <p className="login-footer">
-            Don't have an account?{" "}
-            <a href="#" className="login-link">Create new account</a>
-          </p>
+          <div className="login-footer space-y-2">
+            <p>
+              Don't have an account?{" "}
+              <a href="#" className="login-link">Create new account</a>
+            </p>
+            <div className="pt-2 border-t border-sage/20 text-center">
+              <span className="text-[11px] text-forest/70 block mb-1">Quick Demo Login:</span>
+              <div className="flex justify-center gap-1.5 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("ahmed@zinger.edu");
+                    setPassword("student123");
+                  }}
+                  className="text-[11px] bg-cream px-2 py-1 rounded text-forest font-medium border border-sage/30 hover:bg-sage/20 transition-colors cursor-pointer"
+                >
+                  Student (Ahmed Ehab)
+                </button>
+              </div>
+            </div>
+          </div>
         </form>
       </div>
     </div>
