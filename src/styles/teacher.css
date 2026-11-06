@@ -142,3 +142,164 @@
 .papers-empty {
   @apply py-6 text-center text-sm text-forest/60;
 }
+
+/* Hero carousel */
+.hero {
+  @apply relative grid w-full overflow-hidden rounded-2xl bg-forest shadow-sm;
+}
+
+.hero-slide {
+  @apply relative col-start-1 row-start-1 opacity-0 pointer-events-none transition-opacity duration-700;
+}
+
+.hero-slide-active {
+  @apply opacity-100 pointer-events-auto;
+}
+
+.hero-img {
+  @apply block w-full h-auto;
+}
+
+.hero-overlay {
+  @apply absolute inset-x-0 bottom-0 bg-linear-to-t from-forest/90 to-transparent p-6 pt-16 text-left;
+}
+
+.hero-title {
+  @apply text-3xl font-bold text-cream;
+}
+
+.hero-text {
+  @apply text-sm text-cream/80;
+}
+
+.hero-arrow {
+  @apply absolute top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-forest/70 text-cream text-2xl leading-none hover:bg-forest transition-colors cursor-pointer;
+}
+
+.hero-arrow-left {
+  @apply left-3;
+}
+
+.hero-arrow-right {
+  @apply right-3;
+}
+
+.hero-dots {
+  @apply absolute bottom-4 right-5 z-10 flex items-center gap-2;
+}
+
+.hero-dot {
+  @apply h-2.5 w-2.5 rounded-full bg-cream/50 cursor-pointer transition-all;
+}
+
+.hero-dot-active {
+  @apply w-6 bg-cream;
+}
+
+@keyframes analytics-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes analytics-fill {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.analytics {
+  @apply rounded-2xl bg-forest p-6 shadow-sm text-cream;
+}
+
+.analytics-head {
+  @apply flex flex-wrap items-center justify-between gap-3;
+}
+
+.analytics-title {
+  @apply text-lg font-semibold text-cream;
+}
+
+.analytics-search {
+  @apply w-full sm:w-72 rounded-lg border border-cream/20 bg-cream/10 px-3 py-2 text-sm text-cream placeholder:text-cream/50 focus:outline-none focus:ring-2 focus:ring-sand;
+}
+
+.analytics-body {
+  @apply grid gap-8 md:grid-cols-2 items-center py-6;
+  animation: analytics-fade 0.5s ease;
+}
+
+.analytics-details {
+  @apply space-y-4 text-left;
+}
+
+.analytics-class {
+  @apply text-4xl font-bold text-cream;
+}
+
+.analytics-stats {
+  @apply grid grid-cols-3 gap-3;
+}
+
+.analytics-stat {
+  @apply rounded-xl bg-cream/10 p-3;
+}
+
+.analytics-stat-value {
+  @apply block text-2xl font-bold text-sand;
+}
+
+.analytics-stat-label {
+  @apply text-xs text-cream/70;
+}
+
+.analytics-label {
+  @apply mb-1 text-xs uppercase tracking-wide text-cream/60;
+}
+
+.analytics-badges {
+  @apply flex flex-wrap gap-2;
+}
+
+.analytics-badge-good {
+  @apply rounded-full bg-sage px-3 py-1 text-xs font-medium text-cream;
+}
+
+.analytics-badge-warn {
+  @apply rounded-full bg-sand px-3 py-1 text-xs font-medium text-forest;
+}
+
+.analytics-chart {
+  @apply mx-auto rounded-2xl bg-cream p-4;
+}
+
+.analytics-tabs {
+  @apply flex gap-3;
+}
+
+.analytics-tab {
+  @apply relative flex flex-1 flex-col items-start overflow-hidden rounded-xl bg-cream/10 px-4 py-3 text-left hover:bg-cream/20 transition-colors cursor-pointer;
+}
+
+.analytics-tab-active {
+  @apply bg-cream/20;
+}
+
+.analytics-tab-name {
+  @apply text-sm font-semibold text-cream;
+}
+
+.analytics-tab-avg {
+  @apply text-xs text-cream/70;
+}
+
+.analytics-progress {
+  @apply absolute bottom-0 left-0 h-1 bg-sand;
+  animation: analytics-fill 6s linear forwards;
+}
+
+.analytics-progress-paused {
+  animation-play-state: paused;
+}
+
+.analytics-empty {
+  @apply py-10 text-center text-sm text-cream/70;
+}
