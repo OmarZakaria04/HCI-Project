@@ -1,62 +1,275 @@
 
 @reference "../index.css";
 
+@font-face {
+  font-family: "Bree Serif";
+  src: url("../fonts/bree-serif/BreeSerif-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Source Sans 3";
+  src: url("../fonts/source-sans-3/SourceSans3[wght].ttf") format("truetype");
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+}
+
 .login-page {
-  @apply min-h-screen flex items-center justify-center bg-sage/30 p-4;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  background: color-mix(in srgb, var(--color-sage) 25%, white);
+  color: var(--color-forest);
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
+  font-synthesis: none;
 }
 
 .login-card {
-  @apply grid md:grid-cols-2 w-full max-w-5xl md:h-[28rem] rounded-xl overflow-hidden shadow-xl;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  width: 100%;
+  max-width: 1280px;
+  min-height: 688px;
+  overflow: hidden;
+  border-radius: 24px;
+  background: white;
+  box-shadow: 0 20px 48px -24px rgb(30 59 47 / 30%);
 }
 
 .login-left {
-  @apply hidden md:flex items-center justify-center bg-white p-8;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-width: 0;
+  padding: 48px;
+}
+
+.login-brand {
+  margin: 0;
+  font-family: "Bree Serif", Georgia, serif;
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.login-artwork {
+  display: grid;
+  flex: 1;
+  place-items: center;
 }
 
 .login-img {
-  @apply max-h-full max-w-full object-contain;
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
 .login-right {
-  @apply flex flex-col items-center justify-center bg-cream p-8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 48px;
+  background: var(--color-cream);
+}
+
+.login-content {
+  width: 100%;
+  max-width: 400px;
 }
 
 .login-title {
-  @apply text-3xl text-forest font-semibold;
+  margin: 0;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
 }
 
 .login-subtitle {
-  @apply text-sm text-forest/70 mt-1;
+  margin: 12px 0 0;
+  font-size: 18px;
+  line-height: 1.5;
 }
 
 .login-form {
-  @apply mt-6 w-full max-w-xs bg-white rounded-md p-5 shadow-sm;
+  margin-top: 32px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
 }
 
 .login-label {
-  @apply block text-xs text-forest;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 21px;
 }
 
 .login-row {
-  @apply flex justify-between text-xs text-forest;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .login-link {
-  @apply text-sage font-medium hover:underline;
+  color: var(--color-forest);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 21px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.login-link:hover {
+  text-decoration-thickness: 2px;
 }
 
 .login-input {
-  @apply mt-1 mb-4 w-full rounded bg-cream/60 border border-sage/30 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sand;
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid color-mix(in srgb, var(--color-forest) 55%, white);
+  border-radius: 8px;
+  padding: 12px 16px;
+  background: white;
+  color: var(--color-forest);
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.login-input::placeholder {
+  color: color-mix(in srgb, var(--color-forest) 75%, white);
+  opacity: 1;
+}
+
+.login-input:hover {
+  border-color: var(--color-forest);
+}
+
+.login-input:focus-visible,
+.login-button:focus-visible,
+.login-demo-button:focus-visible,
+.login-link:focus-visible {
+  outline: 2px solid var(--color-forest);
+  outline-offset: 4px;
 }
 
 .login-error {
-  @apply text-xs text-red-600 mb-3;
+  margin: -8px 0 16px;
+  color: #a12b25;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.login-button,
+.login-demo-button {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--color-forest);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 150ms ease;
 }
 
 .login-button {
-  @apply w-full rounded bg-forest text-cream py-2 text-sm font-medium hover:bg-sage transition-colors;
+  background: var(--color-forest);
+  color: var(--color-cream);
+}
+
+.login-button:hover {
+  background: color-mix(in srgb, var(--color-forest) 90%, black);
+}
+
+.login-button:active,
+.login-demo-button:active {
+  transform: translateY(1px);
 }
 
 .login-footer {
-  @apply text-xs text-center text-forest/70 mt-4;
+  margin: 24px 0 0;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+}
+
+.login-demo {
+  margin-top: 32px;
+  border-top: 1px solid color-mix(in srgb, var(--color-sage) 35%, transparent);
+  padding-top: 24px;
+}
+
+.login-demo-title {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.login-demo-button {
+  background: transparent;
+  color: var(--color-forest);
+}
+
+.login-demo-button:hover {
+  background: color-mix(in srgb, var(--color-sage) 12%, var(--color-cream));
+}
+
+.login-demo-student {
+  margin: 12px 0 0;
+  font-size: 16px;
+  line-height: 21px;
+  text-align: center;
+}
+
+@media (min-width: 900px) and (max-width: 1100px) {
+  .login-page,
+  .login-left,
+  .login-right {
+    padding: 32px;
+  }
+}
+
+@media (max-width: 899px) {
+  .login-page { padding: 24px; }
+  .login-card {
+    grid-template-columns: 1fr;
+    max-width: 560px;
+    min-height: auto;
+    border-radius: 20px;
+  }
+  .login-left { gap: 16px; padding: 24px; }
+  .login-brand { font-size: 28px; }
+  .login-img { max-width: 200px; }
+  .login-right { padding: 32px; }
+  .login-title { font-size: 32px; }
+}
+
+@media (max-width: 480px) {
+  .login-page { padding: 16px; }
+  .login-left,
+  .login-right { padding: 24px; }
+  .login-img { max-width: 160px; }
+  .login-form { margin-top: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-button,
+  .login-demo-button { transition: none; transform: none; }
 }
