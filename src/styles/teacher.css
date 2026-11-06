@@ -31,3 +31,114 @@
 .teacher-card-title {
   @apply text-lg font-semibold text-forest mb-3;
 }
+
+.teacher-page {
+  @apply space-y-8;
+}
+
+.teacher-page-head {
+  @apply flex items-center justify-between;
+}
+
+.teacher-heading {
+  @apply text-2xl font-bold text-forest;
+}
+
+.teacher-actions {
+  @apply flex gap-2;
+}
+
+.teacher-btn {
+  @apply rounded-lg bg-forest text-cream px-4 py-2 text-sm font-medium hover:bg-sage transition-colors;
+}
+
+.teacher-btn-outline {
+  @apply rounded-lg border border-forest text-forest px-4 py-2 text-sm font-medium hover:bg-sand/30 transition-colors;
+}
+
+.teacher-section-title {
+  @apply text-lg font-semibold text-forest mb-3;
+}
+
+.teacher-card {
+  @apply bg-white rounded-xl shadow-sm p-5;
+}
+
+.teacher-class-grid {
+  @apply grid gap-4 sm:grid-cols-3;
+}
+
+.teacher-class-card {
+  @apply flex flex-col items-start gap-1 rounded-xl bg-white p-5 text-left shadow-sm border-2 border-transparent hover:border-sand transition-colors cursor-pointer;
+}
+
+.teacher-class-card-active {
+  @apply border-forest;
+}
+
+.teacher-class-name {
+  @apply text-lg font-semibold text-forest;
+}
+
+.teacher-class-meta {
+  @apply text-sm text-forest/70;
+}
+
+.teacher-class-avg {
+  @apply text-sm font-medium text-sage;
+}
+
+.teacher-notif-list {
+  @apply divide-y divide-sand/40;
+}
+
+.teacher-notif-item {
+  @apply flex items-center justify-between py-3 text-sm text-forest;
+}
+
+.teacher-notif-time {
+  @apply text-xs text-forest/60 shrink-0 ml-4;
+}
+
+.teacher-analysis {
+  @apply grid gap-6 md:grid-cols-2 items-center;
+}
+
+.teacher-analysis-details {
+  @apply space-y-3 text-sm text-forest;
+}
+.papers-filters {
+  @apply flex flex-wrap gap-3 mb-4;
+}
+
+.papers-select {
+  @apply rounded-lg border border-sand bg-white px-3 py-2 text-sm text-forest focus:outline-none focus:ring-2 focus:ring-sand;
+}
+
+.papers-list {
+  @apply divide-y divide-sand/40 text-left;
+}
+
+.papers-row {
+  @apply grid grid-cols-4 items-center gap-3 py-3 px-2 text-sm text-forest rounded-lg hover:bg-sand/20 transition-colors;
+}
+
+.papers-student {
+  @apply font-medium;
+}
+
+.papers-meta {
+  @apply text-forest/70;
+}
+
+.papers-badge-pending {
+  @apply justify-self-end rounded-full bg-sand/40 px-3 py-0.5 text-xs font-medium text-forest;
+}
+
+.papers-badge-done {
+  @apply justify-self-end rounded-full bg-sage/30 px-3 py-0.5 text-xs font-medium text-forest;
+}
+
+.papers-empty {
+  @apply py-6 text-center text-sm text-forest/60;
+}

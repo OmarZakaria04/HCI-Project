@@ -68,3 +68,42 @@ export const classAnalysis = {
 ]
   },
 };
+
+export const papers = [
+  { id: 1, student: "Mohamed Ehab", grade: 5, classId: "5A", paper: "HW1", submitted: "15-10-2026 5:00 PM", status: "Pending" },
+  { id: 2, student: "Omar Zakaria", grade: 5, classId: "5A", paper: "HW1", submitted: "15-10-2026 6:00 PM", status: "Pending" },
+  { id: 3, student: "Mahmoud Ehab", grade: 5, classId: "5A", paper: "HW1", submitted: "15-10-2026 7:00 PM", status: "Pending" },
+  { id: 4, student: "Ahmed Ehab", grade: 5, classId: "5A", paper: "Quiz 1", submitted: "14-10-2026 9:00 AM", status: "Graded" },
+  { id: 5, student: "Sara Hany", grade: 4, classId: "4A", paper: "Quiz 1", submitted: "13-10-2026 10:30 AM", status: "Graded" },
+  { id: 6, student: "Youssef Adel", grade: 3, classId: "3B", paper: "HW2", submitted: "12-10-2026 2:00 PM", status: "Pending" },
+];
+export const paperDetails = {
+  1: {
+    answers: [
+      { q: 1, question: "12 × 4 = ?", text: "48" },
+      { q: 2, question: "Which is bigger: 1/2 or 1/3?", text: "1/3" },
+      { q: 3, question: "3/4 + 1/4 = ?", text: "4/8" },
+    ],
+    ai: {
+      score: 1,
+      total: 3,
+      gaps: ["Comparing fractions", "Adding fractions with the same denominator"],
+      redFlags: ["Repeated fraction mistakes across 3 assignments"],
+      feedback: "Practice comparing fractions with different denominators.",
+    },
+  },
+  2: {
+    answers: [
+      { q: 1, question: "12 × 4 = ?", text: "46" },
+      { q: 2, question: "Which is bigger: 1/2 or 1/3?", text: "1/2" },
+      { q: 3, question: "3/4 + 1/4 = ?", text: "1" },
+    ],
+    ai: {
+      score: 2,
+      total: 3,
+      gaps: ["Multiplication facts"],
+      redFlags: [],
+      feedback: "Review the 4 times table.",
+    },
+  },
+};

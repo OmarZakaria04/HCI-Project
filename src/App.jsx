@@ -12,6 +12,7 @@ import ParentGrades from "./pages/parent/ParentGrades";
 import ParentEmergency from "./pages/parent/ParentEmergency";
 import ParentBehavior from "./pages/parent/ParentBehavior";
 import TeacherLayout from "./components/TeacherLayout";
+import TeacherPapers from "./pages/teacher/TeacherPapers";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
       <Route path="/parent/behavior" element={<ParentBehavior />} />
       <Route path="/teacher" element={<TeacherLayout />}>
   <Route index element={<TeacherHome />} />
+<Route path="papers" element={<TeacherPapers />} />
 </Route>
     </Routes>
   );

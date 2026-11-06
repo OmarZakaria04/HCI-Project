@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { users } from "../data/users";
+import { notifications } from "../data/teacherData";
 import "../styles/header.css";
 
 // Role-specific configuration & navigation dummy data
@@ -11,12 +12,11 @@ const ROLE_CONFIG = {
     basePath: "/teacher",
     meta: "Mathematics Dept",
     navItems: [
-      { label: "Dashboard", path: "/teacher" },
-      { label: "Classes", path: "/teacher/papers" },
-      { label: "Gradebook", path: "/teacher/students" },
-      { label: "Attendance", path: "/teacher/schedule" },
-      { label: "Assignments", path: "/teacher/notifications" },
-    ],
+  { label: "Dashboard", path: "/teacher" },
+  { label: "Papers", path: "/teacher/papers" },
+  { label: "Students", path: "/teacher/students" },
+  { label: "Schedule", path: "/teacher/schedule" },
+],
   },
   student: {
     title: "Student Portal",
@@ -58,6 +58,7 @@ export default function Header({ role: propRole }) {
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   // 1. Detect role
@@ -86,7 +87,7 @@ export default function Header({ role: propRole }) {
   })();
 
   const config = ROLE_CONFIG[detectedRole] || ROLE_CONFIG.teacher;
-
+  const notifList = detectedRole === "teacher" ? notifications : [];
   // 2. Resolve user data (from localStorage if matches role, otherwise use role's dummy user)
   const currentUser = (() => {
     try {
@@ -104,15 +105,16 @@ export default function Header({ role: propRole }) {
   })();
 
   // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
+ useEffect(() => {
+  function handleClickOutside(event) {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setIsDropdownOpen(false);
+      setIsNotifOpen(false);
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, []);
 
   // Helper for initials
   const initials = currentUser?.name
@@ -184,35 +186,64 @@ export default function Header({ role: propRole }) {
 
         {/* Right: Actions, Notifications & Profile */}
         <div className="header-actions" ref={dropdownRef}>
-          {/* Notifications button */}
-          <button
-            type="button"
-            className="notification-btn"
-            title="Notifications"
-            aria-label="View notifications"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              />
-            </svg>
-            <span className="notification-dot" />
-          </button>
+          <div className="relative">
+  <button
+    type="button"
+    className="notification-btn"
+    title="Notifications"
+    aria-label="View notifications"
+    aria-expanded={isNotifOpen}
+  onClick={() => {
+  setIsDropdownOpen(false);
+  setIsNotifOpen((prev) => !prev);
+}}
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-5 h-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+      />
+    </svg>
+    <span className="notification-dot" />
+  </button>
+
+  {isNotifOpen && (
+    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-sand/50 z-50 text-left">
+      <div className="px-4 py-3 border-b border-sand/40 text-sm font-semibold text-forest">
+        Notifications
+      </div>
+      <ul className="max-h-72 overflow-y-auto divide-y divide-sand/30">
+        {notifList.length === 0 ? (
+          <li className="px-4 py-3 text-xs text-forest/60">No new notifications</li>
+        ) : (
+          notifList.map((n) => (
+            <li key={n.id} className="px-4 py-3 text-xs text-forest">
+              <p>{n.text}</p>
+              <p className="text-forest/50 mt-0.5">{n.time}</p>
+            </li>
+          ))
+        )}
+      </ul>
+    </div>
+  )}
+</div>
 
           {/* User Profile trigger */}
           <button
             type="button"
             className="user-menu-trigger"
-            onClick={() => setIsDropdownOpen((prev) => !prev)}
+            onClick={() => {
+  setIsNotifOpen(false);
+  setIsDropdownOpen((prev) => !prev);
+}}
             aria-expanded={isDropdownOpen}
           >
             <div className="user-avatar">{initials}</div>
