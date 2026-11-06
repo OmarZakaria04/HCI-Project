@@ -12,10 +12,10 @@ const ROLE_CONFIG = {
     meta: "Mathematics Dept",
     navItems: [
       { label: "Dashboard", path: "/teacher" },
-      { label: "Classes", path: "/teacher/classes" },
-      { label: "Gradebook", path: "/teacher/grades" },
-      { label: "Attendance", path: "/teacher/attendance" },
-      { label: "Assignments", path: "/teacher/assignments" },
+      { label: "Classes", path: "/teacher/papers" },
+      { label: "Gradebook", path: "/teacher/students" },
+      { label: "Attendance", path: "/teacher/schedule" },
+      { label: "Assignments", path: "/teacher/notifications" },
     ],
   },
   student: {

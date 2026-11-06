@@ -1,0 +1,33 @@
+@reference "../index.css";
+
+.teacher-shell {
+  @apply min-h-screen bg-cream;
+}
+
+.teacher-nav {
+  @apply flex items-center justify-between bg-forest text-cream px-6 py-3;
+}
+
+.teacher-brand {
+  @apply text-xl font-bold italic;
+}
+
+.teacher-nav-right {
+  @apply flex items-center gap-4 text-sm;
+}
+
+.teacher-logout {
+  @apply rounded bg-sand text-forest px-3 py-1 font-medium hover:bg-cream transition-colors;
+}
+
+.teacher-main {
+  @apply max-w-6xl mx-auto p-6;
+}
+
+.teacher-card {
+  @apply bg-white rounded-xl shadow-sm p-5;
+}
+
+.teacher-card-title {
+  @apply text-lg font-semibold text-forest mb-3;
+}

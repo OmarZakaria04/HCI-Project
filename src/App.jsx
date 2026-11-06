@@ -8,12 +8,12 @@ import ParentChat from "./pages/parent/ParentChat";
 import ParentGrades from "./pages/parent/ParentGrades";
 import ParentEmergency from "./pages/parent/ParentEmergency";
 import ParentBehavior from "./pages/parent/ParentBehavior";
+import TeacherLayout from "./components/TeacherLayout";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
-      <Route path="/teacher" element={<TeacherHome />} />
       <Route path="/student" element={<StudentHome />} />
       <Route path="/parent" element={<ParentHome />} />
       <Route path="/parent/teachers" element={<ParentTeachers />} />
@@ -22,6 +22,9 @@ export default function App() {
       <Route path="/parent/grades" element={<ParentGrades />} />
       <Route path="/parent/emergency" element={<ParentEmergency />} />
       <Route path="/parent/behavior" element={<ParentBehavior />} />
+      <Route path="/teacher" element={<TeacherLayout />}>
+  <Route index element={<TeacherHome />} />
+</Route>
     </Routes>
   );
 }
