@@ -25,10 +25,8 @@ const ROLE_CONFIG = {
     meta: "Grade 11 • Class B",
     navItems: [
       { label: "Dashboard", path: "/student" },
-      { label: "My Courses", path: "/student/courses" },
-      { label: "Assignments", path: "/student/assignments" },
-      { label: "Timetable", path: "/student/timetable" },
       { label: "Grades", path: "/student/grades" },
+      { label: "Teachers", path: "/student/teachers" },
     ],
   },
   parent: {
