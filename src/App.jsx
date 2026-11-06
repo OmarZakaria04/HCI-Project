@@ -5,6 +5,7 @@ import StudentHome from "./pages/student/StudentHome";
 import StudentGrades from "./pages/student/StudentGrades";
 import StudentTeachers from "./pages/student/StudentTeachers";
 import StudentAnnouncements from "./pages/student/StudentAnnouncements";
+import StudentSolvingWorkspace from "./pages/student/StudentSolvingWorkspace";
 import ParentHome from "./pages/parent/ParentHome";
 import ParentTeachers from "./pages/parent/ParentTeachers";
 import ParentChat from "./pages/parent/ParentChat";
@@ -24,6 +25,8 @@ export default function App() {
       <Route path="/student/teachers" element={<StudentTeachers />} />
       <Route path="/student/teachers/:teacherId" element={<StudentTeachers />} />
       <Route path="/student/announcements" element={<StudentAnnouncements />} />
+      <Route path="/student/workspace/:assessmentId" element={<StudentSolvingWorkspace />} />
+      <Route path="/student/workspace" element={<StudentSolvingWorkspace />} />
       <Route path="/parent" element={<ParentHome />} />
       <Route path="/parent/teachers" element={<ParentTeachers />} />
       <Route path="/parent/chat" element={<ParentChat />} />

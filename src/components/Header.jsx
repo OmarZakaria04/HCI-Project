@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { users } from "../data/users";
 import { notifications } from "../data/teacherData";
+import { studentNotifications } from "../data/studentData";
 import "../styles/header.css";
 
 // Role-specific configuration & navigation dummy data
@@ -87,7 +88,12 @@ export default function Header({ role: propRole }) {
   })();
 
   const config = ROLE_CONFIG[detectedRole] || ROLE_CONFIG.teacher;
-  const notifList = detectedRole === "teacher" ? notifications : [];
+  const notifList =
+    detectedRole === "teacher"
+      ? notifications
+      : detectedRole === "student"
+      ? studentNotifications
+      : [];
   // 2. Resolve user data (from localStorage if matches role, otherwise use role's dummy user)
   const currentUser = (() => {
     try {
@@ -225,9 +231,20 @@ export default function Header({ role: propRole }) {
           <li className="px-4 py-3 text-xs text-forest/60">No new notifications</li>
         ) : (
           notifList.map((n) => (
-            <li key={n.id} className="px-4 py-3 text-xs text-forest">
-              <p>{n.text}</p>
-              <p className="text-forest/50 mt-0.5">{n.time}</p>
+            <li
+              key={n.id}
+              onClick={() => {
+                if (n.link) {
+                  setIsNotifOpen(false);
+                  navigate(n.link);
+                }
+              }}
+              className={`px-4 py-3 text-xs text-forest transition-colors ${
+                n.link ? "hover:bg-cream/60 cursor-pointer" : ""
+              }`}
+            >
+              <p className="font-medium leading-relaxed">{n.text}</p>
+              <p className="text-forest/50 text-[10px] mt-0.5">{n.time}</p>
             </li>
           ))
         )}
