@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import { studentData } from "../../data/studentData";
 import {
@@ -7,11 +7,14 @@ import {
   ChatIcon,
   FeedbackIcon,
   SendIcon,
+  CheckIcon,
+  StarIcon,
 } from "../../components/StudentIcons";
 import "../../styles/student.css";
 
 export default function StudentTeachers() {
   const { teacherId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
 
   // Selected teacher in detail view
@@ -20,19 +23,30 @@ export default function StudentTeachers() {
     : studentData.teachers[0];
 
   const [activeTeacher, setActiveTeacher] = useState(initialTeacher);
-  const [isDetailView, setIsDetailView] = useState(Boolean(teacherId));
+  const [isDetailView, setIsDetailView] = useState(Boolean(teacherId) || Boolean(location.state?.prefillMessage));
 
   // Teachers carousel index for overview view
   const [teacherCarouselIndex, setTeacherCarouselIndex] = useState(0);
 
   // Chat state for the active teacher
   const [messages, setMessages] = useState(activeTeacher.initialMessages);
-  const [inputMessage, setInputMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState(location.state?.prefillMessage || "");
 
   // Feedback quiz carousel index
   const [feedbackIndex, setFeedbackIndex] = useState(0);
   const activeFeedback =
     activeTeacher.feedbackItems[feedbackIndex] || activeTeacher.feedbackItems[0];
+
+  const chatInputRef = useRef(null);
+
+  // Focus input if prefilled from location.state
+  useEffect(() => {
+    if (location.state?.prefillMessage) {
+      setInputMessage(location.state.prefillMessage);
+      setIsDetailView(true);
+      setTimeout(() => chatInputRef.current?.focus(), 150);
+    }
+  }, [location.state]);
 
   const handleSelectTeacher = (teacher) => {
     setActiveTeacher(teacher);
@@ -62,11 +76,25 @@ export default function StudentTeachers() {
         {
           id: Date.now() + 1,
           sender: "teacher",
-          text: `Hello Ahmed, I have noted your message regarding ${activeTeacher.subject}. Let me review it and get back to you shortly.`,
+          text: `Hello Ahmed, I received your question regarding ${activeTeacher.subject}. Let me review this specific item and guide you step by step.`,
           time: "Just now",
         },
       ]);
     }, 1000);
+  };
+
+  // S9: Attach quiz review request to chat
+  const handleAskQuizReview = (feedback) => {
+    const text = `Hi ${activeTeacher.name}, could you please review my score on ${feedback.title}?`;
+    setInputMessage(text);
+    chatInputRef.current?.focus();
+  };
+
+  // S9: Attach question clarification to chat
+  const handleAskQuestionClarification = (qItem, feedback) => {
+    const text = `Hi ${activeTeacher.name}, regarding ${feedback.title} - ${qItem.q}: Could you please clarify this question for me?`;
+    setInputMessage(text);
+    chatInputRef.current?.focus();
   };
 
   return (
@@ -76,7 +104,6 @@ export default function StudentTeachers() {
       <main className="student-container">
         {/* ============================================================ */}
         {/* VIEW A: Teacher Detail & Chat / Feedback (Screen 4: Mr. Ahmed) */}
-        {/* Reached directly by clicking a teacher card from the teachers list */}
         {/* ============================================================ */}
         {isDetailView ? (
           <div className="space-y-6">
@@ -91,24 +118,24 @@ export default function StudentTeachers() {
               </p>
             </div>
 
-            {/* Section: Message (Direct Chat Thread) */}
+            {/* Section: Message (Direct Chat Thread with S9 attachments) */}
             <div className="student-card space-y-3">
               <div className="student-card-header">
-                <h2 className="student-card-title">
-                  <ChatIcon className="w-5 h-5 text-forest" /> Message
-                </h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-forest/60 hidden sm:inline">
-                    Chat with {activeTeacher.name}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsDetailView(false)}
-                    className="btn-ghost text-xs"
-                  >
-                    ← Back to Teachers
-                  </button>
+                <div>
+                  <h2 className="student-card-title">
+                    <ChatIcon className="w-5 h-5 text-forest" /> Message Teacher
+                  </h2>
+                  <p className="text-[11px] text-forest/60">
+                    Ask for a quiz review, question clarification, or general guidance
+                  </p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setIsDetailView(false)}
+                  className="btn-ghost text-xs"
+                >
+                  ← Back to Teachers
+                </button>
               </div>
 
               <div className="student-chat-box">
@@ -129,18 +156,27 @@ export default function StudentTeachers() {
                 ))}
               </div>
 
-              {/* Suggestion Chips */}
+              {/* S9 Suggestion & Question Quick Chips */}
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                <span className="text-[11px] text-forest/60 mr-1">Suggested replies:</span>
+                <span className="text-[11px] text-forest/60 mr-1">Quick Attach:</span>
                 {[
-                  `Could you explain question 2 in Quiz 1?`,
-                  `Is the upcoming homework due this Sunday?`,
-                  `Thank you for the detailed feedback!`,
+                  `Review Quiz 1 submission`,
+                  `Clarify Question 2 on Fractions`,
+                  `Schedule office hours meeting`,
                 ].map((chip, idx) => (
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setInputMessage(chip)}
+                    onClick={() => {
+                      setInputMessage(
+                        chip.includes("Review")
+                          ? `Hi ${activeTeacher.name}, could you please review my Quiz 1 submission?`
+                          : chip.includes("Question")
+                          ? `Hi ${activeTeacher.name}, regarding Question 2 on Fractions: Could you please help clarify this step?`
+                          : `Hi ${activeTeacher.name}, would it be possible to schedule a short meeting during office hours?`
+                      );
+                      chatInputRef.current?.focus();
+                    }}
                     className="suggestion-chip"
                   >
                     {chip}
@@ -151,10 +187,11 @@ export default function StudentTeachers() {
               {/* Chat Form */}
               <form onSubmit={handleSendMessage} className="flex gap-2 pt-1">
                 <input
+                  ref={chatInputRef}
                   type="text"
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder={`Type message to ${activeTeacher.name}...`}
+                  placeholder={`Type message or question for ${activeTeacher.name}...`}
                   className="flex-1 bg-cream/50 border border-sand/50 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-forest placeholder:text-forest/40 focus:outline-none focus:ring-2 focus:ring-sand"
                 />
                 <button type="submit" className="btn-primary text-xs sm:text-sm px-5 inline-flex items-center gap-1.5">
@@ -163,59 +200,114 @@ export default function StudentTeachers() {
               </form>
             </div>
 
-            {/* Section: Feedback (Quiz Feedback Carousel) */}
+            {/* Section: S5 Personalized Feedback & S8 Hard-Question Markers */}
             <div className="student-card space-y-4">
               <div className="student-card-header">
-                <h2 className="student-card-title">
-                  <FeedbackIcon className="w-5 h-5 text-forest" /> Feedback
-                </h2>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFeedbackIndex((prev) =>
-                        prev > 0 ? prev - 1 : activeTeacher.feedbackItems.length - 1
-                      )
-                    }
-                    className="carousel-nav-btn w-7 h-7 text-xs"
-                    title="Previous Assessment Feedback"
-                    aria-label="Previous Assessment Feedback"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFeedbackIndex((prev) => (prev + 1) % activeTeacher.feedbackItems.length)
-                    }
-                    className="carousel-nav-btn w-7 h-7 text-xs"
-                    title="Next Assessment Feedback"
-                    aria-label="Next Assessment Feedback"
-                  >
-                    ›
-                  </button>
+                <div>
+                  <h2 className="student-card-title">
+                    <FeedbackIcon className="w-5 h-5 text-forest" /> Personalized Quiz Feedback
+                  </h2>
+                  <p className="text-[11px] text-forest/60">
+                    Balanced, friendly feedback confirmed by teacher • Positive & constructive points
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-forest bg-sage/20 border border-sage/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <CheckIcon className="w-3 h-3 text-forest" /> Teacher Confirmed
+                  </span>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFeedbackIndex((prev) =>
+                          prev > 0 ? prev - 1 : activeTeacher.feedbackItems.length - 1
+                        )
+                      }
+                      className="carousel-nav-btn w-7 h-7 text-xs"
+                      title="Previous Assessment Feedback"
+                      aria-label="Previous Assessment Feedback"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFeedbackIndex((prev) => (prev + 1) % activeTeacher.feedbackItems.length)
+                      }
+                      className="carousel-nav-btn w-7 h-7 text-xs"
+                      title="Next Assessment Feedback"
+                      aria-label="Next Assessment Feedback"
+                    >
+                      ›
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {/* Active Quiz Feedback Card */}
-              <div className="p-5 rounded-2xl bg-cream/40 border border-sand/40 space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-sand/30">
-                  <h3 className="text-base font-bold text-forest">{activeFeedback.title}</h3>
-                  <span className="text-xs font-bold text-cream bg-forest px-3 py-1 rounded-full">
-                    Score: {activeFeedback.score}
-                  </span>
+              <div className="p-5 rounded-2xl bg-cream/40 border border-sand/40 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-sand/30 gap-2">
+                  <div>
+                    <h3 className="text-base font-bold text-forest">{activeFeedback.title}</h3>
+                    <span className="text-xs text-forest/60">Confirmed on {activeFeedback.confirmedDate}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-cream bg-forest px-3 py-1 rounded-full">
+                      Score: {activeFeedback.score}
+                    </span>
+                    {/* S9 Quiz Review Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleAskQuizReview(activeFeedback)}
+                      className="text-xs font-bold text-forest bg-white hover:bg-cream border border-sand/50 px-2.5 py-1 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+                    >
+                      Ask for Review <ChatIcon className="w-3.5 h-3.5 text-forest" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="space-y-2 pt-1">
-                  {activeFeedback.questions.map((qItem, i) => (
+                {/* S5 & S8: Question Feedback with Balanced Positive & Negative Points */}
+                <div className="space-y-3">
+                  {activeFeedback.questions.map((qItem) => (
                     <div
-                      key={i}
-                      className="p-3 rounded-xl bg-white border border-sand/30 text-xs text-forest flex items-start gap-2.5 shadow-2xs"
+                      key={qItem.id}
+                      className="p-4 rounded-xl bg-white border border-sand/30 text-xs text-forest space-y-2 shadow-2xs"
                     >
-                      <span className="font-extrabold text-forest bg-sand/30 px-2 py-0.5 rounded text-[11px] shrink-0">
-                        {qItem.q}
-                      </span>
-                      <p className="leading-relaxed">{qItem.note}</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-forest bg-sand/30 px-2 py-0.5 rounded text-[11px]">
+                            {qItem.q}
+                          </span>
+                          {qItem.isHardQuestion && (
+                            <span className="text-[10px] font-bold text-forest bg-sand/30 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                              <StarIcon className="w-3 h-3 text-forest" /> Marked Hard
+                            </span>
+                          )}
+                        </div>
+
+                        {/* S9 Action: Ask clarification on this specific question */}
+                        <button
+                          type="button"
+                          onClick={() => handleAskQuestionClarification(qItem, activeFeedback)}
+                          className="text-[11px] font-semibold text-forest bg-cream/70 hover:bg-sand/30 border border-sand/40 px-2 py-0.5 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
+                          title="Ask teacher about this question"
+                        >
+                          <ChatIcon className="w-3 h-3 text-forest" /> Ask About Question
+                        </button>
+                      </div>
+
+                      {/* Balanced Feedback: Positive & Practice Points */}
+                      <div className="space-y-1 pt-1">
+                        <p className="text-forest font-medium text-xs leading-relaxed">
+                          {qItem.positive}
+                        </p>
+                        <p className="text-forest/80 text-xs leading-relaxed">
+                          {qItem.constructive}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -319,4 +411,3 @@ export default function StudentTeachers() {
     </div>
   );
 }
-

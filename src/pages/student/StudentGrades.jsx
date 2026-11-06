@@ -11,6 +11,8 @@ import {
   ScienceIcon,
   MathIcon,
   EnglishIcon,
+  PrinterIcon,
+  CheckIcon,
 } from "../../components/StudentIcons";
 import "../../styles/student.css";
 
@@ -40,17 +42,18 @@ export default function StudentGrades() {
   });
   const [toastMessage, setToastMessage] = useState(null);
 
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
   const handleDownloadReport = () => {
     setToastMessage("Downloading Term 1 Official Report Card (PDF)...");
   };
 
+  const handlePrintReport = () => {
+    window.print();
+  };
+
   const handleViewReport = () => {
-    setModalState({
-      isOpen: true,
-      title: "Term 1 Official Report Card",
-      message: `Student: ${studentData.profile.name} • GPA: ${studentData.profile.gpa} / 4.0 • Academic Standing: Honors with Distinction. Verified by Administration.`,
-      onConfirm: () => setModalState({ isOpen: false }),
-    });
+    setIsReportModalOpen(true);
   };
 
   const handleOpenSubjectDetail = (idx) => {
@@ -166,18 +169,23 @@ export default function StudentGrades() {
                 <h2 className="student-card-title">
                   <ReportCardIcon className="w-5 h-5 text-forest" /> Report Cards
                 </h2>
-                <span className="text-xs font-bold text-forest">GPA: {studentData.profile.gpa} / 4.0</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-forest bg-sage/20 border border-sage/30 px-2.5 py-0.5 rounded-full">
+                    Teacher Confirmed & Verified
+                  </span>
+                  <span className="text-xs font-bold text-forest">GPA: {studentData.profile.gpa} / 4.0</span>
+                </div>
               </div>
 
               <div className="p-5 rounded-2xl bg-linear-to-br from-cream/50 to-white border border-sand/50 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
                   <h3 className="text-sm font-bold text-forest">Term 1 Official Report Card</h3>
                   <p className="text-xs text-forest/70 mt-0.5">
-                    Includes official quarterly exam grades, classwork scores, and conduct marks.
+                    Verified and confirmed by class teachers. Ready to download or print to bring home.
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={handleViewReport}
@@ -190,7 +198,15 @@ export default function StudentGrades() {
                     onClick={handleDownloadReport}
                     className="btn-secondary text-xs flex-1 sm:flex-none"
                   >
-                    Download
+                    Download PDF
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePrintReport}
+                    className="btn-ghost text-xs flex-1 sm:flex-none inline-flex items-center gap-1.5"
+                    title="Print report to bring home"
+                  >
+                    <PrinterIcon className="w-3.5 h-3.5" /> Print
                   </button>
                 </div>
               </div>
@@ -275,6 +291,107 @@ export default function StudentGrades() {
           </div>
         )}
       </main>
+
+      {/* S1: Official Report Card Modal */}
+      {isReportModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl border border-sand/50 shadow-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-sand/30">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-forest/10 text-forest flex items-center justify-center">
+                  <ReportCardIcon className="w-5 h-5 text-forest" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-forest">Zinger School Official Report Card</h3>
+                  <span className="text-[11px] text-forest/60">Term 1 • Academic Year 2026/2027</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsReportModalOpen(false)}
+                className="w-7 h-7 rounded-full bg-cream hover:bg-sand/30 text-forest text-xs flex items-center justify-center cursor-pointer font-bold"
+                aria-label="Close"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs p-3 bg-cream/40 rounded-xl border border-sand/30">
+              <div>
+                <span className="text-forest/60 block">Student Name:</span>
+                <strong className="text-forest">{studentData.profile.name}</strong>
+              </div>
+              <div>
+                <span className="text-forest/60 block">Student ID & Grade:</span>
+                <strong className="text-forest">{studentData.profile.id} • {studentData.profile.grade}</strong>
+              </div>
+              <div>
+                <span className="text-forest/60 block">Class Teacher:</span>
+                <strong className="text-forest">{studentData.profile.teacher}</strong>
+              </div>
+              <div>
+                <span className="text-forest/60 block">Term GPA:</span>
+                <strong className="text-forest">{studentData.profile.gpa} / 4.0 (A)</strong>
+              </div>
+            </div>
+
+            {/* Subject Grades Table */}
+            <div className="border border-sand/40 rounded-xl overflow-hidden text-xs">
+              <table className="w-full text-left">
+                <thead className="bg-sand/20 text-forest uppercase font-bold text-[11px]">
+                  <tr>
+                    <th className="py-2.5 px-3">Subject</th>
+                    <th className="py-2.5 px-3">Instructor</th>
+                    <th className="py-2.5 px-3 text-center">Score</th>
+                    <th className="py-2.5 px-3 text-center">Grade</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-sand/20">
+                  {studentData.subjects.map((subj) => (
+                    <tr key={subj.id} className="hover:bg-cream/30">
+                      <td className="py-2.5 px-3 font-semibold text-forest">{subj.name}</td>
+                      <td className="py-2.5 px-3 text-forest/70">{subj.teacher}</td>
+                      <td className="py-2.5 px-3 text-center font-bold text-forest">{subj.overall}</td>
+                      <td className="py-2.5 px-3 text-center font-extrabold text-forest">{subj.gradeLetter}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="p-3 rounded-xl bg-sage/15 border border-sage/30 text-xs text-forest space-y-1">
+              <div className="flex items-center gap-1.5 font-bold">
+                <CheckIcon className="w-3.5 h-3.5 text-forest" /> Verified by School Academic Board & Class Teachers
+              </div>
+              <p className="text-forest/80 text-[11px]">
+                Report confirmed. Suitable for printing to bring home for parent signature.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-sand/30">
+              <button
+                type="button"
+                onClick={handlePrintReport}
+                className="btn-ghost text-xs inline-flex items-center gap-1.5"
+              >
+                <PrinterIcon className="w-3.5 h-3.5" /> Print Report
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleDownloadReport();
+                  setIsReportModalOpen(false);
+                }}
+                className="btn-primary text-xs"
+              >
+                Download PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmModal
         isOpen={modalState.isOpen}
