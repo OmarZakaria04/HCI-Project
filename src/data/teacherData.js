@@ -107,3 +107,116 @@ export const paperDetails = {
     },
   },
 };
+
+export const scheduleDays = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
+
+export const schedulePeriods = [
+  { id: "p1", name: "First", time: "08:00 - 08:45 AM" },
+  { id: "p2", name: "Second", time: "09:00 - 09:45 AM" },
+  { id: "break", name: "Break", time: "09:45 - 10:15 AM", isBreak: true },
+  { id: "p3", name: "Third", time: "10:15 - 11:00 AM" },
+  { id: "p4", name: "Fourth", time: "11:15 - 12:00 PM" },
+];
+
+export const scheduleTimetable = {
+  Saturday: {
+    p1: { classId: "5A", subject: "Math • Fractions & Decimals", room: "Room 204", grade: 5 },
+    p2: { classId: "Free", subject: "Office Hours", room: "Staff Room" },
+    break: { label: "Morning Break" },
+    p3: { classId: "4A", subject: "Math • Multiplication Drill", room: "Room 102", grade: 4 },
+    p4: { classId: "Free", subject: "Lesson Prep", room: "Staff Room" },
+  },
+  Sunday: {
+    p1: { classId: "Free", subject: "Planning", room: "Staff Room" },
+    p2: { classId: "5A", subject: "Math • Decimals & Percentages", room: "Room 204", grade: 5 },
+    break: { label: "Morning Break" },
+    p3: { classId: "Free", subject: "Office Hours", room: "Staff Room" },
+    p4: { classId: "3B", subject: "Math • Basic Geometry", room: "Math Lab", grade: 3 },
+  },
+  Monday: {
+    p1: { classId: "4A", subject: "Math • Multiplication Quiz", room: "Room 102", grade: 4 },
+    p2: { classId: "Free", subject: "Grading Period", room: "Staff Room" },
+    break: { label: "Morning Break" },
+    p3: { classId: "Free", subject: "Office Hours", room: "Staff Room" },
+    p4: { classId: "5A", subject: "Math • Quiz Review", room: "Room 204", grade: 5 },
+  },
+  Tuesday: {
+    p1: { classId: "Free", subject: "Dept Meeting", room: "Conference B" },
+    p2: { classId: "3B", subject: "Math • Word Problems", room: "Math Lab", grade: 3 },
+    break: { label: "Morning Break" },
+    p3: { classId: "5A", subject: "Math • Fractions Lab", room: "Room 204", grade: 5 },
+    p4: { classId: "Free", subject: "Office Hours", room: "Staff Room" },
+  },
+  Wednesday: {
+    p1: { classId: "4A", subject: "Math • Decimals Intro", room: "Room 102", grade: 4 },
+    p2: { classId: "Free", subject: "Office Hours", room: "Staff Room" },
+    break: { label: "Morning Break" },
+    p3: { classId: "Free", subject: "AI Assessment Review", room: "Staff Room" },
+    p4: { classId: "3B", subject: "Math • Multiplication Tables", room: "Math Lab", grade: 3 },
+  },
+  Thursday: {
+    p1: { classId: "Free", subject: "Planning", room: "Staff Room" },
+    p2: { classId: "4A", subject: "Math • Weekly Review", room: "Room 102", grade: 4 },
+    break: { label: "Morning Break" },
+    p3: { classId: "5A", subject: "Math • Midterm Preparation", room: "Room 204", grade: 5 },
+    p4: { classId: "Free", subject: "Weekend Wrap-up", room: "Staff Room" },
+  },
+};
+
+export const teacherScheduleEvents = [
+  {
+    id: 1,
+    title: "Assignment 1: Fractions Practice",
+    classId: "5A",
+    grade: 5,
+    type: "Assignment",
+    date: "2026-10-12",
+    time: "11:59 PM",
+    status: "Upcoming",
+    description: "Exercises 1 to 15 on Chapter 3: Dividing and multiplying fractions.",
+  },
+  {
+    id: 2,
+    title: "Quiz 1: Multiplication Tables",
+    classId: "4A",
+    grade: 4,
+    type: "Quiz",
+    date: "2026-10-17",
+    time: "09:00 AM",
+    status: "Upcoming",
+    description: "Quick 20-minute timed quiz covering 6x through 12x multiplication tables.",
+  },
+  {
+    id: 3,
+    title: "Unit 2 Review Exam",
+    classId: "5A",
+    grade: 5,
+    type: "Exam",
+    date: "2026-10-22",
+    time: "10:15 AM",
+    status: "Upcoming",
+    description: "Midterm test covering Decimals, Fractions, and Basic Geometry.",
+  },
+  {
+    id: 4,
+    title: "HW2: Geometry & Perimeters",
+    classId: "3B",
+    grade: 3,
+    type: "Assignment",
+    date: "2026-10-14",
+    time: "05:00 PM",
+    status: "Completed",
+    description: "Draw 5 polygons and calculate perimeter given side lengths.",
+  },
+  {
+    id: 5,
+    title: "Interactive Geometry Lab",
+    classId: "4A",
+    grade: 4,
+    type: "Lesson",
+    date: "2026-10-19",
+    time: "09:15 AM",
+    status: "Upcoming",
+    description: "Hands-on manipulative fractions session in Math Lab Room 102.",
+  },
+];

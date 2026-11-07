@@ -14,6 +14,7 @@ import ParentEmergency from "./pages/parent/ParentEmergency";
 import ParentBehavior from "./pages/parent/ParentBehavior";
 import TeacherLayout from "./components/TeacherLayout";
 import TeacherPapers from "./pages/teacher/TeacherPapers";
+import TeacherSchedule from "./pages/teacher/TeacherSchedule";
 
 export default function App() {
   return (
@@ -35,9 +36,10 @@ export default function App() {
       <Route path="/parent/emergency" element={<ParentEmergency />} />
       <Route path="/parent/behavior" element={<ParentBehavior />} />
       <Route path="/teacher" element={<TeacherLayout />}>
-  <Route index element={<TeacherHome />} />
-<Route path="papers" element={<TeacherPapers />} />
-</Route>
+        <Route index element={<TeacherHome />} />
+        <Route path="papers" element={<TeacherPapers />} />
+        <Route path="schedule" element={<TeacherSchedule />} />
+      </Route>
     </Routes>
   );
 }

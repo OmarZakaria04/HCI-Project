@@ -107,6 +107,115 @@
 .teacher-analysis-details {
   @apply space-y-3 text-sm text-forest;
 }
+/* Papers Chalkboard Board & Modern Table (Green backboard with beige/brown edges) */
+.papers-board-card {
+  @apply rounded-2xl bg-[#183126] border-2 border-sand/60 shadow-lg p-5 sm:p-7 text-cream overflow-hidden;
+}
+
+.papers-board-header {
+  @apply flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 mb-5 border-b border-sand/30;
+}
+
+.papers-board-title {
+  @apply text-xl font-extrabold text-cream flex items-center gap-2;
+}
+
+.papers-stats-bar {
+  @apply flex flex-wrap items-center gap-2;
+}
+
+.papers-stat-chip {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border border-sand/35 bg-cream/10 text-cream shadow-2xs;
+}
+
+.papers-stat-chip-pending {
+  @apply bg-sand/20 border-sand/50 text-sand;
+}
+
+.papers-stat-chip-done {
+  @apply bg-sage/30 border-sage/50 text-cream;
+}
+
+/* Filters Bar */
+.papers-filters-bar {
+  @apply flex flex-wrap items-center gap-3 mb-5;
+}
+
+.papers-search-input {
+  @apply flex-1 min-w-[200px] rounded-xl border border-sand/40 bg-cream/10 px-3.5 py-2 text-xs text-cream placeholder:text-cream/50 focus:outline-none focus:ring-2 focus:ring-sand transition-all;
+}
+
+.papers-select-modern {
+  @apply rounded-xl border border-sand/40 bg-[#162C22] px-3.5 py-2 text-xs font-semibold text-cream focus:outline-none focus:ring-2 focus:ring-sand cursor-pointer transition-all;
+}
+
+.papers-reset-btn {
+  @apply h-8 px-3 rounded-xl bg-sand/20 hover:bg-sand/35 border border-sand/40 text-cream font-bold text-xs transition-colors cursor-pointer;
+}
+
+/* Modern Chalkboard Table */
+.papers-table-container {
+  @apply overflow-x-auto rounded-xl border border-sand/35 bg-[#142920]/80 shadow-inner;
+}
+
+.papers-modern-table {
+  @apply w-full text-left text-xs border-collapse;
+}
+
+.papers-modern-table thead tr {
+  @apply bg-[#10221A] border-b border-sand/35;
+}
+
+.papers-modern-table th {
+  @apply py-3.5 px-4 font-bold text-sand uppercase tracking-wider text-[11px] select-none;
+}
+
+.papers-modern-table tbody tr {
+  @apply border-b border-sand/15 transition-colors hover:bg-sand/10 cursor-pointer;
+}
+
+.papers-modern-table tbody tr:last-child {
+  @apply border-b-0;
+}
+
+.papers-modern-table td {
+  @apply py-3.5 px-4 text-cream/90 font-medium;
+}
+
+/* Table elements */
+.papers-student-cell {
+  @apply flex items-center gap-2.5;
+}
+
+.papers-avatar-mini {
+  @apply w-7 h-7 rounded-full bg-sand/30 text-sand border border-sand/50 flex items-center justify-center font-bold text-[10px] shrink-0;
+}
+
+.papers-paper-tag {
+  @apply font-bold text-sand;
+}
+
+.papers-class-badge {
+  @apply inline-block px-2 py-0.5 rounded-md bg-cream/10 border border-sand/30 text-cream/80 text-[11px];
+}
+
+.papers-status-badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border;
+}
+
+.papers-status-done {
+  @apply bg-sage/35 border-sage/60 text-cream;
+}
+
+.papers-status-pending {
+  @apply bg-sand/25 border-sand/50 text-sand;
+}
+
+.papers-action-btn {
+  @apply inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-sand/25 hover:bg-sand text-cream hover:text-forest border border-sand/40 transition-all cursor-pointer;
+}
+
+/* Legacy filters fallback */
 .papers-filters {
   @apply flex flex-wrap gap-3 mb-4;
 }
@@ -140,52 +249,57 @@
 }
 
 .papers-empty {
-  @apply py-6 text-center text-sm text-forest/60;
+  @apply py-10 text-center text-xs text-cream/70;
 }
 
-/* Hero carousel */
+/* Hero carousel - Original layout, scaled to a suitable size */
 .hero {
-  @apply relative grid w-full overflow-hidden rounded-2xl bg-forest shadow-sm;
+  @apply relative grid w-full overflow-hidden rounded-2xl bg-forest border border-sand/40 shadow-sm h-[280px] sm:h-[330px] md:h-[360px] select-none;
 }
 
 .hero-slide {
-  @apply relative col-start-1 row-start-1 opacity-0 pointer-events-none transition-opacity duration-700;
+  @apply relative col-start-1 row-start-1 w-full h-full opacity-0 pointer-events-none transition-opacity duration-700 overflow-hidden no-underline;
 }
 
 .hero-slide-active {
   @apply opacity-100 pointer-events-auto;
 }
 
-.hero-img {
-  @apply block w-full h-auto;
+.hero-img-backdrop {
+  @apply absolute inset-0 w-full h-full object-cover blur-xl opacity-45 scale-105 pointer-events-none select-none;
 }
 
+.hero-img {
+  @apply relative z-1 block w-full h-full object-contain select-none transition-transform duration-700 ease-out;
+}
+
+/* Overlay with generous horizontal padding so arrows never cover or hide the text */
 .hero-overlay {
-  @apply absolute inset-x-0 bottom-0 bg-linear-to-t from-forest/90 to-transparent p-6 pt-16 text-left;
+  @apply absolute inset-x-0 bottom-0 bg-linear-to-t from-forest/95 via-forest/65 to-transparent pl-16 sm:pl-20 pr-24 sm:pr-28 pb-5 sm:pb-6 pt-16 text-left z-10;
 }
 
 .hero-title {
-  @apply text-3xl font-bold text-cream;
+  @apply text-2xl sm:text-3xl font-extrabold text-cream leading-tight drop-shadow-xs;
 }
 
 .hero-text {
-  @apply text-sm text-cream/80;
+  @apply text-xs sm:text-sm text-cream/90 mt-1 max-w-xl leading-relaxed;
 }
 
 .hero-arrow {
-  @apply absolute top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-forest/70 text-cream text-2xl leading-none hover:bg-forest transition-colors cursor-pointer;
+  @apply absolute top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full bg-forest/80 border border-sand/40 text-cream text-2xl leading-none flex items-center justify-center hover:bg-forest hover:border-sand transition-all cursor-pointer shadow-md active:scale-95;
 }
 
 .hero-arrow-left {
-  @apply left-3;
+  @apply left-3 sm:left-4;
 }
 
 .hero-arrow-right {
-  @apply right-3;
+  @apply right-3 sm:right-4;
 }
 
 .hero-dots {
-  @apply absolute bottom-4 right-5 z-10 flex items-center gap-2;
+  @apply absolute bottom-4 right-6 z-20 flex items-center gap-2;
 }
 
 .hero-dot {
@@ -193,7 +307,7 @@
 }
 
 .hero-dot-active {
-  @apply w-6 bg-cream;
+  @apply w-6 bg-sand rounded-full;
 }
 
 @keyframes analytics-fade {
@@ -207,7 +321,7 @@
 }
 
 .analytics {
-  @apply rounded-2xl bg-forest p-6 shadow-sm text-cream;
+  @apply rounded-2xl bg-forest p-6 shadow-sm text-cream border border-sand/40;
 }
 
 .analytics-head {
@@ -303,3 +417,76 @@
 .analytics-empty {
   @apply py-10 text-center text-sm text-cream/70;
 }
+
+/* ==========================================================================
+   Teacher Schedule & Timetable Board (High Contrast Chalkboard Theme)
+   ========================================================================== */
+
+.schedule-board-card {
+  @apply rounded-2xl bg-[#163327] border-2 border-[#C8B48A] shadow-xl p-5 sm:p-7 text-white overflow-hidden space-y-6;
+}
+
+.schedule-board-header {
+  @apply flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#C8B48A]/40;
+}
+
+.schedule-board-title {
+  @apply text-xl font-extrabold text-[#F5F0E6] flex items-center gap-2;
+}
+
+.timetable-container {
+  @apply overflow-x-auto rounded-xl border border-[#C8B48A]/50 bg-[#0E2119] shadow-inner;
+}
+
+.timetable-table {
+  @apply w-full text-left text-xs border-collapse min-w-[760px];
+}
+
+.timetable-table thead tr {
+  @apply bg-[#0A1712] border-b-2 border-[#C8B48A]/50;
+}
+
+.timetable-table th {
+  @apply py-3 px-3.5 font-extrabold text-[#F5F0E6] uppercase tracking-wider text-[11px] select-none border-r border-[#C8B48A]/30 last:border-r-0;
+}
+
+.timetable-table td {
+  @apply p-2 text-white border-b border-r border-[#C8B48A]/20 last:border-r-0 align-top;
+}
+
+.timetable-table tr:last-child td {
+  @apply border-b-0;
+}
+
+.timetable-period-th {
+  @apply w-36 bg-[#08130E] font-bold text-[#F3E5D0] text-[11px];
+}
+
+.timetable-slot {
+  @apply rounded-lg p-3 transition-all cursor-pointer border-2 border-[#C8B48A]/70 bg-[#224A3A] shadow-xs hover:border-[#F5F0E6] hover:bg-[#2B5B47] flex flex-col gap-1.5 min-h-[76px];
+}
+
+.timetable-slot-active {
+  @apply bg-[#2F634E] border-[#F5F0E6] shadow-md ring-2 ring-[#C8B48A];
+}
+
+.timetable-slot-break {
+  @apply bg-[#C8B48A]/20 border border-dashed border-[#C8B48A]/70 text-[#F5F0E6] font-bold rounded-lg p-2.5 text-center flex items-center justify-center min-h-[50px] shadow-xs;
+}
+
+.timetable-slot-free {
+  @apply bg-black/25 border border-dashed border-white/20 rounded-lg p-3 hover:border-[#C8B48A]/60 hover:bg-black/35 text-white/50 hover:text-white/80 transition-colors flex flex-col items-center justify-center min-h-[76px] cursor-pointer;
+}
+
+.schedule-modal-input {
+  @apply rounded-xl border border-[#C8B48A]/60 bg-[#0F231B] px-3.5 py-2.5 text-xs text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-[#C8B48A] transition-all;
+}
+
+.schedule-item-card {
+  @apply rounded-xl bg-[#1E4032] border border-[#C8B48A]/50 p-4 transition-all hover:border-[#C8B48A] hover:bg-[#254C3C] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs;
+}
+
+.schedule-item-card-done {
+  @apply opacity-60 bg-[#12261E] border-[#C8B48A]/20 line-through;
+}
+
