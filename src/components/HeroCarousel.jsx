@@ -9,7 +9,7 @@ const slides = [
     title: "Classes",
     text: "Browse your classes and students",
     img: classImg,
-    to: "/teacher/students",
+    to: "/teacher/classes",
     bgColor: "#F8F7F3",
   },
   {

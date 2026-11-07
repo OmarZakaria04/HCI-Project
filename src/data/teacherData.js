@@ -1,7 +1,7 @@
 export const classes = [
-{ id: "5A", name: "Grade 5A", students: 28, average: 72 },
-{ id: "4A", name: "Grade 4A", students: 25, average: 81 },
-{ id: "3B", name: "Grade 3B", students: 30, average: 66 },
+  { id: "5A", name: "Grade 5A", grade: 5, students: 28, average: 72 },
+  { id: "4A", name: "Grade 4A", grade: 4, students: 25, average: 81 },
+  { id: "3B", name: "Grade 3B", grade: 3, students: 30, average: 66 },
 ];
 
 export const notifications = [
@@ -220,3 +220,79 @@ export const teacherScheduleEvents = [
     description: "Hands-on manipulative fractions session in Math Lab Room 102.",
   },
 ];
+export const students = [
+  { id: 1, name: "Mohamed Ehab", classId: "5A", attendance: 96, grade: 84 },
+  { id: 2, name: "Omar Zakaria", classId: "5A", attendance: 45, grade: 38 },
+  { id: 3, name: "Mahmoud Ehab", classId: "5A", attendance: 88, grade: 71 },
+  { id: 4, name: "Ahmed Ehab", classId: "5A", attendance: 80, grade: 52 },
+  { id: 5, name: "Salma Nabil", classId: "5A", attendance: 93, grade: 91 },
+  { id: 6, name: "Sara Hany", classId: "4A", attendance: 97, grade: 89 },
+  { id: 7, name: "Karim Fathy", classId: "4A", attendance: 90, grade: 78 },
+  { id: 8, name: "Youssef Adel", classId: "3B", attendance: 85, grade: 64 },
+  { id: 9, name: "Laila Samir", classId: "3B", attendance: 70, grade: 58 },
+];
+
+export const studentDetails = {
+  2: {
+    gaps: ["Comparing fractions", "Multiplication facts"],
+    redFlags: [
+      { id: 1, text: "Attendance below 50% this term" },
+      { id: 2, text: "Repeated mistakes in fractions across 3 assignments" },
+    ],
+    repeated: ["Treats 1/3 as larger than 1/2", "Skips the carry step when multiplying"],
+    topics: [
+      { label: "Multiplication", value: 45 },
+      { label: "Word Probs", value: 50 },
+      { label: "Fractions", value: 30 },
+      { label: "Decimals", value: 40 },
+      { label: "Geometry", value: 55 },
+    ],
+    assessments: [
+      {
+        id: "hw1", title: "HW1", score: "2/3",
+        feedback: "Review the 4 times table before the next quiz.",
+        items: [
+          { q: "12 × 4", answer: "46", correct: false },
+          { q: "Bigger: 1/2 or 1/3?", answer: "1/2", correct: true },
+          { q: "3/4 + 1/4", answer: "1", correct: true },
+        ],
+      },
+      {
+        id: "quiz1", title: "Quiz 1", score: "1/3",
+        feedback: "Practice comparing fractions with different denominators.",
+        items: [
+          { q: "Bigger: 2/3 or 3/5?", answer: "3/5", correct: false },
+          { q: "7 × 8", answer: "56", correct: true },
+          { q: "1/2 + 1/4", answer: "2/6", correct: false },
+        ],
+      },
+    ],
+    messages: {
+      student: [{ from: "teacher", text: "Omar, please review the fractions worksheet before Sunday.", time: "Yesterday" }],
+      parent: [],
+    },
+  },
+  4: {
+    gaps: ["Adding fractions"],
+    redFlags: [{ id: 1, text: "Keeps missing fraction problems" }],
+    repeated: ["Adds numerators and denominators separately"],
+    topics: [
+      { label: "Multiplication", value: 70 },
+      { label: "Word Probs", value: 65 },
+      { label: "Fractions", value: 40 },
+      { label: "Decimals", value: 60 },
+      { label: "Geometry", value: 68 },
+    ],
+    assessments: [
+      {
+        id: "quiz1", title: "Quiz 1", score: "1/5",
+        feedback: "Revisit adding fractions with the same denominator.",
+        items: [
+          { q: "1/4 + 2/4", answer: "3/8", correct: false },
+          { q: "5 × 6", answer: "30", correct: true },
+        ],
+      },
+    ],
+    messages: { student: [], parent: [] },
+  },
+};

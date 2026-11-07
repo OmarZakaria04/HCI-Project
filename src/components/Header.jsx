@@ -15,7 +15,7 @@ const ROLE_CONFIG = {
     navItems: [
   { label: "Dashboard", path: "/teacher" },
   { label: "Papers", path: "/teacher/papers" },
-  { label: "Students", path: "/teacher/students" },
+  { label: "Classes", path: "/teacher/classes" },
   { label: "Schedule", path: "/teacher/schedule" },
 ],
   },

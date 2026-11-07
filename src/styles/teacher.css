@@ -490,3 +490,120 @@
   @apply opacity-60 bg-[#12261E] border-[#C8B48A]/20 line-through;
 }
 
+.classes-grid {
+  @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+.classes-card {
+  @apply block rounded-2xl bg-white p-5 shadow-sm border-2 border-transparent text-left hover:border-sand transition-colors;
+}
+
+.classes-card-top {
+  @apply flex items-center justify-between;
+}
+
+.classes-name {
+  @apply text-xl font-semibold text-forest;
+}
+
+
+
+.classes-meta {
+  @apply mt-1 text-sm text-forest/70;
+}
+
+.classes-circle {
+  @apply flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-full border-4 border-sage text-forest;
+}
+
+.classes-circle-value {
+  @apply text-sm font-bold leading-none;
+}
+
+.classes-circle-label {
+  @apply mt-0.5 text-[10px] leading-none text-forest/60;
+}
+
+.classes-focus {
+  @apply mt-3 text-xs text-forest/70;
+}
+
+.stu-grid {
+  @apply grid gap-6 lg:grid-cols-2 items-start;
+}
+
+.stu-col {
+  @apply space-y-6;
+}
+
+.stu-card {
+  @apply rounded-2xl bg-[#183126] border-2 border-sand/60 shadow-lg p-5 text-cream space-y-3;
+}
+
+.stu-card-title {
+  @apply text-sm font-extrabold uppercase tracking-wider text-sand;
+}
+
+.stu-sub {
+  @apply pt-2 text-xs font-bold uppercase tracking-wide text-cream/60;
+}
+
+.stu-item {
+  @apply rounded-lg bg-cream/10 border border-sand/25 px-3 py-2 text-xs text-cream/90;
+}
+
+.stu-flag {
+  @apply flex items-center justify-between gap-3;
+}
+
+.stu-carousel-head {
+  @apply flex items-center justify-between;
+}
+
+.stu-nav {
+  @apply h-9 w-9 rounded-full bg-forest/80 border border-sand/40 text-cream text-xl leading-none cursor-pointer hover:bg-forest disabled:opacity-30 disabled:cursor-default;
+}
+
+.stu-assess-title {
+  @apply text-lg font-bold text-cream;
+}
+
+.stu-assess-score {
+  @apply text-xs text-sand;
+}
+
+.stu-answer-ok {
+  @apply font-mono font-bold text-sage;
+}
+
+.stu-answer-bad {
+  @apply font-mono font-bold text-sand;
+}
+
+.stu-feedback {
+  @apply text-xs italic text-cream/80 pt-1;
+}
+
+.stu-tab {
+  @apply rounded-lg border border-sand/40 bg-cream/10 px-3 py-1 text-xs font-bold text-cream cursor-pointer hover:bg-cream/20;
+}
+
+.stu-tab-active {
+  @apply bg-sand text-forest;
+}
+
+.stu-chat {
+  @apply max-h-56 space-y-2 overflow-y-auto;
+}
+
+.stu-msg {
+  @apply rounded-xl bg-sage/30 border border-sage/50 px-3 py-2 text-xs text-cream;
+}
+
+.stu-msg-time {
+  @apply mt-1 block text-[10px] text-cream/60;
+}
+
+.stu-btn-ghost {
+  @apply rounded-lg border border-sand/40 px-3 py-1.5 text-xs font-bold text-cream cursor-pointer hover:bg-cream/10;
+}
