@@ -22,14 +22,14 @@ export const studentNotifications = [
   {
     id: 2,
     type: "assignment",
-    text: "New Assignment: HW 2 (Thermodynamics Lab) uploaded for answer extraction scanner.",
+    text: "New homework: Plant life cycles worksheet is ready. Upload your completed work.",
     time: "1h ago",
     link: "/student",
   },
   {
     id: 3,
     type: "quiz",
-    text: "Upcoming Quiz: Mathematics Quiz 2: Fractions & LCM is ready in your online workspace.",
+    text: "Your Fractions and multiples quiz is ready to start.",
     time: "3h ago",
     link: "/student/workspace/assess-1",
   },
@@ -45,13 +45,13 @@ export const studentNotifications = [
 export const onlineWorkspaceAssessments = {
   "assess-1": {
     id: "assess-1",
-    title: "Mathematics Quiz 2: Fractions & LCM",
+    title: "Fractions and multiples",
     type: "Quiz",
     subject: "Math",
     teacher: "Mrs. Radwa",
     durationMinutes: 30,
     instructions:
-      "Answer all questions using the scratchpad and fraction tool if needed. Your time spent on each question will be recorded for your teacher's review. You can mark difficult questions to review with Mrs. Radwa later.",
+      "Answer each question. Use the scratchpad to work things out. Mark any question you would like help with.",
     questions: [
       {
         id: "q1",
@@ -66,7 +66,7 @@ export const onlineWorkspaceAssessments = {
         id: "q2",
         number: 2,
         topic: "Adding Fractions",
-        prompt: "Solve the equation: (3/4) + (2/5) = ?",
+        prompt: "What is 3/4 + 2/5?",
         options: ["23/20 (or 1 3/20)", "5/9", "5/20", "6/20"],
         correctOption: "23/20 (or 1 3/20)",
         hint: "Find the common denominator (20) first: 15/20 + 8/20.",
@@ -84,27 +84,27 @@ export const onlineWorkspaceAssessments = {
   },
   "assess-3": {
     id: "assess-3",
-    title: "English Midterm Term 1 Examination",
+    title: "Reading and grammar",
     type: "Exam",
     subject: "English",
     teacher: "Mr. Said",
-    durationMinutes: 60,
+    durationMinutes: 30,
     instructions:
-      "Complete the reading and language examination online. The system tracks your time spent per question for Mr. Said's review. Mark any question you want to discuss during office hours.",
+      "Read each question carefully and choose an answer. You can go back to check your answers before you finish.",
     questions: [
       {
         id: "q1",
         number: 1,
-        topic: "Figurative Language",
-        prompt: "Which phrase is a metaphor in: 'The classroom was a lively hive during project time'?",
+        topic: "Reading comprehension",
+        prompt: "Read: 'Maya planted a seed. She watered it each day. Soon, a green shoot appeared.' What happened after Maya watered the seed?",
         options: [
-          "'The classroom was a lively hive'",
-          "'during project time'",
-          "'was'",
-          "There is no metaphor",
+          "A green shoot appeared.",
+          "The seed turned into a stone.",
+          "Maya stopped watering it.",
+          "The plant grew apples right away.",
         ],
-        correctOption: "'The classroom was a lively hive'",
-        hint: "A metaphor compares two things directly without 'like' or 'as'.",
+        correctOption: "A green shoot appeared.",
+        hint: "Look at the last sentence. It tells you what grew.",
       },
       {
         id: "q2",
@@ -134,19 +134,11 @@ export const studentData = {
   heroSlides: [
     {
       id: "homeworks",
-      title: "Home-Works",
+      title: "Schoolwork",
       subtitle: "3 Pending tasks • Next due in 2 days",
       iconType: "homeworks",
       targetView: "home",
       actionText: "View Assessments",
-    },
-    {
-      id: "teachers",
-      title: "Teachers",
-      subtitle: "Connect with subject teachers & view personal feedback",
-      iconType: "teachers",
-      targetView: "teachers",
-      actionText: "Open My Teachers",
     },
     {
       id: "grades",
@@ -155,6 +147,14 @@ export const studentData = {
       iconType: "grades",
       targetView: "grades",
       actionText: "Inspect Report Card",
+    },
+    {
+      id: "teachers",
+      title: "Teachers",
+      subtitle: "Connect with subject teachers & view personal feedback",
+      iconType: "teachers",
+      targetView: "teachers",
+      actionText: "Open My Teachers",
     },
   ],
 
@@ -195,90 +195,80 @@ export const studentData = {
   pendingAssessments: [
     {
       id: "assess-1",
-      title: "Mathematics Quiz 2: Fractions & LCM",
+      title: "Fractions and multiples",
       type: "Quiz",
-      status: "Online",
       isOnline: true,
-      dueDate: "8-11",
-      actionLabel: "Start",
+      dueDate: "2026-11-08",
+      actionLabel: "Start quiz",
       subject: "Math",
-      duration: "30 mins",
+      duration: "30 minutes",
       isSubmitted: false,
     },
     {
       id: "assess-2",
-      title: "Thermodynamics Lab Report 1",
-      type: "HW",
-      status: "Offline",
+      title: "Plant life cycles worksheet",
+      type: "Homework",
       isOnline: false,
-      dueDate: "10-11",
-      actionLabel: "Upload File",
+      dueDate: "2026-11-10",
+      actionLabel: "Upload homework",
       subject: "Science",
-      duration: "PDF / Word",
+      duration: "PDF, Word or image",
       isSubmitted: false,
     },
     {
       id: "assess-3",
-      title: "English Midterm Term 1 Examination",
+      title: "Reading and grammar",
       type: "Exam",
-      status: "Online",
       isOnline: true,
-      dueDate: "8-11",
-      actionLabel: "Start",
+      dueDate: "2026-11-08",
+      actionLabel: "Start exam",
       subject: "English",
-      duration: "60 mins",
+      duration: "30 minutes",
       isSubmitted: false,
     },
   ],
 
   // S6 Student-friendly progress view (designed for Grades 1-5)
-  // Simplified, encouraging, light visual progress, paired with strengths and practice
+  // Subject-specific demo feedback; the dashboard derives its average from the chart scores.
   progressView: {
-    teacherConfirmed: true,
-    confirmedBadge: "Teacher Confirmed & Reviewed",
-    overallGrade: "A (92%)",
-    growthMessage: "You improved in Multiplication & Fractions!",
-    recentExams: [
-      { name: "Quiz 1", score: 85, date: "Sep 20" },
-      { name: "Midterm", score: 88, date: "Oct 5" },
-      { name: "Quiz 2", score: 92, date: "Oct 25" },
+    keyTakeaways: [
+      {
+        subject: "Math",
+        comment: "You are doing well at comparing fractions. Keep showing your working clearly.",
+      },
+      {
+        subject: "Science",
+        comment: "You can name the main parts of a plant. Keep up the good work.",
+      },
     ],
-    // Something the student does well (encouraging strength)
-    strength: {
-      title: "Superstar Skill: Finding Common Denominators!",
-      description: "You set up LCM calculations clearly and showed great step-by-step logic.",
-    },
-    // Only 1 or 2 relevant topics to practice paired with suggestion & ask teacher help
     practiceTopics: [
       {
         id: "practice-1",
-        title: "Let's work on fractions!",
-        tip: "Remember to simplify improper fractions in your final step (like changing 23/20 into 1 3/20).",
-        teacher: "Mrs. Radwa",
-        suggestedHelpMessage: "Hi Mrs. Radwa, could you please give me a tip on simplifying mixed fractions?",
+        subject: "English",
+        title: "Finding the main idea",
+        tip: "You found details in the passage. Practise identifying its main idea by summing up one paragraph in a sentence.",
+        teacherId: "mr-said",
+        suggestedHelpMessage: "Hi Mr. Said, could you help me find the main idea of a paragraph?",
       },
       {
         id: "practice-2",
-        title: "Let's practice division with remainders!",
-        tip: "Double check the subtraction step before writing down the final remainder.",
-        teacher: "Mrs. Radwa",
-        suggestedHelpMessage: "Hi Mrs. Radwa, can we practice division remainders during office hours?",
+        subject: "History",
+        title: "Putting events in order",
+        tip: "You recognised the events. Practise ordering them by placing three events on a timeline.",
+        teacherId: "ms-mona",
+        suggestedHelpMessage: "Hi Ms. Mona, could you help me put events in order on a timeline?",
       },
     ],
   },
 
-  // Analysis section data for Home-S (Wireframe Metrics Graph & Details)
+  // The same five scores feed the radar, bars, and equal-weight dashboard average.
   analysis: {
-    details: "Mathematics (92%) • Science (95%) • English (88%)",
-    excellentWorkOn: "Linear Equations & Biology Lab",
-    keyTakeaways:
-      "Great consistency across assignments. Maintain current momentum and review English vocabulary before Friday's quiz.",
     radarMetrics: [
       { label: "Math", value: 92 },
       { label: "Science", value: 95 },
       { label: "English", value: 88 },
       { label: "History", value: 85 },
-      { label: "Classwork", value: 91 },
+      { label: "Geography", value: 91 },
     ],
   },
 
@@ -294,19 +284,19 @@ export const studentData = {
       history: [
         {
           rowNumber: 1,
-          assignment: "HW 1: Cell Structure (95%)",
+          assignment: "HW 1: Plant Parts (95%)",
           quiz: "Quiz 1 (18/20)",
           classWork: "Lab Safety (10/10)",
         },
         {
           rowNumber: 2,
-          assignment: "HW 2: Thermodynamics (88%)",
+          assignment: "HW 2: Plant Life Cycles (88%)",
           quiz: "Quiz 2 (19/20)",
           classWork: "Group Experiment (9/10)",
         },
         {
           rowNumber: 3,
-          assignment: "HW 3: Optics & Waves (92%)",
+          assignment: "HW 3: Light and Shadows (92%)",
           quiz: "Midterm Prep (46/50)",
           classWork: "Workbook Part B (10/10)",
         },
@@ -328,13 +318,13 @@ export const studentData = {
         },
         {
           rowNumber: 2,
-          assignment: "HW 2: Linear Equations (94%)",
+          assignment: "HW 2: Multiplication (94%)",
           quiz: "Quiz 2 (18/20)",
           classWork: "Problem Set 4 (9.5/10)",
         },
         {
           rowNumber: 3,
-          assignment: "HW 3: Polynomials (91%)",
+          assignment: "HW 3: Division with Remainders (91%)",
           quiz: "Midterm (45/50)",
           classWork: "Mental Math (10/10)",
         },
@@ -350,19 +340,19 @@ export const studentData = {
       history: [
         {
           rowNumber: 1,
-          assignment: "HW 1: Essay Draft (85%)",
+          assignment: "HW 1: My Favourite Place (85%)",
           quiz: "Vocab Quiz 1 (16/20)",
           classWork: "Reading Circle (9/10)",
         },
         {
           rowNumber: 2,
-          assignment: "HW 2: Poetry Analysis (87%)",
+          assignment: "HW 2: Reading a Poem (87%)",
           quiz: "Grammar Quiz 2 (17/20)",
-          classWork: "Debate Session (8.5/10)",
+          classWork: "Sharing Our Ideas (8.5/10)",
         },
         {
           rowNumber: 3,
-          assignment: "HW 3: Final Composition (89%)",
+          assignment: "HW 3: Writing a Short Story (89%)",
           quiz: "Midterm Reading (42/50)",
           classWork: "Journal Entry (9/10)",
         },
@@ -445,17 +435,17 @@ export const studentData = {
           questions: [
             {
               id: "q1",
-              q: "Question 1 (Force Vectors Diagram)",
+              q: "Question 1 (Pushes and Pulls)",
               status: "correct",
-              positive: "What went well: Outstanding vector arrows and proper directional labeling.",
-              constructive: "Always remember to state the SI units (Newtons).",
+              positive: "What went well: Your arrows show which way the toy car moves.",
+              constructive: "Label each arrow as a push or a pull.",
             },
             {
               id: "q2",
-              q: "Question 2 (Friction Calculation)",
+              q: "Question 2 (Rough and Smooth Surfaces)",
               status: "needs-practice",
-              positive: "What went well: You identified normal force correctly.",
-              constructive: "Practice tip: Check your decimal multiplication on the friction coefficient.",
+              positive: "What went well: You noticed that the toy car slows down on a rough surface.",
+              constructive: "Practice tip: Try the car on a smooth surface and compare how far it travels.",
               isHardQuestion: true,
             },
           ],
@@ -465,13 +455,13 @@ export const studentData = {
         {
           id: 1,
           sender: "student",
-          text: "Mr. Ahmed, is the thermodynamics lab report due before 4 PM or midnight?",
+          text: "Mr. Ahmed, what should I include in my plant life cycles worksheet?",
           time: "10:14 AM",
         },
         {
           id: 2,
           sender: "teacher",
-          text: "Hello Ahmed! It is due by 4 PM on Sunday so our scanner can process your diagrams.",
+          text: "Hello Ahmed! Draw and label the seed, seedling and adult plant. The worksheet is due on 10 November.",
           time: "10:25 AM",
         },
         {
@@ -485,31 +475,47 @@ export const studentData = {
     {
       id: "mr-said",
       name: "Mr. Said",
-      subject: "English Literature",
+      subject: "English",
       department: "Humanities Department",
       avatarBg: "bg-sage",
       office: "Room 102",
       feedbackItems: [
         {
+          id: "reading-main-idea",
+          title: "Reading quiz - Finding the main idea",
+          score: "88%",
+          confirmedByTeacher: true,
+          confirmedDate: "Oct 25, 2026",
+          questions: [
+            {
+              id: "main-idea",
+              q: "Finding the main idea",
+              status: "needs-practice",
+              positive: "What went well: You found details in the passage.",
+              constructive: "Practice tip: Sum up one paragraph in a sentence to identify its main idea.",
+            },
+          ],
+        },
+        {
           id: "essay-1",
-          title: "Essay 1 - Thematic Analysis",
+          title: "My Favourite Place - A Short Paragraph",
           score: "18/20",
           confirmedByTeacher: true,
           confirmedDate: "Oct 20, 2026",
           questions: [
             {
               id: "q1",
-              q: "Question 1 (Thesis & Topic Sentence)",
+              q: "Question 1 (Opening Sentence)",
               status: "correct",
-              positive: "What went well: Compelling thesis statement with thoughtful textual evidence.",
-              constructive: "Keep linking your concluding sentence back to the opening motif.",
+              positive: "What went well: Your first sentence tells us about your favourite place.",
+              constructive: "Add one detail about what you can see or hear there.",
             },
             {
               id: "q2",
               q: "Question 2 (Punctuation & Flow)",
               status: "needs-practice",
               positive: "What went well: Rich vocabulary selection.",
-              constructive: "Practice tip: Watch out for run-on sentences in paragraph 3.",
+              constructive: "Practice tip: Use a capital letter at the start and a full stop at the end of each sentence.",
             },
           ],
         },
@@ -518,10 +524,37 @@ export const studentData = {
         {
           id: 1,
           sender: "teacher",
-          text: "Ahmed, your vocabulary essay showed great thematic depth. Keep up the high standard!",
+          text: "Ahmed, your paragraph helped me picture your favourite place. Keep using clear describing words!",
           time: "Yesterday",
         },
       ],
+    },
+    {
+      id: "ms-mona",
+      name: "Ms. Mona",
+      subject: "History",
+      department: "Humanities Department",
+      avatarBg: "bg-sand",
+      office: "Room 103",
+      feedbackItems: [
+        {
+          id: "history-event-order",
+          title: "History quiz - Putting events in order",
+          score: "85%",
+          confirmedByTeacher: true,
+          confirmedDate: "Oct 27, 2026",
+          questions: [
+            {
+              id: "event-order",
+              q: "Putting events in order",
+              status: "needs-practice",
+              positive: "What went well: You recognised the events.",
+              constructive: "Practice tip: Place three events on a timeline, from earliest to latest.",
+            },
+          ],
+        },
+      ],
+      initialMessages: [],
     },
   ],
 };

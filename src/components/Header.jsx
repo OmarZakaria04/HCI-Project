@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { users } from "../data/users";
 import { notifications } from "../data/teacherData";
-import { studentNotifications } from "../data/studentData";
+import { studentData, studentNotifications } from "../data/studentData";
 import "../styles/header.css";
 
 // Role-specific configuration & navigation dummy data
@@ -23,7 +23,7 @@ const ROLE_CONFIG = {
     title: "Student Portal",
     badgeClass: "brand-badge-student",
     basePath: "/student",
-    meta: "Grade 11 • Class B",
+    meta: `${studentData.profile.grade} • ${studentData.profile.section}`,
     navItems: [
       { label: "Dashboard", path: "/student" },
       { label: "Grades", path: "/student/grades" },

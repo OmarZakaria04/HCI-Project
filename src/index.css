@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Bree Serif";
+  src: url("./fonts/bree-serif/BreeSerif-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Source Sans 3";
+  src: url("./fonts/source-sans-3/SourceSans3[wght].ttf") format("truetype");
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+}
+
 @theme {
   --color-forest: #1E3B2F;
   --color-sage: #7F8C6A;

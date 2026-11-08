@@ -1,34 +1,48 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
 import RadarChart from "../../components/RadarChart";
 import Toast from "../../components/Toast";
 import { studentData } from "../../data/studentData";
 import {
-  AnnouncementIcon,
   HomeworkIcon,
-  TeacherIcon,
-  GradesIcon,
-  AssessmentIcon,
-  AnalysisIcon,
   CheckIcon,
-  ChatIcon,
-  StarIcon,
 } from "../../components/StudentIcons";
+import classImg from "../../assets/class.png";
+import papersImg from "../../assets/papers.png";
+import scheduleImg from "../../assets/schedule.png";
 import "../../styles/student.css";
+import "../../styles/student-dashboard.css";
+
+const heroImages = { homeworks: papersImg, teachers: classImg, grades: scheduleImg };
+const taskMarkers = { Quiz: "Q", Homework: "HW", Exam: "E" };
+const deadlineFormatter = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
+});
 
 export default function StudentHome() {
   const navigate = useNavigate();
 
-  // Hero carousel index: 0 = Home-Works, 1 = Teachers, 2 = Grades
   const [heroIndex, setHeroIndex] = useState(0);
+  const schoolworkRef = useRef(null);
+  const swipeRef = useRef(null);
 
   // S2 & S3: File upload simulation for answer extraction scanner
   const [uploadedFiles, setUploadedFiles] = useState({});
   const [activeUploadItem, setActiveUploadItem] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const isReplacingUpload = Boolean(activeUploadItem && uploadedFiles[activeUploadItem.id]);
 
   const [toastMessage, setToastMessage] = useState(null);
+
+  const schoolwork = [...studentData.pendingAssessments].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  const pendingCount = schoolwork.filter(
+    (item) => !item.isSubmitted && !uploadedFiles[item.id]
+  ).length;
+  const progressMetrics = studentData.analysis?.radarMetrics || [];
+  const overallAverage = progressMetrics.length > 0
+    ? (progressMetrics.reduce((total, metric) => total + metric.value, 0) / progressMetrics.length).toFixed(1)
+    : null;
 
   const handlePrevHero = () => {
     setHeroIndex((prev) => (prev - 1 + studentData.heroSlides.length) % studentData.heroSlides.length);
@@ -44,6 +58,32 @@ export default function StudentHome() {
       navigate("/student/teachers");
     } else if (currentSlide.id === "grades") {
       navigate("/student/grades");
+    } else {
+      schoolworkRef.current.focus({ preventScroll: true });
+      schoolworkRef.current.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+        block: "start",
+      });
+    }
+  };
+
+  const handleHeroKeyDown = (event) => {
+    if (event.key === "ArrowLeft") handlePrevHero();
+    else if (event.key === "ArrowRight") handleNextHero();
+    else if (event.key === "Home") setHeroIndex(0);
+    else if (event.key === "End") setHeroIndex(studentData.heroSlides.length - 1);
+    else return;
+    event.preventDefault();
+  };
+
+  const handleSwipeEnd = (event) => {
+    if (!swipeRef.current) return;
+    const dx = event.clientX - swipeRef.current.x;
+    const dy = event.clientY - swipeRef.current.y;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      swipeRef.current.swiped = true;
+      if (dx < 0) handleNextHero();
+      else handlePrevHero();
     }
   };
 
@@ -60,7 +100,7 @@ export default function StudentHome() {
   };
 
   const handleConfirmUpload = () => {
-    if (!activeUploadItem) return;
+    if (!activeUploadItem || (isReplacingUpload && !selectedFile)) return;
     setUploadedFiles((prev) => ({
       ...prev,
       [activeUploadItem.id]: selectedFile ? selectedFile.name : "Homework_Scan_Ahmed.pdf",
@@ -68,66 +108,88 @@ export default function StudentHome() {
     const itemTitle = activeUploadItem.title;
     setActiveUploadItem(null);
     setSelectedFile(null);
-    setToastMessage(`${itemTitle} submitted for teacher review & answer extraction scanner!`);
+    setToastMessage(`${itemTitle} ${isReplacingUpload ? "upload replaced" : "uploaded"} for this demo.`);
   };
 
   const handleAskTeacherPractice = (topic) => {
-    navigate("/student/teachers", {
+    navigate(`/student/teachers/${topic.teacherId}`, {
       state: { prefillMessage: topic.suggestedHelpMessage },
     });
   };
 
   return (
-    <div className="student-page-wrapper">
+    <div className="student-page-wrapper student-dashboard">
       <Header role="student" />
 
       <main className="student-container">
-        {/* Top Hero Carousel Card: Home-Works (Screen Home-S) */}
-        <div className="wireframe-hero-card">
-          <div className="w-full flex items-center justify-between px-2 sm:px-4">
+        <div className="student-dashboard-welcome">
+          <h1>Hi {studentData.profile.name.split(" ")[0]}</h1>
+          <p aria-live="polite">
+            You have {pendingCount} {pendingCount === 1 ? "task" : "tasks"} to complete.
+          </p>
+        </div>
+
+        <section
+          className="student-dashboard-carousel"
+          aria-label="Student navigation"
+          aria-roledescription="carousel"
+          onKeyDown={handleHeroKeyDown}
+        >
+          <div className="student-carousel-stage">
             <button
               type="button"
               onClick={handlePrevHero}
-              className="carousel-nav-btn"
+              className="carousel-nav-btn student-carousel-previous"
               title="Previous slide"
               aria-label="Previous slide"
             >
               ‹
             </button>
 
-            <div className="flex-1 px-4 cursor-pointer" onClick={handleHeroAction}>
-              <div className="w-12 h-12 rounded-2xl bg-forest/10 text-forest flex items-center justify-center mx-auto mb-2 shadow-2xs">
-                {studentData.heroSlides[heroIndex].iconType === "homeworks" && (
-                  <HomeworkIcon className="w-6 h-6 text-forest" />
-                )}
-                {studentData.heroSlides[heroIndex].iconType === "teachers" && (
-                  <TeacherIcon className="w-6 h-6 text-forest" />
-                )}
-                {studentData.heroSlides[heroIndex].iconType === "grades" && (
-                  <GradesIcon className="w-6 h-6 text-forest" />
-                )}
-              </div>
-              <h1 className="wireframe-hero-title">
-                {studentData.heroSlides[heroIndex].title}
-              </h1>
-              <p className="wireframe-hero-subtitle mx-auto">
-                {studentData.heroSlides[heroIndex].subtitle}
-              </p>
-              {studentData.heroSlides[heroIndex].id !== "homeworks" && (
-                <button
-                  type="button"
-                  onClick={handleHeroAction}
-                  className="mt-3 text-xs font-bold text-forest bg-sand/30 hover:bg-sand/50 px-3.5 py-1.5 rounded-full transition-colors inline-block cursor-pointer"
-                >
-                  {studentData.heroSlides[heroIndex].actionText} →
-                </button>
-              )}
+            <div
+              className="student-carousel-track"
+              onPointerDown={(event) => {
+                swipeRef.current = event.pointerType === "mouse" ? null : { x: event.clientX, y: event.clientY, swiped: false };
+              }}
+              onPointerUp={handleSwipeEnd}
+              onPointerCancel={() => { swipeRef.current = null; }}
+              onClickCapture={(event) => {
+                if (swipeRef.current?.swiped) {
+                  event.stopPropagation();
+                  swipeRef.current = null;
+                }
+              }}
+            >
+              {studentData.heroSlides.map((slide, index) => {
+                const isActive = index === heroIndex;
+                const position = isActive ? "active" : index === (heroIndex + 1) % studentData.heroSlides.length ? "next" : "previous";
+                return (
+                  <button
+                    key={slide.id}
+                    type="button"
+                    onClick={() => isActive ? handleHeroAction() : setHeroIndex(index)}
+                    className={`student-carousel-card student-carousel-card-${position}`}
+                    aria-label={isActive ? `Open ${slide.title}` : `Show ${slide.title}`}
+                  >
+                    <img src={heroImages[slide.id]} alt="" className="student-carousel-backdrop" draggable={false} />
+                    <img src={heroImages[slide.id]} alt="" className="student-carousel-image" draggable={false} />
+                    <span className="student-carousel-overlay">
+                      <span className="student-carousel-title">{slide.title}</span>
+                      {slide.id === "homeworks" && (
+                        <span className="student-carousel-subtitle">
+                          {pendingCount} pending {pendingCount === 1 ? "task" : "tasks"}
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             <button
               type="button"
               onClick={handleNextHero}
-              className="carousel-nav-btn"
+              className="carousel-nav-btn student-carousel-next"
               title="Next slide"
               aria-label="Next slide"
             >
@@ -135,215 +197,181 @@ export default function StudentHome() {
             </button>
           </div>
 
-          {/* Dots Indicator */}
-          <div className="flex items-center gap-2 mt-4">
-            {studentData.heroSlides.map((_, i) => (
+          <div className="student-carousel-dots">
+            {studentData.heroSlides.map((slide, i) => (
               <button
-                key={i}
+                key={slide.id}
                 type="button"
                 onClick={() => setHeroIndex(i)}
-                className={`h-2 rounded-full transition-all cursor-pointer ${
-                  heroIndex === i ? "w-6 bg-forest" : "w-2 bg-sand/60"
-                }`}
-                aria-label={`Go to slide ${i + 1}`}
-              />
+                className="student-carousel-dot"
+                aria-label={`Show ${slide.title}`}
+                aria-current={heroIndex === i ? "true" : undefined}
+              >
+                <span />
+              </button>
             ))}
           </div>
-        </div>
+          <p className="sr-only" aria-live="polite" aria-atomic="true">
+            {studentData.heroSlides[heroIndex].title}, slide {heroIndex + 1} of {studentData.heroSlides.length}
+          </p>
+        </section>
 
-        {/* Second Card: Announcements Banner (Navigates to /student/announcements) */}
+        {/* Schoolwork */}
         <div
-          onClick={() => navigate("/student/announcements")}
-          className="student-card hover:border-forest/50 transition-all cursor-pointer bg-linear-to-r from-cream/80 to-white flex items-center justify-between gap-4"
+          ref={schoolworkRef}
+          id="student-schoolwork"
+          role="region"
+          tabIndex={-1}
+          aria-labelledby="student-schoolwork-title"
+          className="student-card student-dashboard-schoolwork"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-forest/10 text-forest flex items-center justify-center shrink-0">
-              <AnnouncementIcon className="w-6 h-6 text-forest" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-forest">Announcements</h2>
-              <p className="text-xs text-forest/70">
-                Latest: <span className="font-semibold">{studentData.announcements[0].title}</span> —{" "}
-                {studentData.announcements[0].content.substring(0, 75)}...
-              </p>
-            </div>
-          </div>
-          <span className="btn-ghost text-xs shrink-0 hidden sm:flex">
-            View All →
-          </span>
-        </div>
-
-        {/* Third Section: Pending Assessments matching wireframe */}
-        <div className="student-card space-y-3">
           <div className="student-card-header">
-            <div>
-              <h2 className="student-card-title">
-                <AssessmentIcon className="w-5 h-5 text-forest" /> Pending Assessments
-              </h2>
-              <p className="text-[11px] text-forest/60">
-                Track pending quizzes, exams, and homework submissions
-              </p>
-            </div>
+            <h2 id="student-schoolwork-title" className="student-card-title">
+              Your schoolwork
+            </h2>
             <span className="text-xs font-semibold text-forest/70">
-              {studentData.pendingAssessments.length} Pending
+              {pendingCount} pending
             </span>
           </div>
 
-          <div className="space-y-2.5">
-            {studentData.pendingAssessments.map((item) => (
-              <div key={item.id} className="assessment-row">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-sand/30 flex items-center justify-center text-forest text-sm font-bold shrink-0">
-                    {item.type === "Quiz" ? "Q" : item.type === "HW" ? "H" : "E"}
+          <ul className="student-schoolwork-list">
+            {schoolwork.map((item) => {
+              return (
+                <li key={item.id} className="student-schoolwork-row">
+                  <div className="student-schoolwork-marker" aria-hidden="true">
+                    {taskMarkers[item.type] || item.type.charAt(0)}
                   </div>
-                  <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-forest">
-                      Details: <span className="font-semibold">{item.type}</span> — {item.title}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-1 text-[11px] text-forest/70">
-                      <span
-                        className={`assessment-type-badge ${
-                          item.type === "Quiz"
-                            ? "badge-quiz"
-                            : item.type === "HW"
-                            ? "badge-hw"
-                            : "badge-exam"
-                        }`}
-                      >
-                        Status: {item.status}
-                      </span>
-                      <span className="font-semibold text-forest">Due: {item.dueDate}</span>
-                      <span>• {item.duration}</span>
+                  <div className="student-schoolwork-content">
+                    <p className="student-schoolwork-subject">{item.subject} · {item.isOnline ? "Online " : ""}{item.type}</p>
+                    <h3>{item.title}</h3>
+                    <div className="student-schoolwork-meta">
+                      <span>Due <time dateTime={item.dueDate}>{deadlineFormatter.format(new Date(`${item.dueDate}T00:00:00Z`))}</time></span>
+                      <span aria-hidden="true">·</span>
+                      <span>{item.duration}</span>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  {uploadedFiles[item.id] ? (
-                    <span className="text-xs text-forest font-bold bg-sage/20 px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5">
-                      <CheckIcon className="w-3.5 h-3.5 text-forest" />
-                      Uploaded
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleAssessmentAction(item)}
-                      className={item.isOnline ? "btn-primary text-xs px-4" : "btn-secondary text-xs px-4"}
-                    >
-                      {item.actionLabel}
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Fourth Section: Analysis & Learning Progress (Wireframe 1:1 with Circular Metrics Graph + S6 Encouragement) */}
-        <div className="student-card space-y-5">
-          <div className="student-card-header">
-            <div>
-              <h2 className="student-card-title">
-                <AnalysisIcon className="w-5 h-5 text-forest" /> Analysis
-              </h2>
-              <p className="text-[11px] text-forest/60">
-                Performance analysis & encouraging growth • Designed for Grades 1–5
-              </p>
-            </div>
-            <span className="text-xs font-bold text-forest bg-sage/20 border border-sage/30 px-3 py-1 rounded-full flex items-center gap-1.5">
-              <CheckIcon className="w-3.5 h-3.5 text-forest" />
-              {studentData.progressView?.confirmedBadge || "Teacher Confirmed"}
-            </span>
-          </div>
-
-          {/* Wireframe 2-Column Grid: Left = Encouraging Details & Topics, Right = Circular Metrics Graph */}
-          <div className="grid md:grid-cols-2 gap-6 items-start">
-            {/* Left Column: Details, Strength, and Short Topics to Practice */}
-            <div className="space-y-4">
-              <div>
-                <span className="text-xs font-bold text-forest/70 block uppercase tracking-wider mb-1">
-                  Details:
-                </span>
-                <p className="text-xs font-semibold text-forest bg-cream/50 p-3 rounded-xl border border-sand/40 leading-relaxed">
-                  {studentData.analysis?.details || "Mathematics (92%) • Science (95%) • English (88%)"}
-                </p>
-              </div>
-
-              <div>
-                <span className="text-xs font-bold text-forest/70 block uppercase tracking-wider mb-1">
-                  Excellent work on:
-                </span>
-                <p className="text-xs text-forest bg-sage/15 p-3 rounded-xl border border-sage/30 font-bold inline-flex items-center gap-2 w-full">
-                  <CheckIcon className="w-4 h-4 text-forest shrink-0" />
-                  {studentData.analysis?.excellentWorkOn || studentData.progressView?.strength?.title || "Linear Equations & Finding Common Denominators"}
-                </p>
-              </div>
-
-              <div>
-                <span className="text-xs font-bold text-forest/70 block uppercase tracking-wider mb-1">
-                  Key Takeaways:
-                </span>
-                <p className="text-xs text-forest/80 bg-cream/40 p-3 rounded-xl border border-sand/40 leading-relaxed font-medium">
-                  {studentData.analysis?.keyTakeaways || "Great consistency across assignments. Maintain current momentum!"}
-                </p>
-              </div>
-
-              {/* S6: 1 or 2 Relevant Topics to Practice with Direct Teacher Help */}
-              <div className="space-y-2.5 pt-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-forest uppercase tracking-wider">
-                    Topics to Practice (Short & Encouraging):
-                  </span>
-                  <span className="text-[11px] text-forest/50">Only 2 key topics</span>
-                </div>
-
-                <div className="space-y-2">
-                  {(studentData.progressView?.practiceTopics || []).map((topic) => (
-                    <div
-                      key={topic.id}
-                      className="p-3 rounded-xl bg-cream/40 border border-sand/40 flex items-center justify-between gap-3 shadow-2xs"
-                    >
-                      <div>
-                        <h4 className="text-xs font-bold text-forest">{topic.title}</h4>
-                        <p className="text-[11px] text-forest/70 mt-0.5 leading-snug">{topic.tip}</p>
-                      </div>
+                  <div className="student-schoolwork-action">
+                    {uploadedFiles[item.id] || item.isSubmitted ? (
+                      <>
+                        <div className="student-schoolwork-uploaded" role="status">
+                          <span><CheckIcon className="w-4 h-4" /> {uploadedFiles[item.id] ? "Uploaded" : "Submitted"}</span>
+                          {uploadedFiles[item.id] && <p>{uploadedFiles[item.id]}</p>}
+                        </div>
+                        {uploadedFiles[item.id] && !item.isOnline && (
+                          <button
+                            type="button"
+                            onClick={() => handleAssessmentAction(item)}
+                            className="btn-secondary student-schoolwork-replace"
+                            aria-label={`Replace upload: ${item.title}`}
+                          >
+                            Replace upload
+                          </button>
+                        )}
+                      </>
+                    ) : (
                       <button
                         type="button"
-                        onClick={() => handleAskTeacherPractice(topic)}
-                        className="btn-ghost text-xs px-2.5 py-1 shrink-0"
+                        onClick={() => handleAssessmentAction(item)}
+                        className={item.isOnline ? "btn-primary" : "btn-secondary"}
+                        aria-label={`${item.actionLabel}: ${item.title}`}
                       >
-                        <ChatIcon className="w-3.5 h-3.5 text-forest" /> Ask Help
+                        {item.actionLabel}
                       </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          {schoolwork.length === 0 && <p className="student-schoolwork-empty">You're all caught up. New schoolwork will appear here.</p>}
+        </div>
+
+        <div className="student-dashboard-progress-layout">
+          <section className="student-card student-progress" aria-labelledby="student-progress-title">
+            <div className="student-card-header">
+              <h2 id="student-progress-title" className="student-card-title">Your progress</h2>
+              <span className="student-progress-demo">Demo data</span>
             </div>
 
-            {/* Right Column: Wireframe Circular Metrics Graph (RadarChart) */}
-            <div className="flex flex-col items-center justify-center p-6 bg-linear-to-b from-cream/40 to-white rounded-2xl border border-sand/40 shadow-xs text-center">
-              <span className="text-xs font-bold text-forest uppercase tracking-wider mb-2">
-                Metrics Graph
-              </span>
-              <RadarChart
-                data={studentData.analysis?.radarMetrics || [
-                  { label: "Math", value: 92 },
-                  { label: "Science", value: 95 },
-                  { label: "English", value: 88 },
-                  { label: "History", value: 85 },
-                  { label: "Classwork", value: 91 },
-                ]}
-                size={220}
-              />
-              <div className="flex items-center gap-1.5 mt-3 text-xs font-bold text-forest">
-                <StarIcon className="w-4 h-4 text-sand" />
-                <span>Overall Grade: {studentData.progressView?.overallGrade || "A (92%)"}</span>
+            {overallAverage !== null && (
+              <p className="student-progress-overall" aria-label={`Overall average across ${progressMetrics.length} equally weighted subjects`}>
+                <span>Overall average</span>
+                <strong>{overallAverage}%</strong>
+                <span className="student-progress-subject-count">{progressMetrics.length} {progressMetrics.length === 1 ? "subject" : "subjects"}</span>
+              </p>
+            )}
+
+            {progressMetrics.length > 0 ? (
+              <div className="student-progress-charts">
+                <div
+                  className="student-progress-radar"
+                  role="img"
+                  aria-label="Progress overview radar chart. Exact scores are listed alongside."
+                >
+                  <RadarChart data={progressMetrics} size={320} />
+                </div>
+                <ul className="student-progress-scores" aria-label="Progress scores">
+                  {progressMetrics.map((metric) => (
+                    <li key={metric.label}>
+                      <div className="student-progress-score-label">
+                        <span>{metric.label}</span>
+                        <span>{metric.value}%</span>
+                      </div>
+                      <div
+                        className="student-progress-bar"
+                        role="meter"
+                        aria-label={metric.label}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={metric.value}
+                      >
+                        <span style={{ width: `${metric.value}%` }} />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <span className="text-[11px] text-forest/60 mt-0.5">
-                {studentData.progressView?.growthMessage || "You improved in Multiplication & Fractions!"}
-              </span>
+            ) : (
+              <p className="student-progress-empty">No progress scores to show yet.</p>
+            )}
+
+            <div className="student-progress-takeaways">
+              <h3>Key takeaways</h3>
+              <p className="student-progress-excellent">Excellent work on</p>
+              <dl>
+                {(studentData.progressView?.keyTakeaways || []).map((takeaway) => (
+                  <div key={takeaway.subject}>
+                    <dt>{takeaway.subject}</dt>
+                    <dd>{takeaway.comment}</dd>
+                  </div>
+                ))}
+              </dl>
             </div>
-          </div>
+          </section>
+
+          <section className="student-card student-practice" aria-labelledby="student-practice-title">
+            <div className="student-card-header">
+              <h2 id="student-practice-title" className="student-card-title">Topics to practice</h2>
+            </div>
+            <ul className="student-practice-topics">
+              {(studentData.progressView?.practiceTopics || []).map((topic) => (
+                <li key={topic.id}>
+                  <p className="student-practice-subject">{topic.subject}</p>
+                  <h3>{topic.title}</h3>
+                  <p>{topic.tip}</p>
+                  <button
+                    type="button"
+                    onClick={() => handleAskTeacherPractice(topic)}
+                    className="btn-secondary student-practice-help"
+                    aria-label={`Ask Help: ${topic.title}`}
+                  >
+                    Ask Help
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
       </main>
 
@@ -357,7 +385,7 @@ export default function StudentHome() {
               </div>
               <div>
                 <h3 className="text-base font-bold text-forest">
-                  Upload Assignment for Extraction Scanner
+                  {isReplacingUpload ? "Replace upload" : "Upload homework"}
                 </h3>
                 <p className="text-xs text-forest/70 mt-0.5">
                   {activeUploadItem.title}
@@ -367,11 +395,14 @@ export default function StudentHome() {
 
             <div className="p-3 rounded-xl bg-cream/40 border border-sand/40 text-xs text-forest/80 space-y-1">
               <p>
-                <strong>How it works:</strong> Upload your completed handwritten or typed assignment.
-                The system will process your pages through the teacher&apos;s answer extraction scanner
-                for verified scoring and feedback.
+                {isReplacingUpload ? "Choose a new file to replace your homework upload. " : "Choose your completed worksheet or try a sample upload. "}
+                This demo records the filename without sending your file.
               </p>
             </div>
+
+            {isReplacingUpload && (
+              <p className="text-sm text-forest/70 break-all">Current file: {uploadedFiles[activeUploadItem.id]}</p>
+            )}
 
             {/* File Input */}
             <div className="border-2 border-dashed border-sand/50 rounded-xl p-4 text-center space-y-2 bg-cream/20">
@@ -379,22 +410,22 @@ export default function StudentHome() {
                 type="file"
                 id="fileUpload"
                 className="hidden"
-                accept=".pdf,.doc,.docx,.png,.jpg"
+                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
               />
               <label
                 htmlFor="fileUpload"
                 className="cursor-pointer text-xs font-bold text-forest bg-white hover:bg-cream border border-sand/50 px-4 py-2 rounded-xl inline-block shadow-2xs"
               >
-                Choose PDF or Image File
+                Choose a file
               </label>
               {selectedFile ? (
                 <p className="text-xs font-semibold text-forest mt-1">
                   Selected: {selectedFile.name}
                 </p>
               ) : (
-                <p className="text-[11px] text-forest/50">
-                  Supported formats: PDF, DOCX, JPG, PNG (Max 15MB)
+                <p className="text-sm text-forest/70">
+                  PDF, Word, JPG or PNG
                 </p>
               )}
             </div>
@@ -414,8 +445,9 @@ export default function StudentHome() {
                 type="button"
                 onClick={handleConfirmUpload}
                 className="btn-primary text-xs"
+                disabled={isReplacingUpload && !selectedFile}
               >
-                Upload & Send to Scanner
+                {isReplacingUpload ? "Replace upload" : selectedFile ? "Upload homework" : "Use sample homework"}
               </button>
             </div>
           </div>
