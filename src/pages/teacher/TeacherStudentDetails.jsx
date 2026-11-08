@@ -5,7 +5,7 @@ import RadarChart from "../../components/RadarChart";
 import ConfirmModal from "../../components/ConfirmModal";
 import Toast from "../../components/Toast";
 import "../../styles/teacher.css";
-
+import ParentMessageModal from "../../components/ParentMessageModal";
 // Shown for students that have no entry in studentDetails
 const emptyDetails = {
   gaps: [],
@@ -47,7 +47,7 @@ function StudentView() {
   const [dismissing, setDismissing] = useState(null);
   const [toast, setToast] = useState(null);
   const [slide, setSlide] = useState(0);
-  const [channel, setChannel] = useState("student");
+  const [parentOpen, setParentOpen] = useState(false);
   const [messages, setMessages] = useState(details.messages);
   const [draft, setDraft] = useState("");
 
@@ -62,6 +62,7 @@ function StudentView() {
     );
   }
 
+  const parentName = student.parent ?? `Parent of ${student.name}`;
   const assessment = details.assessments[slide];
 
   const confirmFlag = (id) => {
@@ -79,16 +80,23 @@ function StudentView() {
     });
   };
 
-  const sendMessage = (e) => {
-    e.preventDefault();
-    if (!draft.trim()) return;
-    setMessages((prev) => ({
-      ...prev,
-      [channel]: [...prev[channel], { from: "teacher", text: draft.trim(), time: "Just now" }],
-    }));
-    setDraft("");
-    if (channel === "parent") setToast({ message: "Message sent to the parent." });
-  };
+const sendStudentMessage = (e) => {
+  e.preventDefault();
+  if (!draft.trim()) return;
+  setMessages((prev) => ({
+    ...prev,
+    student: [...prev.student, { from: "teacher", text: draft.trim(), time: "Just now" }],
+  }));
+  setDraft("");
+};
+
+const sendParentMessage = (text, emergency) => {
+  setMessages((prev) => ({
+    ...prev,
+    parent: [...prev.parent, { from: "teacher", text, time: "Just now", emergency }],
+  }));
+  setToast({ message: emergency ? "Emergency text sent to the parent." : "Message sent to the parent." });
+};
 
   return (
     <div className="teacher-page">
@@ -105,7 +113,7 @@ function StudentView() {
           </div>
         </div>
         <div className="teacher-actions">
-          <button type="button" className="teacher-btn" onClick={() => setChannel("parent")}>
+          <button type="button" className="teacher-btn" onClick={() => setParentOpen(true)}>
             Contact Parent
           </button>
           <Link to={`/teacher/classes/${classId}`} className="teacher-btn-outline">← Back</Link>
@@ -140,42 +148,28 @@ function StudentView() {
           </section>
 
           <section className="stu-card">
-            <h2 className="stu-card-title">Message</h2>
-            <div className="flex gap-2 mb-3">
-              {["student", "parent"].map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setChannel(c)}
-                  className={`stu-tab ${channel === c ? "stu-tab-active" : ""}`}
-                >
-                  {c === "student" ? "Student" : "Parent"}
-                </button>
-              ))}
-            </div>
-
-            <div className="stu-chat">
-              {messages[channel].length === 0 && (
-                <p className="text-xs text-cream/60">No messages yet. Start the conversation below.</p>
-              )}
-              {messages[channel].map((m, i) => (
-                <div key={i} className="stu-msg">
-                  <p>{m.text}</p>
-                  <span className="stu-msg-time">{m.time}</span>
-                </div>
-              ))}
-            </div>
-
-            <form onSubmit={sendMessage} className="flex gap-2 mt-3">
-              <input
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder={`Message the ${channel}...`}
-                className="papers-search-input"
-              />
-              <button type="submit" className="papers-action-btn">Send</button>
-            </form>
-          </section>
+  <h2 className="stu-card-title">Message {student.name}</h2>
+  <div className="stu-chat">
+    {messages.student.length === 0 && (
+      <p className="text-xs text-cream/60">No messages yet. Start the conversation below.</p>
+    )}
+    {messages.student.map((m, i) => (
+      <div key={i} className="stu-msg">
+        <p>{m.text}</p>
+        <span className="stu-msg-time">{m.time}</span>
+      </div>
+    ))}
+  </div>
+  <form onSubmit={sendStudentMessage} className="flex gap-2 mt-3">
+    <input
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      placeholder="Message the student..."
+      className="papers-search-input"
+    />
+    <button type="submit" className="papers-action-btn">Send</button>
+  </form>
+</section>
         </div>
 
         {/* RIGHT: analysis + red flags */}
@@ -229,7 +223,14 @@ function StudentView() {
           </section>
         </div>
       </div>
-
+<ParentMessageModal
+  isOpen={parentOpen}
+  parentName={parentName}
+  studentName={student.name}
+  messages={messages.parent}
+  onSend={sendParentMessage}
+  onClose={() => setParentOpen(false)}
+/>
       <ConfirmModal
         isOpen={dismissing !== null}
         title="Dismiss this red flag?"

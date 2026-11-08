@@ -607,3 +607,189 @@
 .stu-btn-ghost {
   @apply rounded-lg border border-sand/40 px-3 py-1.5 text-xs font-bold text-cream cursor-pointer hover:bg-cream/10;
 }
+
+/* Parent message popup */
+.pm-backdrop {
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4;
+}
+
+.pm-panel {
+  @apply flex h-[34rem] max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border-2 border-sand/70 bg-[#183126] text-cream shadow-2xl;
+}
+
+.pm-head {
+  @apply flex items-center gap-3 border-b border-sand/30 px-5 py-4;
+}
+
+.pm-avatar {
+  @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-sand/50 bg-sand/30 text-sm font-bold text-sand;
+}
+
+.pm-name {
+  @apply text-base font-extrabold text-cream;
+}
+
+.pm-sub {
+  @apply text-xs text-sand;
+}
+
+.pm-close {
+  @apply h-8 w-8 rounded-full bg-cream/10 text-sm font-bold text-cream hover:bg-cream/20 cursor-pointer;
+}
+
+.pm-thread {
+  @apply flex-1 space-y-3 overflow-y-auto px-5 py-4;
+}
+
+.pm-empty {
+  @apply pt-10 text-center text-xs text-cream/60;
+}
+
+.pm-row {
+  @apply flex;
+}
+
+.pm-row-me {
+  @apply justify-end;
+}
+
+.pm-bubble {
+  @apply max-w-[80%] rounded-2xl px-3.5 py-2 text-xs;
+}
+
+.pm-bubble-them {
+  @apply bg-cream/15 text-cream;
+}
+
+.pm-bubble-me {
+  @apply bg-sage/60 text-cream;
+}
+
+.pm-bubble-urgent {
+  @apply border border-red-400 bg-red-900/60;
+}
+
+.pm-urgent-tag {
+  @apply mb-1 block text-[10px] font-extrabold uppercase tracking-wider text-red-300;
+}
+
+.pm-time {
+  @apply mt-1 block text-[10px] text-cream/60;
+}
+
+.pm-quick {
+  @apply flex flex-wrap gap-2 px-5 pb-2;
+}
+
+.pm-chip {
+  @apply rounded-full border border-red-300/50 bg-red-900/40 px-3 py-1 text-[11px] text-cream cursor-pointer hover:bg-red-900/70;
+}
+
+.pm-bar {
+  @apply flex items-center gap-2 border-t border-sand/30 px-4 py-3;
+}
+
+.pm-toggle {
+  @apply shrink-0 rounded-full border border-sand/40 bg-cream/10 px-3 py-2 text-[11px] font-bold text-cream cursor-pointer hover:bg-cream/20;
+}
+
+.pm-toggle-on {
+  @apply border-red-300 bg-red-700 text-white hover:bg-red-700;
+}
+
+.pm-input {
+  @apply min-w-0 flex-1 rounded-full border border-sand/40 bg-cream/10 px-4 py-2 text-xs text-cream placeholder:text-cream/50 focus:outline-none focus:ring-2 focus:ring-sand;
+}
+
+.pm-send {
+  @apply h-9 w-9 shrink-0 rounded-full bg-sand font-bold text-forest cursor-pointer hover:bg-cream;
+}
+
+/* Grading page */
+.grade-banner {
+  @apply rounded-2xl border-2 border-sand/60 bg-[#183126] px-6 py-8 text-center shadow-lg;
+}
+
+.grade-banner-title {
+  @apply text-2xl sm:text-3xl font-extrabold text-cream;
+}
+
+.grade-banner-sub {
+  @apply mt-1 text-xs text-sand;
+}
+
+.grade-board {
+  @apply space-y-5 rounded-2xl border-2 border-sand/60 bg-[#183126] p-5 sm:p-7 text-cream shadow-lg;
+}
+
+.grade-toolbar {
+  @apply flex flex-wrap items-center justify-between gap-3;
+}
+
+.grade-tool {
+  @apply rounded-xl border border-sand/40 bg-sand/20 px-4 py-2 text-xs font-bold text-cream cursor-pointer hover:bg-sand/35 disabled:cursor-default disabled:opacity-50;
+}
+
+.grade-tool-on {
+  @apply bg-sand text-forest hover:bg-sand;
+}
+
+.grade-file {
+  @apply rounded-full border border-sand/30 bg-cream/10 px-3 py-1 text-[11px] text-cream/80;
+}
+
+.grade-answers {
+  @apply space-y-2 rounded-xl border border-sand/35 bg-[#142920]/80 p-4;
+}
+
+.grade-answer {
+  @apply flex flex-wrap items-center justify-between gap-3 rounded-lg border border-sand/20 bg-cream/5 px-3 py-3 text-xs;
+}
+
+.grade-q {
+  @apply mr-2 font-bold text-sand;
+}
+
+.grade-ocr {
+  @apply rounded-md bg-cream/15 px-2.5 py-1 font-mono text-xs font-bold text-sand;
+}
+
+.grade-input {
+  @apply w-28 rounded-md border border-sand/50 bg-[#0F231B] px-2 py-1 font-mono text-xs text-cream focus:outline-none focus:ring-2 focus:ring-sand;
+}
+
+.grade-lowconf {
+  @apply rounded-full border border-sand/50 bg-sand/25 px-2 py-0.5 text-[10px] font-bold text-sand;
+}
+
+.grade-primary {
+  @apply rounded-xl bg-sand px-6 py-3 text-sm font-extrabold text-forest cursor-pointer hover:bg-cream disabled:cursor-default disabled:opacity-60;
+}
+
+.grade-spinner {
+  @apply mx-auto h-12 w-12 animate-spin rounded-full border-4 border-sand/30 border-t-sand;
+}
+
+.grade-review {
+  @apply grid items-start gap-6 md:grid-cols-[1fr_auto];
+}
+
+.grade-score {
+  @apply text-4xl font-extrabold text-cream;
+}
+
+.grade-score-input {
+  @apply w-16 rounded-md border border-sand/50 bg-[#0F231B] px-2 text-center text-cream focus:outline-none focus:ring-2 focus:ring-sand;
+}
+
+.grade-block-title {
+  @apply mb-1 text-xs font-bold uppercase tracking-wide text-sand;
+}
+
+.grade-textarea {
+  @apply w-full rounded-lg border border-sand/40 bg-[#0F231B] p-2 text-xs text-cream focus:outline-none focus:ring-2 focus:ring-sand;
+}
+
+.grade-footer {
+  @apply flex flex-wrap items-center justify-between gap-3 border-t border-sand/30 pt-4;
+}

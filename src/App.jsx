@@ -18,6 +18,7 @@ import TeacherSchedule from "./pages/teacher/TeacherSchedule";
 import TeacherClassDetails from "./pages/teacher/TeacherClassDetails";
 import TeacherClasses from "./pages/teacher/TeacherClasses";
 import TeacherStudentDetails from "./pages/teacher/TeacherStudentDetails";
+import TeacherGrading from "./pages/teacher/TeacherGrading.jsx";
 
 
 export default function App() {
@@ -46,6 +47,7 @@ export default function App() {
       <Route path="classes" element={<TeacherClasses />} />
       <Route path="classes/:classId" element={<TeacherClassDetails />} />
       <Route path="classes/:classId/students/:studentId" element={<TeacherStudentDetails />} />
+      <Route path="papers/:paperId" element={<TeacherGrading />} />
       </Route>
     </Routes>
   );

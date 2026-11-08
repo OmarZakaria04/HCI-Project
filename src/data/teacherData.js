@@ -80,34 +80,25 @@ export const papers = [
 export const paperDetails = {
   1: {
     answers: [
-      { q: 1, question: "12 × 4 = ?", text: "48" },
-      { q: 2, question: "Which is bigger: 1/2 or 1/3?", text: "1/3" },
-      { q: 3, question: "3/4 + 1/4 = ?", text: "4/8" },
+      { q: 1, question: "12 × 4 = ?", text: "48", key: "48", confidence: 0.97,
+        gap: "Multiplication facts", mistake: "Skips the carry step when multiplying", tip: "Review the 4 times table." },
+      { q: 2, question: "Which is bigger: 1/2 or 1/3?", text: "1/3", key: "1/2", confidence: 0.93,
+        gap: "Comparing fractions", mistake: "Treats a larger denominator as a larger fraction", tip: "Practice comparing fractions with different denominators." },
+      { q: 3, question: "3/4 + 1/4 = ?", text: "4/8", key: "1", confidence: 0.9,
+        gap: "Adding fractions", mistake: "Adds numerators and denominators separately", tip: "Revisit adding fractions with the same denominator." },
     ],
-    ai: {
-      score: 1,
-      total: 3,
-      gaps: ["Comparing fractions", "Adding fractions with the same denominator"],
-      redFlags: ["Repeated fraction mistakes across 3 assignments"],
-      feedback: "Practice comparing fractions with different denominators.",
-    },
   },
   2: {
     answers: [
-      { q: 1, question: "12 × 4 = ?", text: "46" },
-      { q: 2, question: "Which is bigger: 1/2 or 1/3?", text: "1/2" },
-      { q: 3, question: "3/4 + 1/4 = ?", text: "1" },
+      { q: 1, question: "12 × 4 = ?", text: "46", key: "48", confidence: 0.58,
+        gap: "Multiplication facts", mistake: "Skips the carry step when multiplying", tip: "Review the 4 times table." },
+      { q: 2, question: "Which is bigger: 1/2 or 1/3?", text: "1/2", key: "1/2", confidence: 0.95,
+        gap: "Comparing fractions", mistake: "Treats a larger denominator as a larger fraction", tip: "Practice comparing fractions with different denominators." },
+      { q: 3, question: "3/4 + 1/4 = ?", text: "1", key: "1", confidence: 0.96,
+        gap: "Adding fractions", mistake: "Adds numerators and denominators separately", tip: "Revisit adding fractions with the same denominator." },
     ],
-    ai: {
-      score: 2,
-      total: 3,
-      gaps: ["Multiplication facts"],
-      redFlags: [],
-      feedback: "Review the 4 times table.",
-    },
   },
 };
-
 export const scheduleDays = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
 
 export const schedulePeriods = [
