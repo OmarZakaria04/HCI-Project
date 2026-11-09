@@ -4,11 +4,9 @@ import Header from "../../components/Header";
 import DashboardCarousel from "../../components/DashboardCarousel";
 import RadarChart from "../../components/RadarChart";
 import Toast from "../../components/Toast";
+import HomeworkUploadModal from "../../components/HomeworkUploadModal";
 import { studentData } from "../../data/studentData";
-import {
-  HomeworkIcon,
-  CheckIcon,
-} from "../../components/StudentIcons";
+import { CheckIcon } from "../../components/StudentIcons";
 import classImg from "../../assets/class.png";
 import papersImg from "../../assets/papers.png";
 import scheduleImg from "../../assets/schedule.png";
@@ -25,11 +23,12 @@ export default function StudentHome() {
   const navigate = useNavigate();
 
   const schoolworkRef = useRef(null);
+  const uploadTriggerRef = useRef(null);
+  const uploadRowRef = useRef(null);
 
   // S2 & S3: File upload simulation for answer extraction scanner
   const [uploadedFiles, setUploadedFiles] = useState({});
   const [activeUploadItem, setActiveUploadItem] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
   const isReplacingUpload = Boolean(activeUploadItem && uploadedFiles[activeUploadItem.id]);
 
   const [toastMessage, setToastMessage] = useState(null);
@@ -58,26 +57,36 @@ export default function StudentHome() {
   };
 
   // S3 & S4 Assessment Action
-  const handleAssessmentAction = (item) => {
+  const handleAssessmentAction = (item, event) => {
     if (item.isOnline) {
       // S4: Quizzes and exams are submitted only through the online solving workspace
       navigate(`/student/workspace/${item.id}`);
     } else {
       // S3: Assignment upload for teacher to run through answer extraction scanner
+      uploadTriggerRef.current = event.currentTarget;
+      uploadRowRef.current = event.currentTarget.closest(".student-schoolwork-row");
       setActiveUploadItem(item);
-      setSelectedFile(null);
     }
   };
 
-  const handleConfirmUpload = () => {
-    if (!activeUploadItem || (isReplacingUpload && !selectedFile)) return;
+  const closeUpload = () => {
+    setActiveUploadItem(null);
+    requestAnimationFrame(() => {
+      const target = uploadTriggerRef.current?.isConnected
+        ? uploadTriggerRef.current
+        : uploadRowRef.current?.querySelector("button");
+      target?.focus({ preventScroll: true });
+    });
+  };
+
+  const handleConfirmUpload = (fileName) => {
+    if (!activeUploadItem || !fileName) return;
     setUploadedFiles((prev) => ({
       ...prev,
-      [activeUploadItem.id]: selectedFile ? selectedFile.name : "Homework_Scan_Ahmed.pdf",
+      [activeUploadItem.id]: fileName,
     }));
     const itemTitle = activeUploadItem.title;
-    setActiveUploadItem(null);
-    setSelectedFile(null);
+    closeUpload();
     setToastMessage(`${itemTitle} ${isReplacingUpload ? "upload replaced" : "uploaded"} for this demo.`);
   };
 
@@ -151,7 +160,7 @@ export default function StudentHome() {
                         {uploadedFiles[item.id] && !item.isOnline && (
                           <button
                             type="button"
-                            onClick={() => handleAssessmentAction(item)}
+                            onClick={(event) => handleAssessmentAction(item, event)}
                             className="btn-secondary student-schoolwork-replace"
                             aria-label={`Replace upload: ${item.title}`}
                           >
@@ -162,7 +171,7 @@ export default function StudentHome() {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => handleAssessmentAction(item)}
+                        onClick={(event) => handleAssessmentAction(item, event)}
                         className={item.isOnline ? "btn-primary" : "btn-secondary"}
                         aria-label={`${item.actionLabel}: ${item.title}`}
                       >
@@ -265,83 +274,14 @@ export default function StudentHome() {
         </div>
       </main>
 
-      {/* S3: Assignment Upload Modal for Scanner */}
       {activeUploadItem && (
-        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl border border-sand/50 shadow-2xl max-w-md w-full p-6 space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-sand/30 text-forest flex items-center justify-center shrink-0">
-                <HomeworkIcon className="w-5 h-5 text-forest" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-forest">
-                  {isReplacingUpload ? "Replace upload" : "Upload homework"}
-                </h3>
-                <p className="text-xs text-forest/70 mt-0.5">
-                  {activeUploadItem.title}
-                </p>
-              </div>
-            </div>
-
-            <div className="p-3 rounded-xl bg-cream/40 border border-sand/40 text-xs text-forest/80 space-y-1">
-              <p>
-                {isReplacingUpload ? "Choose a new file to replace your homework upload. " : "Choose your completed worksheet or try a sample upload. "}
-                This demo records the filename without sending your file.
-              </p>
-            </div>
-
-            {isReplacingUpload && (
-              <p className="text-sm text-forest/70 break-all">Current file: {uploadedFiles[activeUploadItem.id]}</p>
-            )}
-
-            {/* File Input */}
-            <div className="border-2 border-dashed border-sand/50 rounded-xl p-4 text-center space-y-2 bg-cream/20">
-              <input
-                type="file"
-                id="fileUpload"
-                className="hidden"
-                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-              />
-              <label
-                htmlFor="fileUpload"
-                className="cursor-pointer text-xs font-bold text-forest bg-white hover:bg-cream border border-sand/50 px-4 py-2 rounded-xl inline-block shadow-2xs"
-              >
-                Choose a file
-              </label>
-              {selectedFile ? (
-                <p className="text-xs font-semibold text-forest mt-1">
-                  Selected: {selectedFile.name}
-                </p>
-              ) : (
-                <p className="text-sm text-forest/70">
-                  PDF, Word, JPG or PNG
-                </p>
-              )}
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-sand/30">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveUploadItem(null);
-                  setSelectedFile(null);
-                }}
-                className="btn-secondary text-xs"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmUpload}
-                className="btn-primary text-xs"
-                disabled={isReplacingUpload && !selectedFile}
-              >
-                {isReplacingUpload ? "Replace upload" : selectedFile ? "Upload homework" : "Use sample homework"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <HomeworkUploadModal
+          key={activeUploadItem.id}
+          assignment={activeUploadItem}
+          currentFile={uploadedFiles[activeUploadItem.id]}
+          onConfirm={handleConfirmUpload}
+          onClose={closeUpload}
+        />
       )}
 
       <Toast message={toastMessage} onClose={() => setToastMessage(null)} />

@@ -2,7 +2,7 @@
 
 Reusable guidance for designing or restyling **any page** in this project.
 
-Derived on 8 November 2026 from `context.md` and the student dashboard implementation; extended on 9 November with the quiz/exam workspace, answer choices, and floating tools panel. This is a design reference, not a request to change application behavior or a claim that every existing page already follows it.
+Derived on 8 November 2026 from `context.md` and the student dashboard implementation; extended on 9 November with the quiz/exam workspace, teacher review layouts, and the approved Classes workspace and heading dropdown. This is a design reference, not a request to change application behavior or a claim that every existing page already follows it.
 
 Review scope: the original reference used source and recorded approval history; its fresh screenshot attempt did not complete. The 9 November workspace extension also uses the headless checks and visually inspected screenshots recorded in `context.md`. This does not establish a whole-app accessibility or physical-device pass. Observed implementation values and recommended extensions are distinguished below.
 
@@ -136,6 +136,7 @@ Forms, directories, tables, and workspaces can use different layouts while keepi
 | Element | Treatment |
 |---|---|
 | Standard content panel | White; 1px panel border; 14px radius; 24px padding |
+| Teacher chalkboard panel | Papers, Classes, and grading use `#183126`, cream text, 1px sand border at 60% opacity, 14px radius, and 24px padding; the dashboard analytics board retains forest `#1E3B2F` |
 | Panel shadow | `0 1px 2px rgb(30 59 47 / 3%)` |
 | Internal separation | 1px row divider; generous vertical spacing |
 | Button / small inset / category marker | Usually 12px radius |
@@ -147,6 +148,8 @@ Forms, directories, tables, and workspaces can use different layouts while keepi
 A panel header places its heading on the left and optional compact context on the right, with room to wrap. Use a quiet bottom divider. Keep counts as text unless their status actually benefits from a badge.
 
 Within a panel, prefer plain text, lists, or definition lists to more tinted boxes. Use a tinted inset only for a real grouping or explanation. Strong shadows belong to floating UI; the main header and ordinary content should remain visually quiet.
+
+On teacher chalkboards, use cream fields with forest text, quiet cream dividers, and a contrasting cream focus outline. Keep counts, percentages, and statuses as readable text; avoid decorative avatars, repeated pills, and emojis in these teacher data views. Preserve the approved green surface when refining a teacher page.
 
 ## 7. Controls and interaction states
 
@@ -184,9 +187,48 @@ The source page has a file chooser, not a complete general form system. For othe
 
 Arrange fields in a clear reading order; use columns only for closely related short values. Put the main submit action beside a clear cancel/back action. Preserve entered values after validation errors. These are recommended extensions, not claims about controls already implemented on the reference page.
 
+### Class rosters and selectors in headings
+
+**Approved 9 November 2026:** Classes opens with a selected class and its roster in one workspace. A native class dropdown replaces the class-name portion of the green panel heading: **[Grade 5A ▾] Students**. Keep **Students** capitalized in this approved heading; ordinary headings elsewhere retain sentence case. Do not repeat the selector above the panel or restore a separate class-card landing screen.
+
+- **Scale the choice control.** Use one native dropdown when a class-button row would grow or wrap. The approved layout accommodates ten classes without adding rows above the roster. Add searchable selection only when the actual list warrants it.
+- **Integrate the control visually.** Use cream background, forest text, a sand border, 12px corners, and the heading's Source Sans 3 28px/700 typography. The implemented heading control uses 2px vertical/10px horizontal padding, a minimum 48px height, and an 8px gap before Students. Hover becomes white. Allow the heading to wrap on narrow screens.
+- **Keep selection accessible.** Retain the native dropdown arrow and keyboard behavior, give the control the accessible name “Class,” and keep the complete selected class and Students in the heading's accessible name. Use the 2px cream focus outline with 4px offset on the green board. Class changes must retain selector focus.
+- **Update the workspace together.** Changing class updates its URL, heading, roster, summary, and practice topics, and clears student search. Direct links, refresh, browser Back/Forward, and returning from student details restore the selected class. Announce selection and search results without moving focus into the table.
+
+The listed students represent the **entire class**. Derive the class count from the same roster: **“5 students in class” / “Showing all 5 students.”** Searching uses **“Showing 1 of 5 students,”** and an empty class uses **“No students in this class.”** Avoid “available records” or a larger unrelated class total that implies an undisclosed subset. Keep search visibly labeled, normalize surrounding whitespace/case, and provide Clear search with focus restoration.
+
+Use plain student names, attendance percentages, overall grades, and explicit **View student** links in a semantic table. Keep detailed charts on the dashboard and individual feedback/analysis in student details. At narrow widths, contain the table in a labeled, keyboard-focusable horizontal scroll region. Unknown classes need a recovery selector; an empty class list needs an explicit state.
+
+`TeacherClasses.jsx` and `teacher-classes.css` are the implemented references. Classes currently retains supplied fixture averages rather than recalculating them from student rows; do not describe those values as derived totals. Implementation limits and validation history belong in `context.md`.
+
+### Individual student review
+
+**Owner revision — 9 November 2026:** Student details use three full-width green sections in this order: **Learning Objectives**, **Assessment feedback**, then **Message [student]**. Learning Objectives puts the cream radar and exact topic scores on the left, with support flags, topics needing practice, and repeated mistakes on the right. Keep these groups beside the graph on desktop; do not restore the tall analysis sidebar beside assessment feedback. Stack the objectives columns below 1000px. Preserve the owner's capitalized **Learning Objectives** heading.
+
+Use the approved nested-detail text back link with the named class destination, a student-name heading, plain Class/Attendance/Overall grade metadata, and Contact parent beside the identity. Use a labeled native assessment selector only for multiple records; one record shows its title directly. Question results use readable student-answer labels, explicit Correct/Incorrect wording, and dividers. Never substitute a generic quiz or topic scores for missing student records. Distinguish unavailable analysis from a known empty set of findings.
+
+Support flags keep visible review status, confirmation, cancellable dismissal, and persistent undo. Conversations use labeled multiline fields, disabled blank sends, sender/time labels, and keyboard-scrollable logs. Parent and flag dialogs reuse the native modal/focus patterns; retain drafts on cancellation. Reference `TeacherStudentDetails.jsx`, `ParentMessageModal.jsx`, and scoped `teacher-student-details.css`. These remain local prototype interactions without shared publication or delivery.
+
+### Parent-contact conversation
+
+**Approved refinement — 9 November 2026:** Use one native modal with a separated header, one recipient line, an accessible 44px **X**, a scrolling body, and a stable footer. Order the body as Conversation → Message type → Your message; use native **Standard message / Emergency** radio choices rather than an on/off button. An empty conversation gets one compact line; existing messages use a named, keyboard-scrollable log with sender/time labels.
+
+Emergency mode uses local semantic red (`#B42318`, hover `#912018`, pale surface `#FEF3F2`) for the selected choice, explanatory notice, main action, and emergency history labels. Keep the rest of the white/forest modal consistent with the system. Suggested messages belong in one labeled dropdown and fill an editable draft. **Review emergency message** replaces the body in the same dialog with a recipient/message preview and **Back to edit / Send emergency message** actions; do not stack another modal. Preserve unsent text across mode changes and cancellation, disable blank sends, and keep the delivery limitation in quiet footer text. `ParentMessageModal.jsx` and the `.tsd-parent-*` rules in `teacher-student-details.css` are the reference. This supersedes the earlier emergency-toggle and nested-confirmation presentation.
+
+### Student report card
+
+**Owner refinement — 9 November 2026:** The Grades overview offers **View report** only. Keep **Print report** and **Download PDF**, with their existing behavior/availability and explanation, inside the report dialog. Match the other dialogs' title/context header, accessible 44px SVG X, white/sand/forest palette, 16px corners, 24px edges, scrolling body, and stable action footer. A report may retain its wider 760px desktop width for tabular content. Preserve original report values, keyboard/dismissal behavior, narrow-table scrolling, and report-only printing; ensure print CSS removes flex/scroll clipping after changing the screen layout. Reference `StudentGrades.jsx` and `student-grades.css`.
+
+### Student homework upload
+
+**Implemented 9 November 2026:** `HomeworkUploadModal.jsx` and `homework-upload.css` apply the organized dialog pattern to student uploads: assignment title/context and accessible X in the header, a short instruction and clearly labeled file area, then a stable Cancel/Upload footer. Use a real keyboard-operable button for the native file picker, readable announced filenames, and a Change file action. Keep the supported formats beside the control and the filename-only demo explanation in quiet footer text. Avoid a dashed drop target when drag-and-drop is not implemented.
+
+Upload requires a supported selected file. Keep **Use sample homework** as an explicit secondary alternative before selection, separate from the main action, and omit it during replacement. Replacement shows the current filename and preserves it until confirmation; cancelling never replaces it. Retain native dialog semantics, focus containment/restoration, Escape/backdrop dismissal, scroll locking, visible header/footer, and student-friendly type/action sizing. This replaces the old upload overlay and label-only file chooser; it does not add actual file transfer or shared submissions.
+
 ### Dialogs and temporary feedback
 
-The existing upload overlay uses a centered white surface, 16px corners, 24px padding, a subtle sand border, strong shadow, and a dark translucent backdrop (`black / 45%`). It has a clear title, relevant context, input state, and a separated footer with cancel and confirm actions.
+The homework upload uses a centered white native dialog, 16px corners, 24px padding, a subtle sand border, strong shadow, and a dark translucent backdrop (`black / 45%`). It has a clear title, relevant context, input state, and a separated footer with cancel and confirm actions.
 
 For new dialogs, also provide a programmatic accessible name, dialog semantics, initial focus, focus containment, Escape dismissal where appropriate, and focus restoration. Constrain height and allow internal scrolling. Cancel must preserve the saved state; confirmation commits the new state.
 
@@ -321,7 +363,7 @@ Use the existing brand tokens instead of inventing near-identical colors. Apply 
 - `student-dashboard.css` is intentionally scoped. Its `.student-dashboard` class is an implementation boundary, not the universal class future pages should adopt.
 - Classes such as `.btn-primary` are shared across screens, and imported role styles may affect each other. Inspect selectors and CSS load order before broad edits. Prefer a scoped page change for a single-page request.
 - The page raises Tailwind `text-xs` and `text-sm` through local variables. This does not increase explicit sizes such as `text-[10px]`. Prefer explicit semantic typography on migrated pages over copying these utility overrides blindly.
-- Header popovers still contain small explicit type and clickable notification `<li>` elements. The upload overlay does not currently implement complete dialog focus behavior; its hidden input/label file chooser needs keyboard review. The toast lacks live-region semantics and uses a small dismiss target. Treat these as implementation gaps to address when those controls are in scope, not reusable interaction specifications.
+- Header popovers still contain small explicit type and clickable notification `<li>` elements. The shared toast lacks live-region semantics and uses a small dismiss target. Treat these as implementation gaps to address when those controls are in scope, not reusable interaction specifications. The revised homework modal now has native dialog focus handling and a keyboard-operable file-picker button; those earlier upload limitations no longer apply.
 - Some shared icon controls do not receive the page's 44px sizing override. Verify each interactive target; do not assume a page-level accessibility pass.
 - Do not copy fixture names, subjects, counts, example dates, equal-weight averaging, specific charts, or the original page's section order into unrelated pages. Reuse their clarity and consistency instead.
 - Historical previews and superseded redesign instructions are not additional design requirements. Prefer the latest owner decisions recorded in `context.md` and verified implementation.
@@ -332,7 +374,7 @@ Before considering a restyled page complete:
 
 - All ten Nielsen heuristics have been considered for the page's actual tasks, with applicable behavior checked and unresolved gaps recorded.
 - Shared edges, spacing, font loading, heading hierarchy, and visual emphasis are consistent.
-- White panels, 14px corners, quiet borders, and restrained accents form one system.
+- White panels or the approved teacher chalkboard, 14px corners, quiet borders, and restrained accents form one system.
 - Main actions are at least 48px tall; compact targets reach 44px; focus is visible.
 - Text, controls, and meaningful graphics have adequate contrast on their actual backgrounds.
 - Keyboard users can navigate, activate controls, dismiss overlays, and return to their previous position.
@@ -354,8 +396,12 @@ Copy this instruction into a future page-change request:
 | `src/index.css` | Actual palette tokens and local font declarations |
 | `src/styles/student-dashboard.css` | Current overrides: type, container, surface, row, chart, focus, motion, breakpoint values |
 | `src/styles/student-workspace.css` | Assessment theme, answer states, floating tools placement, internal scrolling, responsive fit |
+| `src/pages/teacher/TeacherClasses.jsx` and `src/styles/teacher-classes.css` | Class dropdown within the heading, complete-roster counts, green table workspace, selection/history/focus behavior |
+| `src/pages/teacher/TeacherStudentDetails.jsx` and `src/styles/teacher-student-details.css` | Full-width Learning Objectives/feedback/message sequence, graph/support columns, missing-data states, assessment selection, and flag review |
+| `src/pages/teacher/TeacherPapers.jsx` and `src/styles/teacher-papers.css` | Approved green submission table, cream filters, plain status/count text, and review links |
 | `src/styles/student.css` | Inherited panel/button/control styles; smaller defaults overridden on the source page |
-| `src/pages/student/StudentHome.jsx` | Structure, derived summaries, action labels, states, carousel behavior, upload overlay |
+| `src/pages/student/StudentHome.jsx` | Structure, derived summaries, action labels, states, carousel behavior, upload/count integration |
+| `src/components/HomeworkUploadModal.jsx` and `src/styles/homework-upload.css` | Native homework upload/replacement dialog, file selection/validation, separate sample action, cancellation, and focus behavior |
 | `src/pages/student/StudentSolvingWorkspace.jsx` | Radio answer groups, question navigation/focus, tool state/dismissal, confirmation and completion |
 | `src/components/Header.jsx` and `src/styles/header.css` | Shared navigation, account/notification controls, inherited header styling |
 | `src/components/RadarChart.jsx`, `StudentIcons.jsx`, and `Toast.jsx` | Chart palette, icon vocabulary, temporary feedback behavior |

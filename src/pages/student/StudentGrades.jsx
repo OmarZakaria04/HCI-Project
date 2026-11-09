@@ -100,16 +100,7 @@ export default function StudentGrades() {
                     <p>Academic year 2026/2027</p>
                     <p className="grades-meta">GPA: <strong>{profile.gpa} / 4.0</strong></p>
                   </div>
-                  <div className="grades-report-actions">
-                    <div className="grades-actions">
-                      <button type="button" className="grades-button grades-button-primary" onClick={openReport}>View report</button>
-                      <button type="button" className="grades-button" onClick={printReport}>
-                        <PrinterIcon className="grades-print-icon" /> Print report
-                      </button>
-                      <button type="button" className="grades-button" disabled aria-describedby="grades-pdf-note">Download PDF</button>
-                    </div>
-                    <p id="grades-pdf-note" className="grades-meta">PDF download is unavailable in this demo.</p>
-                  </div>
+                  <button type="button" className="grades-button grades-button-primary" onClick={openReport}>View report</button>
                 </div>
               </section>
 
@@ -164,45 +155,49 @@ export default function StudentGrades() {
           }}
         >
           <div className="grades-dialog-content">
-            <div className="grades-dialog-heading">
+            <header className="grades-dialog-heading">
               <div>
-                <p className="grades-meta">Zinger School · 2026/2027</p>
                 <h2 id="report-title">Term 1 report card</h2>
+                <p className="grades-meta">Zinger School · 2026/2027</p>
               </div>
-              <button type="button" className="grades-close" aria-label="Close report" autoFocus onClick={() => reportRef.current.close()}>×</button>
-            </div>
+              <button type="button" className="grades-close" aria-label="Close report" autoFocus onClick={() => reportRef.current.close()}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+              </button>
+            </header>
 
-            <dl className="grades-report-details">
-              <div><dt>Student</dt><dd>{profile.name}</dd></div>
-              <div><dt>Student ID</dt><dd>{profile.id}</dd></div>
-              <div><dt>Grade &amp; class</dt><dd>{profile.grade} · {profile.section}</dd></div>
-              <div><dt>Class teacher</dt><dd>{profile.teacher}</dd></div>
-              <div><dt>Term GPA</dt><dd>{profile.gpa} / 4.0</dd></div>
-            </dl>
+            <div className="grades-dialog-body">
+              <dl className="grades-report-details">
+                <div><dt>Student</dt><dd>{profile.name}</dd></div>
+                <div><dt>Student ID</dt><dd>{profile.id}</dd></div>
+                <div><dt>Grade &amp; class</dt><dd>{profile.grade} · {profile.section}</dd></div>
+                <div><dt>Class teacher</dt><dd>{profile.teacher}</dd></div>
+                <div><dt>Term GPA</dt><dd>{profile.gpa} / 4.0</dd></div>
+              </dl>
 
-            <div className="grades-record-table-scroll" role="region" aria-label="Report card subject scores" tabIndex={0}>
-              <table className="grades-record-table grades-report-table">
-                <caption className="grades-sr-only">Term 1 subject grades for {profile.name}</caption>
-                <thead><tr><th scope="col">Subject</th><th scope="col">Teacher</th><th scope="col">Score</th><th scope="col">Grade</th></tr></thead>
-                <tbody>
-                  {subjects.map((subject) => (
-                    <tr key={subject.id}>
-                      <th scope="row">{subject.name}</th><td>{subject.teacher}</td><td>{subject.overall}</td><td>{subject.gradeLetter}</td>
-                    </tr>
-                  ))}
-                  {!subjects.length && <tr><td colSpan={4}>No subject grades available yet.</td></tr>}
-                </tbody>
-              </table>
+              <div className="grades-record-table-scroll" role="region" aria-label="Report card subject scores" tabIndex={0}>
+                <table className="grades-record-table grades-report-table">
+                  <caption className="grades-sr-only">Term 1 subject grades for {profile.name}</caption>
+                  <thead><tr><th scope="col">Subject</th><th scope="col">Teacher</th><th scope="col">Score</th><th scope="col">Grade</th></tr></thead>
+                  <tbody>
+                    {subjects.map((subject) => (
+                      <tr key={subject.id}>
+                        <th scope="row">{subject.name}</th><td>{subject.teacher}</td><td>{subject.overall}</td><td>{subject.gradeLetter}</td>
+                      </tr>
+                    ))}
+                    {!subjects.length && <tr><td colSpan={4}>No subject grades available yet.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+              <p id="report-demo-note" className="grades-meta">Demo report with example grades. These results are not connected to teacher approval.</p>
             </div>
-            <p id="report-demo-note" className="grades-meta">Demo report with example grades. These results are not connected to teacher approval.</p>
             <footer className="grades-dialog-footer">
-              <p className="grades-meta" id="report-pdf-note">PDF download is unavailable in this demo.</p>
               <div className="grades-actions">
                 <button type="button" className="grades-button" disabled aria-describedby="report-pdf-note">Download PDF</button>
                 <button type="button" className="grades-button grades-button-primary" onClick={printReport}>
                   <PrinterIcon className="grades-print-icon" /> Print report
                 </button>
               </div>
+              <p className="grades-meta" id="report-pdf-note">PDF download is unavailable in this demo.</p>
             </footer>
           </div>
         </dialog>

@@ -1,0 +1,60 @@
+.student-dashboard .homework-upload {
+  --hu-divider: color-mix(in srgb, var(--color-sand) 50%, white);
+  position: fixed;
+  inset: 0;
+  width: min(560px, calc(100% - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-sand);
+  border-radius: 16px;
+  background: white;
+  color: var(--color-forest);
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  box-shadow: 0 16px 48px rgb(0 0 0 / 20%);
+}
+.student-dashboard .homework-upload[open] { display: flex; flex-direction: column; }
+.student-dashboard .homework-upload::backdrop { background: rgb(0 0 0 / 45%); }
+.homework-upload :is(h2, h3, p) { margin: 0; overflow-wrap: anywhere; }
+.homework-upload .hu-header { display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0; gap: 16px; padding: 24px; border-bottom: 1px solid var(--hu-divider); }
+.homework-upload .hu-header > div { min-width: 0; }
+.homework-upload h2 { font-size: 1.75rem; font-weight: 700; line-height: 1.3; letter-spacing: -0.015em; }
+.homework-upload .hu-header p { margin-top: 4px; color: #40584e; }
+.homework-upload h3 { font-size: 1rem; font-weight: 600; line-height: 1.5; }
+.homework-upload .hu-close { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; border: 1px solid transparent; border-radius: 12px; background: white; color: var(--color-forest); cursor: pointer; transition: background-color 150ms ease; }
+.homework-upload .hu-close:hover { background: var(--color-cream); }
+.homework-upload .hu-form { display: flex; flex-direction: column; min-height: 0; }
+.homework-upload .hu-body { display: grid; gap: 24px; min-height: 0; padding: 24px; overflow-y: auto; overscroll-behavior: contain; }
+.homework-upload .hu-current { display: grid; gap: 4px; padding-bottom: 20px; border-bottom: 1px solid var(--hu-divider); }
+.homework-upload .hu-meta { color: #40584e; font-size: 1rem; }
+.homework-upload .hu-file-group > .hu-meta { margin-top: 4px; }
+.homework-upload .hu-file-area { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; margin-top: 12px; padding: 16px; border: 1px solid var(--hu-divider); border-radius: 12px; background: var(--color-cream); }
+.homework-upload .hu-file-status { flex: 1 1 160px; min-width: 0; }
+.homework-upload .hu-filename { margin-top: 4px; font-weight: 600; }
+.homework-upload .hu-button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 8px 20px; border: 1px solid var(--color-sand); border-radius: 12px; background: white; color: var(--color-forest); font: inherit; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; cursor: pointer; transition: background-color 150ms ease, transform 150ms ease; }
+.homework-upload .hu-button:hover:not(:disabled) { background: var(--color-cream); }
+.homework-upload .hu-button:active:not(:disabled) { transform: scale(0.98); }
+.homework-upload .hu-primary { background: var(--color-forest); border-color: var(--color-forest); color: var(--color-cream); }
+.homework-upload .hu-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--color-forest) 90%, white); }
+.homework-upload .hu-primary:disabled { background: var(--color-cream); border-color: var(--color-sand); border-style: dashed; color: #40584e; cursor: not-allowed; }
+.homework-upload .hu-error { margin-top: 8px; color: #b42318; font-size: 1rem; }
+.homework-upload .hu-error:empty { display: none; }
+.homework-upload .hu-sample { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; font-size: 1rem; }
+.homework-upload .hu-sample-button { min-height: 44px; padding: 4px 0; color: var(--color-forest); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.homework-upload .hu-sample-button:hover { text-decoration-thickness: 2px; }
+.homework-upload .hu-footer { display: grid; flex-shrink: 0; gap: 16px; padding: 20px 24px; border-top: 1px solid var(--hu-divider); background: white; }
+.homework-upload .hu-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
+.homework-upload button:focus-visible { outline: 2px solid var(--color-forest); outline-offset: 4px; }
+@media (max-width: 599px) {
+  .homework-upload :is(.hu-header, .hu-body, .hu-footer) { padding: 20px; }
+  .homework-upload .hu-file-area > button { width: 100%; }
+  .homework-upload .hu-actions { flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .homework-upload :is(.hu-button, .hu-close) { transition: none; }
+  .homework-upload .hu-button:active:not(:disabled) { transform: none; }
+}

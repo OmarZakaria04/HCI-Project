@@ -15,7 +15,6 @@ import ParentBehavior from "./pages/parent/ParentBehavior";
 import TeacherLayout from "./components/TeacherLayout";
 import TeacherPapers from "./pages/teacher/TeacherPapers";
 import TeacherSchedule from "./pages/teacher/TeacherSchedule";
-import TeacherClassDetails from "./pages/teacher/TeacherClassDetails";
 import TeacherClasses from "./pages/teacher/TeacherClasses";
 import TeacherStudentDetails from "./pages/teacher/TeacherStudentDetails";
 import TeacherGrading from "./pages/teacher/TeacherGrading.jsx";
@@ -45,7 +44,7 @@ export default function App() {
       <Route path="papers" element={<TeacherPapers />} />
       <Route path="schedule" element={<TeacherSchedule />} />
       <Route path="classes" element={<TeacherClasses />} />
-      <Route path="classes/:classId" element={<TeacherClassDetails />} />
+      <Route path="classes/:classId" element={<TeacherClasses />} />
       <Route path="classes/:classId/students/:studentId" element={<TeacherStudentDetails />} />
       <Route path="papers/:paperId" element={<TeacherGrading />} />
       </Route>
