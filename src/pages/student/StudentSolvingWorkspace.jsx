@@ -1,55 +1,36 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Header from "../../components/Header";
-import ConfirmModal from "../../components/ConfirmModal";
 import Toast from "../../components/Toast";
 import { onlineWorkspaceAssessments } from "../../data/studentData";
-import {
-  AssessmentIcon,
-  CheckIcon,
-  ChatIcon,
-  HomeworkIcon,
-  CalculatorIcon,
-  StarIcon,
-  LightbulbIcon,
-} from "../../components/StudentIcons";
+import { CheckIcon, CalculatorIcon, StarIcon, LightbulbIcon } from "../../components/StudentIcons";
 import "../../styles/student.css";
+import "../../styles/student-workspace.css";
 
 export default function StudentSolvingWorkspace() {
   const { assessmentId } = useParams();
-  const navigate = useNavigate();
-
-  // Find active assessment or fallback to assess-1
   const assessment =
     onlineWorkspaceAssessments[assessmentId] || onlineWorkspaceAssessments["assess-1"];
-
   const questions = assessment.questions;
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-
-  // Student answers state: { [qId]: selectedOption }
   const [answers, setAnswers] = useState({});
-
-  // S8: Hard-question marking state: { [qId]: boolean }
   const [markedHard, setMarkedHard] = useState({});
-
-  // S4: Time spent per question tracking in seconds: { [qId]: seconds }
   const [questionTimes, setQuestionTimes] = useState(
     questions.reduce((acc, q) => ({ ...acc, [q.id]: 0 }), {})
   );
-
-  // Interactive Tools state
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [scratchpadNote, setScratchpadNote] = useState("");
   const [calcDisplay, setCalcDisplay] = useState("");
-
-  // Submission state
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
-
+  const confirmRef = useRef(null);
+  const summaryRef = useRef(null);
+  const questionRef = useRef(null);
+  const toolsToggleRef = useRef(null);
+  const toolsCloseRef = useRef(null);
   const activeQuestion = questions[currentQuestionIndex];
 
-  // Timer effect: counts seconds spent on active question while not submitted
   useEffect(() => {
     if (isSubmitted) return;
     const interval = setInterval(() => {
@@ -61,37 +42,50 @@ export default function StudentSolvingWorkspace() {
     return () => clearInterval(interval);
   }, [activeQuestion.id, isSubmitted]);
 
-  // Format seconds to mm:ss
+  useEffect(() => {
+    if (isConfirmOpen) confirmRef.current.showModal();
+    else confirmRef.current.close();
+  }, [isConfirmOpen]);
+
+  useEffect(() => {
+    if (isSubmitted) summaryRef.current?.focus();
+  }, [isSubmitted]);
+
+  useEffect(() => {
+    if (isToolsOpen) toolsCloseRef.current?.focus({ preventScroll: true });
+  }, [isToolsOpen]);
+
+  const closeTools = () => {
+    setIsToolsOpen(false);
+    toolsToggleRef.current?.focus({ preventScroll: true });
+  };
+
   const formatTime = (totalSeconds) => {
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
     return `${mins}m ${secs < 10 ? "0" : ""}${secs}s`;
   };
 
-  const handleSelectOption = (opt) => {
-    if (isSubmitted) return;
-    setAnswers((prev) => ({ ...prev, [activeQuestion.id]: opt }));
+  const changeQuestion = (index) => {
+    setCurrentQuestionIndex(index);
+    requestAnimationFrame(() => questionRef.current?.focus());
   };
 
-  // S8: Toggle hard question mark
   const handleToggleHard = () => {
-    if (isSubmitted) return;
     const isNowHard = !markedHard[activeQuestion.id];
     setMarkedHard((prev) => ({ ...prev, [activeQuestion.id]: isNowHard }));
     if (isNowHard) {
-      setToastMessage(
-        `Question ${activeQuestion.number} marked as Hard. It will be flagged to review with your teacher.`
-      );
+      setToastMessage(`Question ${activeQuestion.number} marked as hard. You can return to it before submitting.`);
     }
   };
 
   const handleSubmit = () => {
     setIsConfirmOpen(false);
     setIsSubmitted(true);
-    setToastMessage("Assessment submitted successfully! Teacher will review your answers and timings.");
+    setIsToolsOpen(false);
+    setToastMessage(null);
   };
 
-  // Calculator button handler
   const handleCalcClick = (val) => {
     if (val === "C") setCalcDisplay("");
     else if (val === "=") {
@@ -113,323 +107,227 @@ export default function StudentSolvingWorkspace() {
   const answeredCount = Object.keys(answers).length;
 
   return (
-    <div className="student-page-wrapper">
+    <div className="student-page-wrapper student-workspace">
       <Header role="student" />
-
       <main className="student-container">
-        {/* Workspace Top Bar */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white border border-sand/50 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-forest/10 text-forest flex items-center justify-center shrink-0">
-              <AssessmentIcon className="w-5 h-5 text-forest" />
-            </div>
-            <div>
-              <span className="text-[11px] font-bold text-forest/60 uppercase tracking-wider">
-                Online Solving Workspace • {assessment.subject}
-              </span>
-              <h1 className="text-base sm:text-lg font-bold text-forest">
-                {assessment.title}
-              </h1>
-            </div>
+        <div className="workspace-heading">
+          <div className="workspace-heading-copy">
+            <p className="workspace-meta">{assessment.subject} · Online {assessment.type.toLowerCase()}</p>
+            <h1>{assessment.title}</h1>
+            <p className="workspace-description">{assessment.instructions}</p>
+            <p className="workspace-meta">{questions.length} questions · {assessment.durationMinutes} minutes · {assessment.teacher}</p>
           </div>
-
-          <div className="flex items-center gap-3">
-            {/* Live Question Timer (S4 requirement) */}
-            <div className="bg-cream/70 border border-sand/40 px-3 py-1.5 rounded-xl text-xs font-semibold text-forest flex items-center gap-2">
-              <span className="text-[11px] text-forest/60">Time on this question:</span>
-              <span className="font-mono font-bold text-forest">
-                {formatTime(questionTimes[activeQuestion.id] || 0)}
-              </span>
+          {!isSubmitted && (
+            <div className="workspace-heading-actions">
+              <div className="workspace-timer">
+                <span>Time on this question</span>
+                <strong>{formatTime(questionTimes[activeQuestion.id] || 0)}</strong>
+              </div>
+              <button
+                ref={toolsToggleRef}
+                type="button"
+                onClick={() => isToolsOpen ? closeTools() : setIsToolsOpen(true)}
+                className="btn-secondary"
+                aria-expanded={isToolsOpen}
+                aria-controls="workspace-tools"
+              >
+                <CalculatorIcon className="w-5 h-5" />
+                {isToolsOpen ? "Hide tools" : "Open tools"}
+              </button>
             </div>
-
-            {/* Tools Drawer Toggle */}
-            <button
-              type="button"
-              onClick={() => setIsToolsOpen((prev) => !prev)}
-              className="btn-secondary text-xs inline-flex items-center gap-1.5"
-              title="Open Scratchpad & Calculator"
-            >
-              <CalculatorIcon className="w-3.5 h-3.5 text-forest" /> Tools
-            </button>
-          </div>
+          )}
         </div>
 
-        {/* Tools Drawer */}
         {isToolsOpen && (
-          <div className="p-5 rounded-2xl bg-linear-to-r from-cream/80 to-white border border-sand/50 shadow-xs grid sm:grid-cols-2 gap-4 animate-in fade-in">
-            {/* Mini Calculator */}
-            <div className="bg-white p-3.5 rounded-xl border border-sand/40 space-y-2">
-              <span className="text-xs font-bold text-forest block">Quick Calculator</span>
-              <div className="bg-cream/60 border border-sand/40 rounded-lg p-2 text-right font-mono text-sm h-9 flex items-center justify-end font-bold text-forest">
-                {calcDisplay || "0"}
-              </div>
-              <div className="grid grid-cols-4 gap-1.5 text-xs">
-                {["7", "8", "9", "/", "4", "5", "6", "*", "1", "2", "3", "-", "0", "C", "=", "+"].map(
-                  (btn) => (
+          <aside
+            id="workspace-tools"
+            className="workspace-panel workspace-tools"
+            aria-labelledby="workspace-tools-title"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                event.preventDefault();
+                closeTools();
+              }
+            }}
+          >
+            <div className="workspace-tools-heading">
+              <h2 id="workspace-tools-title">Your tools</h2>
+              <button ref={toolsCloseRef} type="button" className="workspace-tools-close" aria-label="Close tools" onClick={closeTools}>×</button>
+            </div>
+            <div className="workspace-tools-grid">
+              <div className="workspace-calculator">
+                <h3>Calculator</h3>
+                <output className="workspace-calculator-display" aria-label="Calculator result" aria-live="polite">
+                  {calcDisplay || "0"}
+                </output>
+                <div className="workspace-calculator-keys">
+                  {["7", "8", "9", "/", "4", "5", "6", "*", "1", "2", "3", "-", "0", "C", "=", "+"].map((btn) => (
                     <button
                       key={btn}
                       type="button"
                       onClick={() => handleCalcClick(btn)}
-                      className={`p-1.5 rounded-md font-bold transition-all ${
-                        btn === "="
-                          ? "bg-forest text-cream"
-                          : btn === "C"
-                          ? "bg-sand/30 text-forest"
-                          : "bg-cream text-forest hover:bg-sand/20"
-                      }`}
+                      className={btn === "=" ? "workspace-calculate" : ""}
+                      aria-label={{ "/": "Divide", "*": "Multiply", "-": "Subtract", "+": "Add", "C": "Clear calculator", "=": "Equals" }[btn] || btn}
                     >
-                      {btn}
+                      {{ "/": "÷", "*": "×", "-": "−" }[btn] || btn}
                     </button>
-                  )
-                )}
-              </div>
-            </div>
-
-            {/* Fraction & Scratchpad Notes */}
-            <div className="bg-white p-3.5 rounded-xl border border-sand/40 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-forest">Scratchpad & Fraction Notes</span>
-                <span className="text-[10px] text-forest/50">Stored locally</span>
-              </div>
-              <textarea
-                rows="4"
-                value={scratchpadNote}
-                onChange={(e) => setScratchpadNote(e.target.value)}
-                placeholder="Write your intermediate working steps or LCM factors here..."
-                className="w-full bg-cream/40 border border-sand/40 rounded-lg p-2.5 text-xs text-forest placeholder:text-forest/40 focus:outline-none focus:ring-1 focus:ring-sand resize-none"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Post-submission Review Screen */}
-        {isSubmitted ? (
-          <div className="student-card space-y-6 text-center py-8">
-            <div className="w-16 h-16 rounded-3xl bg-forest/10 text-forest flex items-center justify-center mx-auto text-3xl">
-              <CheckIcon className="w-8 h-8 text-forest" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-forest">Assessment Submitted!</h2>
-              <p className="text-xs sm:text-sm text-forest/70 max-w-md mx-auto mt-1">
-                Your answers and exact time spent on each question have been securely recorded for{" "}
-                <strong className="text-forest">{assessment.teacher}&apos;s</strong> review.
-              </p>
-            </div>
-
-            {/* S4 Time Tracking & S8 Hard Question Review Summary */}
-            <div className="max-w-md mx-auto p-4 rounded-xl bg-cream/40 border border-sand/40 text-left space-y-3">
-              <span className="text-xs font-bold text-forest block uppercase tracking-wider">
-                Submission Breakdown for Teacher:
-              </span>
-              <div className="space-y-1.5 text-xs">
-                {questions.map((q) => (
-                  <div
-                    key={q.id}
-                    className="flex items-center justify-between p-2 rounded-lg bg-white border border-sand/30"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-forest">Q{q.number}:</span>
-                      <span className="text-forest/80">{q.topic}</span>
-                      {markedHard[q.id] && (
-                        <span className="text-[10px] bg-sand/30 text-forest px-1.5 py-0.5 rounded font-bold inline-flex items-center gap-1">
-                          <StarIcon className="w-3 h-3 text-forest" /> Marked Hard
-                        </span>
-                      )}
-                    </div>
-                    <span className="font-mono text-forest/60">
-                      {formatTime(questionTimes[q.id] || 0)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* S9 Action: Chat with teacher to review marked questions */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => navigate("/student/teachers")}
-                className="btn-primary text-xs w-full sm:w-auto"
-              >
-                <ChatIcon className="w-4 h-4" /> Message Teacher About Marked Questions
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/student")}
-                className="btn-secondary text-xs w-full sm:w-auto"
-              >
-                Return to Dashboard
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* Main Question Solving Panel */
-          <div className="student-card space-y-6">
-            {/* Question Selector & Hard Question Marker (S8) */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-sand/30">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-forest/70 uppercase">Questions:</span>
-                <div className="flex gap-1.5">
-                  {questions.map((q, idx) => {
-                    const isAnswered = Boolean(answers[q.id]);
-                    const isCurrent = idx === currentQuestionIndex;
-                    const isHard = Boolean(markedHard[q.id]);
-                    return (
-                      <button
-                        key={q.id}
-                        type="button"
-                        onClick={() => setCurrentQuestionIndex(idx)}
-                        className={`w-8 h-8 rounded-lg text-xs font-bold transition-all relative cursor-pointer ${
-                          isCurrent
-                            ? "bg-forest text-cream ring-2 ring-sand"
-                            : isAnswered
-                            ? "bg-sage/30 text-forest border border-sage/40"
-                            : "bg-cream text-forest/70 border border-sand/40"
-                        }`}
-                      >
-                        {q.number}
-                        {isHard && (
-                          <span className="absolute -top-1 -right-1 text-sand">
-                            <StarIcon className="w-2.5 h-2.5" />
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
+                  ))}
                 </div>
               </div>
+              <div className="workspace-scratchpad">
+                <label htmlFor="workspace-notes">Scratchpad</label>
+                <p id="workspace-notes-help" className="workspace-meta">Notes stay on this page until you leave or refresh.</p>
+                <textarea
+                  id="workspace-notes"
+                  aria-describedby="workspace-notes-help"
+                  rows="6"
+                  value={scratchpadNote}
+                  onChange={(e) => setScratchpadNote(e.target.value)}
+                  placeholder="Write your working or notes here…"
+                />
+              </div>
+            </div>
+          </aside>
+        )}
 
-              {/* S8: Hard Question Marking Button */}
+        {isSubmitted ? (
+          <section className="workspace-panel workspace-summary" aria-labelledby="workspace-summary-title">
+            <div className="workspace-summary-heading">
+              <span className="workspace-summary-check"><CheckIcon className="w-6 h-6" /></span>
+              <div>
+                <h2 id="workspace-summary-title" ref={summaryRef} tabIndex={-1}>Assessment complete</h2>
+                <p>{answeredCount} of {questions.length} answered · {hardCount} marked as hard</p>
+              </div>
+            </div>
+            <p className="workspace-demo-note">Demo only: your answers and timings are shown below for this visit. They are not sent to {assessment.teacher} and will reset when you leave or refresh.</p>
+            <h3>Your answers and time</h3>
+            <ul className="workspace-review-list">
+              {questions.map((q) => (
+                <li key={q.id}>
+                  <div>
+                    <h4>Question {q.number} · {q.topic}</h4>
+                    <p>{answers[q.id] || "Not answered"}</p>
+                    {markedHard[q.id] && <span className="workspace-hard-status"><StarIcon className="w-4 h-4" /> Marked as hard</span>}
+                  </div>
+                  <span className="workspace-review-time">{formatTime(questionTimes[q.id] || 0)}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="workspace-summary-actions">
+              <Link to="/student" className="btn-primary">Return to dashboard</Link>
+              <Link to="/student/teachers" className="btn-secondary">Message a teacher</Link>
+            </div>
+          </section>
+        ) : (
+          <section className="workspace-panel workspace-question" aria-labelledby="workspace-question-title">
+            <div className="workspace-question-toolbar">
+              <nav className="workspace-question-nav" aria-label="Assessment questions">
+                <span>Questions</span>
+                <div className="workspace-question-numbers">
+                  {questions.map((q, idx) => (
+                    <button
+                      key={q.id}
+                      type="button"
+                      onClick={() => changeQuestion(idx)}
+                      className="workspace-question-number"
+                      aria-current={idx === currentQuestionIndex ? "step" : undefined}
+                      aria-label={`Question ${q.number}, ${answers[q.id] ? "answered" : "not answered"}${markedHard[q.id] ? ", marked as hard" : ""}`}
+                    >
+                      {q.number}
+                      {answers[q.id] && <CheckIcon className="workspace-answered-icon" />}
+                      {markedHard[q.id] && <StarIcon className="workspace-hard-icon" />}
+                    </button>
+                  ))}
+                </div>
+              </nav>
               <button
                 type="button"
                 onClick={handleToggleHard}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
-                  markedHard[activeQuestion.id]
-                    ? "bg-sand text-forest border-sand shadow-xs"
-                    : "bg-cream/60 hover:bg-sand/20 text-forest/80 border-sand/50"
-                }`}
-                title="Mark this question to review later with teacher"
+                className="btn-secondary workspace-mark-hard"
+                aria-pressed={Boolean(markedHard[activeQuestion.id])}
               >
-                <StarIcon className={`w-3.5 h-3.5 ${markedHard[activeQuestion.id] ? "text-forest" : "text-sand"}`} />
-                <span>
-                  {markedHard[activeQuestion.id]
-                    ? "Marked as Hard Question"
-                    : "Mark as Hard Question"}
-                </span>
+                <StarIcon className="w-5 h-5" />
+                {markedHard[activeQuestion.id] ? "Marked as hard" : "Mark as hard"}
               </button>
             </div>
 
-            {/* Question Details */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-forest/60">
-                  Question {activeQuestion.number} of {questions.length} • {activeQuestion.topic}
-                </span>
-                <span className="text-xs text-forest/50">
-                  Recorded Time: {formatTime(questionTimes[activeQuestion.id] || 0)}
-                </span>
-              </div>
-
-              <h2 className="text-base sm:text-lg font-bold text-forest leading-relaxed">
-                {activeQuestion.prompt}
-              </h2>
-
-              {/* Hint Box */}
+            <div className="workspace-question-content">
+              <p className="workspace-meta">Question {activeQuestion.number} of {questions.length} · {activeQuestion.topic}</p>
+              <h2 id="workspace-question-title" ref={questionRef} tabIndex={-1}>{activeQuestion.prompt}</h2>
               {activeQuestion.hint && (
-                <div className="p-3 rounded-xl bg-sand/15 border border-sand/40 text-xs text-forest flex items-start gap-2">
-                  <span className="font-bold text-sand shrink-0 inline-flex items-center gap-1">
-                    <LightbulbIcon className="w-3.5 h-3.5" /> Helpful Tip:
-                  </span>
-                  <span>{activeQuestion.hint}</span>
+                <div className="workspace-hint">
+                  <LightbulbIcon className="w-5 h-5" />
+                  <p><strong>Helpful tip:</strong> {activeQuestion.hint}</p>
                 </div>
               )}
-
-              {/* Multiple Choice Options */}
-              <div className="space-y-2.5 pt-2">
-                {activeQuestion.options.map((opt, i) => {
-                  const isSelected = answers[activeQuestion.id] === opt;
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => handleSelectOption(opt)}
-                      className={`w-full p-4 rounded-xl text-left text-xs sm:text-sm font-medium transition-all cursor-pointer border flex items-center justify-between ${
-                        isSelected
-                          ? "bg-forest/10 border-forest text-forest font-bold ring-1 ring-forest"
-                          : "bg-white hover:bg-cream/40 border-sand/40 text-forest/85"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0 border ${
-                            isSelected
-                              ? "bg-forest text-cream border-forest"
-                              : "bg-cream text-forest/60 border-sand/40"
-                          }`}
-                        >
-                          {String.fromCharCode(65 + i)}
-                        </span>
-                        <span>{opt}</span>
-                      </div>
-                      {isSelected && <CheckIcon className="w-4 h-4 text-forest" />}
-                    </button>
-                  );
-                })}
-              </div>
+              <fieldset className="workspace-options" key={activeQuestion.id}>
+                <legend className="sr-only">Choose one answer for question {activeQuestion.number}</legend>
+                {activeQuestion.options.map((opt, i) => (
+                  <label key={opt} className="workspace-option">
+                    <span className="workspace-option-letter" aria-hidden="true">{String.fromCharCode(65 + i)}</span>
+                    <span>{opt}</span>
+                    <input
+                      type="radio"
+                      name={`answer-${activeQuestion.id}`}
+                      value={opt}
+                      checked={answers[activeQuestion.id] === opt}
+                      onChange={() => setAnswers((prev) => ({ ...prev, [activeQuestion.id]: opt }))}
+                    />
+                  </label>
+                ))}
+              </fieldset>
             </div>
 
-            {/* Navigation & Submit Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-sand/30">
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <button
-                  type="button"
-                  disabled={currentQuestionIndex === 0}
-                  onClick={() => setCurrentQuestionIndex((prev) => prev - 1)}
-                  className="btn-secondary text-xs flex-1 sm:flex-none"
-                >
-                  ← Previous
-                </button>
-                <button
-                  type="button"
-                  disabled={currentQuestionIndex === questions.length - 1}
-                  onClick={() => setCurrentQuestionIndex((prev) => prev + 1)}
-                  className="btn-secondary text-xs flex-1 sm:flex-none"
-                >
-                  Next →
-                </button>
+            <div className="workspace-question-footer">
+              <div className="workspace-step-actions">
+                <button type="button" disabled={currentQuestionIndex === 0} onClick={() => changeQuestion(currentQuestionIndex - 1)} className="btn-secondary">← Previous</button>
+                <button type="button" disabled={currentQuestionIndex === questions.length - 1} onClick={() => changeQuestion(currentQuestionIndex + 1)} className="btn-secondary">Next →</button>
               </div>
-
-              <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                <span className="text-xs text-forest/60">
-                  {answeredCount} of {questions.length} answered
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setIsConfirmOpen(true)}
-                  className="btn-primary text-xs"
-                >
-                  Submit Assessment
-                </button>
+              <div className="workspace-submit-actions">
+                <span className="workspace-meta" role="status">{answeredCount} of {questions.length} answered</span>
+                <button type="button" onClick={() => setIsConfirmOpen(true)} className="btn-primary">Submit {assessment.type.toLowerCase()}</button>
               </div>
             </div>
-          </div>
+          </section>
         )}
       </main>
 
-      {/* Confirmation Modal */}
-      <ConfirmModal
-        isOpen={isConfirmOpen}
-        title={`Submit ${assessment.title}?`}
-        message={`You have answered ${answeredCount} of ${questions.length} questions.${
-          hardCount > 0 ? ` ${hardCount} question(s) marked for teacher review.` : ""
-        } Once submitted, your answers and question times will be forwarded to ${assessment.teacher}.`}
-        confirmLabel="Yes, Submit"
-        cancelLabel="Continue Solving"
-        onConfirm={handleSubmit}
+      <dialog
+        ref={confirmRef}
+        className="workspace-confirm"
+        aria-labelledby="workspace-confirm-title"
+        aria-describedby="workspace-confirm-description"
         onCancel={() => setIsConfirmOpen(false)}
-      />
-
-      <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+        onClick={(event) => { if (event.target === event.currentTarget) setIsConfirmOpen(false); }}
+        onKeyDown={(event) => {
+          if (event.key !== "Tab") return;
+          const [cancel, confirm] = event.currentTarget.querySelectorAll("button");
+          if (event.shiftKey && document.activeElement === cancel) {
+            event.preventDefault();
+            confirm.focus();
+          } else if (!event.shiftKey && document.activeElement === confirm) {
+            event.preventDefault();
+            cancel.focus();
+          }
+        }}
+      >
+        <div className="workspace-confirm-content">
+          <h2 id="workspace-confirm-title">Submit {assessment.title}?</h2>
+          <p id="workspace-confirm-description">
+            You have answered {answeredCount} of {questions.length} questions.
+            {answeredCount < questions.length && ` ${questions.length - answeredCount} will be left unanswered.`}
+            {hardCount > 0 && ` ${hardCount} marked as hard.`}
+            {" "}You can check your answers before finishing. This demo shows a summary on this page; it does not send your work to a teacher.
+          </p>
+          <div className="workspace-confirm-actions">
+            <button type="button" className="btn-secondary" onClick={() => setIsConfirmOpen(false)}>Keep working</button>
+            <button type="button" className="btn-primary" onClick={handleSubmit}>Submit {assessment.type.toLowerCase()}</button>
+          </div>
+        </div>
+      </dialog>
+      <div className="workspace-notice" role="status">
+        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      </div>
     </div>
   );
 }

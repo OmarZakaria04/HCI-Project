@@ -2,9 +2,9 @@
 
 Reusable guidance for designing or restyling **any page** in this project.
 
-Derived on 8 November 2026 from `context.md` and the current student page implementation, including its shared header, lists, charts, feedback, and upload overlay. This is a design reference, not a request to change application behavior or a claim that every existing page already follows it.
+Derived on 8 November 2026 from `context.md` and the student dashboard implementation; extended on 9 November with the quiz/exam workspace, answer choices, and floating tools panel. This is a design reference, not a request to change application behavior or a claim that every existing page already follows it.
 
-Review scope: source and recorded approval history were inspected. A fresh headless screenshot attempt did not complete, so this document does not claim a new visual, runtime, or accessibility verification pass. Observed implementation values and recommended extensions are distinguished below.
+Review scope: the original reference used source and recorded approval history; its fresh screenshot attempt did not complete. The 9 November workspace extension also uses the headless checks and visually inspected screenshots recorded in `context.md`. This does not establish a whole-app accessibility or physical-device pass. Observed implementation values and recommended extensions are distinguished below.
 
 ## 1. Use this first
 
@@ -169,6 +169,28 @@ For new dialogs, also provide a programmatic accessible name, dialog semantics, 
 
 Use inline status for persistent outcomes, including the changed value when useful. A brief forest/cream toast can supplement it; it should not be the only record of success or a blocking error. Announce status updates appropriately and provide dismissal. The source toast defaults to six seconds; duration should suit the message rather than become a universal requirement.
 
+### Supporting tools and side panels
+
+Use an optional side panel for tools needed alongside an ongoing task, such as a calculator or scratchpad. Preserve the main page's shared width and alignment when the panel opens; do not move the question, shrink its reading area, or add page-level horizontal scrolling.
+
+- When the side margin has enough room, place the panel beside the main content with a 24px gap. Otherwise, use a dismissible overlay within the viewport. The overlay can cover part of the task while open; keep its Close control immediately reachable so the user can return to the task.
+- Keep persistent tools below the sticky navbar with clear spacing. Use `position: fixed` when they should stay at one viewport position; use `position: sticky` when they should remain constrained by a containing section. These behaviors serve different layouts.
+- Carry the panel vocabulary into the tools: white surface, sand border, forest text, 14px corners, and 24px padding. Floating panels can use a stronger shadow than ordinary content panels.
+- Stack tools in a narrow panel. Limit its height to the available viewport, allow internal vertical scrolling, and keep the title/Close row sticky within it. Contain scroll chaining so reaching the panel's end does not unexpectedly scroll the task behind it.
+- Give the panel an accessible name and the toggle `aria-expanded`/`aria-controls`. Move focus to its Close control on opening; support Escape while focus is inside and restore focus to the toggle on dismissal. Close controls need at least a 44 × 44px target.
+- A nonmodal tools panel leaves the page available and does not trap focus or use a modal backdrop. If a future flow requires a modal drawer, use the dialog rules above, including background inertness and focus containment.
+- Closing and reopening tools preserves the current working values. Explain their actual lifetime; page-state notes must not imply storage after navigation or refresh.
+
+**Observed workspace example:** the tools rail is 300px wide, begins 104px from the viewport top (80px navbar + 24px gap), and leaves 24px at the bottom. It fits beside the centered 1200px assessment from a 1896px viewport width; below that it overlays the right side. These dimensions and the breakpoint belong to this composition, not a universal side-panel system. Recalculate fit for the target page and check short viewports as well as narrow ones.
+
+### Questions and answer choices
+
+For a single-answer question, use native radio inputs in a named group, with a whole-row label and readable answer text. Use checkboxes when more than one answer is allowed. Letter markers can help scanning, but must not replace the answer or its accessible name. The workspace uses 64px minimum-height answer rows, 12px corners, and a forest border/cream fill for selection; the checked input also communicates the selected state.
+
+Keep the question, topic, helpful tip, and answer group in a clear reading order. Question-navigation buttons expose the current step and whether each item is answered or marked as hard, using text/accessibility labels and visible symbols alongside color. Preserve answers and marks across question changes and move focus to the new prompt. Show timing once where relevant; a changing timer should not announce every second.
+
+Before finishing an assessment, show answered/unanswered counts and offer a clear way to keep working. Keep final summaries consistent with the same answers, marks, and timings, with explicit unanswered states and accurate demo/delivery wording.
+
 ### Data, charts, and summaries
 
 Use charts only when they help interpret real relationships. Reuse forest outlines/labels, sage data fills, sand guide lines, and cream tracks. Include exact labeled values or an equivalent readable data view. Use appropriate meter semantics for bounded measurements; do not rely on shape or color alone.
@@ -276,6 +298,7 @@ Before considering a restyled page complete:
 - Main actions are at least 48px tall; compact targets reach 44px; focus is visible.
 - Text, controls, and meaningful graphics have adequate contrast on their actual backgrounds.
 - Keyboard users can navigate, activate controls, dismiss overlays, and return to their previous position.
+- Opening tools preserves main-content dimensions and working values; floating panels fit the viewport, scroll internally when needed, and keep Close reachable.
 - Long text, filenames, empty results, missing data, validation, and saved states remain understandable.
 - Labels reflect actual behavior; summaries and repeated values stay synchronized.
 - Existing routes, handlers, state, and destinations still work; no unrelated portal changed.
@@ -292,8 +315,10 @@ Copy this instruction into a future page-change request:
 | `context.md` | Latest owner decisions, approved fonts/palette, demo boundaries, deferred phone work |
 | `src/index.css` | Actual palette tokens and local font declarations |
 | `src/styles/student-dashboard.css` | Current overrides: type, container, surface, row, chart, focus, motion, breakpoint values |
+| `src/styles/student-workspace.css` | Assessment theme, answer states, floating tools placement, internal scrolling, responsive fit |
 | `src/styles/student.css` | Inherited panel/button/control styles; smaller defaults overridden on the source page |
 | `src/pages/student/StudentHome.jsx` | Structure, derived summaries, action labels, states, carousel behavior, upload overlay |
+| `src/pages/student/StudentSolvingWorkspace.jsx` | Radio answer groups, question navigation/focus, tool state/dismissal, confirmation and completion |
 | `src/components/Header.jsx` and `src/styles/header.css` | Shared navigation, account/notification controls, inherited header styling |
 | `src/components/RadarChart.jsx`, `StudentIcons.jsx`, and `Toast.jsx` | Chart palette, icon vocabulary, temporary feedback behavior |
 | `docs/student-dashboard-redesign-plan.md` | Approval history and why older layout/content directions were superseded |
