@@ -151,6 +151,8 @@ Within a panel, prefer plain text, lists, or definition lists to more tinted box
 
 On teacher chalkboards, use cream fields with forest text, quiet cream dividers, and a contrasting cream focus outline. Keep counts, percentages, and statuses as readable text; avoid decorative avatars, repeated pills, and emojis in these teacher data views. Preserve the approved green surface when refining a teacher page.
 
+**Schedule refinement — 9 November 2026:** Preserve the two green timetable/activities panels. Use labeled native class/type dropdowns for growing choices, readable wrapping lesson topics, full activity dates, plain category/class/status metadata, and quiet row dividers. Keep completed rows readable; **Hide completed events** filters those rows without collapsing unfinished work or its controls. A school-wide break is one continuous cell across all day columns with a centered, spaced **BREAK**, retaining the time in the left period column. Create/edit/detail/delete dialogs follow the approved white native-dialog pattern with stable header/footer and scrolling body. Reference `TeacherSchedule.jsx` and `teacher-schedule.css`.
+
 ## 7. Controls and interaction states
 
 | Control | Default | Hover / press |

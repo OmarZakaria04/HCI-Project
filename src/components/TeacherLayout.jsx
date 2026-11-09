@@ -4,6 +4,7 @@ import Header from "./Header";
 export default function TeacherLayout() {
   const isDashboard = useMatch({ path: "/teacher", end: true });
   const isPapers = useMatch({ path: "/teacher/papers", end: false });
+  const isSchedule = useMatch({ path: "/teacher/schedule", end: true });
   const isClassesIndex = useMatch({ path: "/teacher/classes", end: true });
   const isClassRoster = useMatch({ path: "/teacher/classes/:classId", end: true });
   const isStudentDetails = useMatch({ path: "/teacher/classes/:classId/students/:studentId", end: true });
@@ -13,7 +14,7 @@ export default function TeacherLayout() {
   return (
     <div className="min-h-screen bg-cream">
       <Header role="teacher" />
-      <main className={isDashboard || isPapers || isClassesIndex || isClassRoster || isStudentDetails ? "w-full max-w-[1248px] mx-auto px-6 pt-6 pb-16" : "max-w-6xl mx-auto p-6"}>
+      <main className={isDashboard || isPapers || isSchedule || isClassesIndex || isClassRoster || isStudentDetails ? "w-full max-w-[1248px] mx-auto px-6 pt-6 pb-16" : "max-w-6xl mx-auto p-6"}>
         <Outlet />
       </main>
     </div>
