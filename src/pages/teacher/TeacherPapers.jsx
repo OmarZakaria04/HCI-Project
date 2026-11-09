@@ -1,201 +1,126 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { papers } from "../../data/teacherData";
-import "../../styles/teacher.css";
+import submissionDate from "../../utils/submissionDate";
+import "../../styles/teacher-papers.css";
 
 export default function TeacherPapers() {
-  const navigate = useNavigate();
+  const searchRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({
-    grade: "",
-    classId: "",
-    paper: "",
-    status: "",
-  });
+  const [filters, setFilters] = useState({ grade: "", classId: "", paper: "", status: "" });
 
-  const handleChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
+  const handleChange = (event) => {
+    setFilters({ ...filters, [event.target.name]: event.target.value });
   };
 
   const resetFilters = () => {
     setSearchQuery("");
     setFilters({ grade: "", classId: "", paper: "", status: "" });
+    searchRef.current?.focus();
   };
 
-  const grades = [...new Set(papers.map((p) => p.grade))].sort();
-  const classIds = [...new Set(papers.map((p) => p.classId))].sort();
-  const paperNames = [...new Set(papers.map((p) => p.paper))].sort();
-
-  const visible = papers.filter((p) => {
-    const q = searchQuery.toLowerCase();
-    const matchSearch =
-      q === "" || p.student.toLowerCase().includes(q) || p.classId.toLowerCase().includes(q);
-    const matchGrade = filters.grade === "" || String(p.grade) === filters.grade;
-    const matchClass = filters.classId === "" || p.classId === filters.classId;
-    const matchPaper = filters.paper === "" || p.paper === filters.paper;
-    const matchStatus = filters.status === "" || p.status === filters.status;
-
-    return matchSearch && matchGrade && matchClass && matchPaper && matchStatus;
-  });
-
-  const totalCount = papers.length;
-  const pendingCount = papers.filter((p) => p.status === "Pending").length;
-  const gradedCount = papers.filter((p) => p.status === "Graded").length;
-
-  const isFiltered =
-    searchQuery !== "" ||
-    filters.grade !== "" ||
-    filters.classId !== "" ||
-    filters.paper !== "" ||
-    filters.status !== "";
-
-  const openPaper = (id) => navigate(`/teacher/papers/${id}`);
+  const grades = [...new Set(papers.map((paper) => paper.grade))].sort();
+  const classIds = [...new Set(papers.map((paper) => paper.classId))].sort();
+  const paperNames = [...new Set(papers.map((paper) => paper.paper))].sort();
+  const query = searchQuery.trim().toLowerCase();
+  const visible = papers.filter((paper) => (
+    (!query || paper.student.toLowerCase().includes(query) || paper.classId.toLowerCase().includes(query)) &&
+    (!filters.grade || String(paper.grade) === filters.grade) &&
+    (!filters.classId || paper.classId === filters.classId) &&
+    (!filters.paper || paper.paper === filters.paper) &&
+    (!filters.status || paper.status === filters.status)
+  ));
+  const pendingCount = papers.filter((paper) => paper.status === "Pending").length;
+  const gradedCount = papers.filter((paper) => paper.status === "Graded").length;
+  const isFiltered = searchQuery !== "" || Object.values(filters).some(Boolean);
 
   return (
-    <div className="teacher-page">
-      <div className="teacher-page-head">
-        <div>
-          <h1 className="teacher-heading">Papers & Submissions</h1>
-          <p className="text-xs text-forest/70 mt-1">
-            Review student homework, quiz papers, AI analysis, and grade assessments.
-          </p>
-        </div>
-      </div>
+    <div className="teacher-papers">
+      <header className="papers-intro">
+        <h1>Papers &amp; submissions</h1>
+        <p>Review submitted work and check extracted answers before grading.</p>
+      </header>
 
-      <section className="papers-board-card">
-        <div className="papers-board-header">
-          <div className="papers-board-title">
-            <span>📋</span>
-            <span>Submissions Log</span>
-          </div>
+      <section className="papers-board" aria-labelledby="papers-title">
+        <header className="papers-board-heading">
+          <h2 id="papers-title">Submissions</h2>
+          <p>{papers.length} total <span aria-hidden="true">·</span> {pendingCount} pending <span aria-hidden="true">·</span> {gradedCount} graded</p>
+        </header>
 
-          <div className="papers-stats-bar">
-            <span className="papers-stat-chip">Total: {totalCount}</span>
-            <span className="papers-stat-chip papers-stat-chip-pending">⏳ Pending: {pendingCount}</span>
-            <span className="papers-stat-chip papers-stat-chip-done">✓ Graded: {gradedCount}</span>
-          </div>
-        </div>
-
-        <div className="papers-filters-bar">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search student or class (e.g. Omar, 5A)..."
-            className="papers-search-input"
-          />
-
-          <select name="grade" value={filters.grade} onChange={handleChange} className="papers-select-modern" aria-label="Filter by Grade">
-            <option value="">All Grades</option>
-            {grades.map((g) => (
-              <option key={g} value={g}>Grade {g}</option>
-            ))}
-          </select>
-
-          <select name="classId" value={filters.classId} onChange={handleChange} className="papers-select-modern" aria-label="Filter by Class">
-            <option value="">All Classes</option>
-            {classIds.map((c) => (
-              <option key={c} value={c}>Class {c}</option>
-            ))}
-          </select>
-
-          <select name="paper" value={filters.paper} onChange={handleChange} className="papers-select-modern" aria-label="Filter by Paper">
-            <option value="">All Papers</option>
-            {paperNames.map((n) => (
-              <option key={n} value={n}>{n}</option>
-            ))}
-          </select>
-
-          <select name="status" value={filters.status} onChange={handleChange} className="papers-select-modern" aria-label="Filter by Status">
-            <option value="">All Statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="Graded">Graded</option>
-          </select>
-
-          {isFiltered && (
-            <button type="button" onClick={resetFilters} className="papers-reset-btn">
-              Reset Filters
-            </button>
-          )}
+        <div className="papers-filter-grid">
+          <label className="papers-search">
+            <span>Search students or classes</span>
+            <input ref={searchRef} type="search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="e.g. Omar or 5A" />
+          </label>
+          <label>
+            <span>Grade</span>
+            <select name="grade" value={filters.grade} onChange={handleChange}>
+              <option value="">All grades</option>
+              {grades.map((grade) => <option key={grade} value={grade}>Grade {grade}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Class</span>
+            <select name="classId" value={filters.classId} onChange={handleChange}>
+              <option value="">All classes</option>
+              {classIds.map((classId) => <option key={classId} value={classId}>{classId}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Paper</span>
+            <select name="paper" value={filters.paper} onChange={handleChange}>
+              <option value="">All papers</option>
+              {paperNames.map((name) => <option key={name} value={name}>{name}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Status</span>
+            <select name="status" value={filters.status} onChange={handleChange}>
+              <option value="">All statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Graded">Graded</option>
+            </select>
+          </label>
         </div>
 
-        <div className="papers-table-container">
-          <table className="papers-modern-table">
+        <div className="papers-results">
+          <p role="status">Showing {visible.length} of {papers.length} submissions</p>
+          <button type="button" onClick={resetFilters} disabled={!isFiltered}>Clear filters</button>
+        </div>
+
+        <div className="papers-table-scroll" role="region" aria-label="Student submissions" tabIndex={0}>
+          <table>
+            <caption className="papers-sr-only">Student submissions with papers, classes, submission dates, review status, and review links.</caption>
             <thead>
               <tr>
-                <th style={{ width: "26%" }}>Student</th>
-                <th style={{ width: "16%" }}>Paper</th>
-                <th style={{ width: "16%" }}>Class & Grade</th>
-                <th style={{ width: "22%" }}>Submitted</th>
-                <th style={{ width: "12%" }}>Status</th>
-                <th style={{ width: "8%" }} className="text-right pr-4">Action</th>
+                <th scope="col">Student</th>
+                <th scope="col">Paper</th>
+                <th scope="col">Class</th>
+                <th scope="col">Submitted</th>
+                <th scope="col">Status</th>
+                <th scope="col"><span className="papers-sr-only">Review submission</span></th>
               </tr>
             </thead>
             <tbody>
-              {visible.length === 0 ? (
+              {visible.length ? visible.map((paper) => {
+                const date = submissionDate(paper.submitted);
+                return (
+                  <tr key={paper.id}>
+                    <th scope="row">{paper.student}</th>
+                    <td>{paper.paper}</td>
+                    <td>{paper.classId}<span className="papers-secondary">Grade {paper.grade}</span></td>
+                    <td>{date ? <time dateTime={date.iso}>{date.dayLabel}<span className="papers-secondary">{date.timeLabel}</span></time> : paper.submitted}</td>
+                    <td><span className={paper.status === "Pending" ? "papers-pending" : ""}>{paper.status}</span></td>
+                    <td><Link className="papers-review-link" to={`/teacher/papers/${paper.id}`} aria-label={`Review ${paper.paper} from ${paper.student}`}>Review</Link></td>
+                  </tr>
+                );
+              }) : (
                 <tr>
-                  <td colSpan={6} className="papers-empty">
-                    No submissions match your filters.{" "}
-                    <button
-                      type="button"
-                      onClick={resetFilters}
-                      className="underline text-sand font-bold cursor-pointer"
-                    >
-                      Clear filters
-                    </button>
+                  <td colSpan={6} className="papers-empty-state">
+                    <h3>{papers.length ? "No matching submissions" : "No submissions yet"}</h3>
+                    <p>{papers.length ? "Try another student or class, or clear your filters." : "Student work will appear here when it is available."}</p>
                   </td>
                 </tr>
-              ) : (
-                visible.map((p) => {
-                  const initials = p.student.split(" ").map((w) => w[0]).join("");
-                  const isDone = p.status === "Graded";
-
-                  return (
-                    <tr key={p.id} onClick={() => openPaper(p.id)} title="Click to view & grade paper">
-                      <td>
-                        <div className="papers-student-cell">
-                          <div className="papers-avatar-mini">{initials}</div>
-                          <span className="font-bold text-cream">{p.student}</span>
-                        </div>
-                      </td>
-
-                      <td>
-                        <span className="papers-paper-tag">{p.paper}</span>
-                      </td>
-
-                      <td>
-                        <span className="papers-class-badge">
-                          {p.classId} · Grade {p.grade}
-                        </span>
-                      </td>
-
-                      <td>
-                        <span className="text-cream/75 text-[11px]">{p.submitted}</span>
-                      </td>
-
-                      <td>
-                        <span className={`papers-status-badge ${isDone ? "papers-status-done" : "papers-status-pending"}`}>
-                          <span>{isDone ? "✓" : "⏳"}</span>
-                          <span>{p.status}</span>
-                        </span>
-                      </td>
-
-                      <td className="text-right pr-4">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openPaper(p.id);
-                          }}
-                          className="papers-action-btn"
-                        >
-                          <span>Review</span>
-                          <span>→</span>
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
               )}
             </tbody>
           </table>

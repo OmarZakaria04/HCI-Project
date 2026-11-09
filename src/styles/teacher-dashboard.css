@@ -1,11 +1,4 @@
-/* The dashboard owns its theme; other teacher screens keep their existing layout. */
-.teacher-dashboard-main {
-  width: 100%;
-  max-width: 1248px;
-  margin-inline: auto;
-  padding: 24px 24px 64px;
-}
-
+/* The dashboard owns its theme below the shared teacher shell. */
 .teacher-dashboard {
   --dashboard-border: color-mix(in srgb, var(--color-sand) 50%, white);
   display: flex;

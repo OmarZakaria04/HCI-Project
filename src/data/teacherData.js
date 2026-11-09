@@ -90,7 +90,7 @@ export const paperDetails = {
   },
   2: {
     answers: [
-      { q: 1, question: "12 × 4 = ?", text: "46", key: "48", confidence: 0.58,
+      { q: 1, question: "12 × 4 = ?", text: "46", scanText: "48", key: "48", confidence: 0.58,
         gap: "Multiplication facts", mistake: "Skips the carry step when multiplying", tip: "Review the 4 times table." },
       { q: 2, question: "Which is bigger: 1/2 or 1/3?", text: "1/2", key: "1/2", confidence: 0.95,
         gap: "Comparing fractions", mistake: "Treats a larger denominator as a larger fraction", tip: "Practice comparing fractions with different denominators." },
