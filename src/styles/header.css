@@ -1,146 +1,185 @@
-@reference "../index.css";
-
-/* Header Container */
+/* The shared header owns its theme independently of the page below it. */
 .site-header {
-  @apply sticky top-0 z-50 w-full bg-cream border-b border-sand/40 shadow-sm transition-all;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-sand) 50%, white);
+  background: var(--color-cream);
+  color: var(--color-forest);
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
 }
-
 .header-container {
-  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 1248px;
+  height: 80px;
+  margin-inline: auto;
+  padding-inline: 24px;
 }
-
-/* Brand Section */
-.header-brand {
-  @apply flex items-center gap-3 select-none no-underline;
-}
-
+.header-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
 .brand-icon-box {
-  @apply w-10 h-10 rounded-lg bg-forest flex items-center justify-center text-cream shadow-md transition-transform hover:scale-105;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--color-forest);
+  color: var(--color-cream);
 }
-
 .brand-title {
-  @apply text-xl font-bold tracking-tight text-forest leading-none;
+  display: block;
+  font-family: "Bree Serif", Georgia, serif;
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1;
 }
-
-.brand-badge {
-  @apply text-[11px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider border;
-}
-
-/* Role-specific badge color variations */
-.brand-badge-teacher {
-  @apply bg-forest/10 text-forest border-forest/20;
-}
-
-.brand-badge-student {
-  @apply bg-sage/20 text-forest border-sage/40;
-}
-
-.brand-badge-parent {
-  @apply bg-sand/30 text-forest border-sand/60;
-}
-
-/* Navigation Links */
-.header-nav {
-  @apply hidden md:flex items-center gap-1 lg:gap-2;
-}
-
+.brand-portal { display: block; margin-top: 4px; font-size: 0.875rem; line-height: 1.25; }
+.header-nav { display: flex; align-items: center; justify-content: center; gap: 24px; min-width: 0; }
 .nav-item {
-  @apply px-3 py-2 rounded-md text-sm font-medium transition-colors text-forest/75 hover:text-forest hover:bg-sand/20;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding-block: 12px;
+  color: color-mix(in srgb, var(--color-forest) 85%, white);
+  font-size: 1rem;
+  font-weight: 400;
+  white-space: nowrap;
+  text-decoration: none;
 }
-
-.nav-item-active {
-  @apply text-forest bg-sand/35 font-semibold shadow-xs;
+.nav-item::after {
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+  left: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  content: "";
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 160ms ease;
 }
-
-/* Actions Section */
-.header-actions {
-  @apply flex items-center gap-3 relative;
+.nav-item:hover { color: var(--color-forest); }
+.nav-item:hover::after { transform: scaleX(0.5); }
+.nav-item-active { color: var(--color-forest); font-weight: 600; }
+.nav-item-active::after, .nav-item-active:hover::after { transform: scaleX(1); }
+.header-actions { position: relative; display: flex; align-items: center; gap: 16px; }
+.notification-btn, .mobile-nav-toggle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: var(--color-forest);
+  cursor: pointer;
 }
-
-/* Notification Button */
-.notification-btn {
-  @apply relative p-2 rounded-full text-forest/80 hover:text-forest hover:bg-sand/20 transition-colors focus:outline-none focus:ring-2 focus:ring-sand;
-}
-
 .notification-dot {
-  @apply absolute top-1 right-1 w-2.5 h-2.5 bg-forest rounded-full ring-2 ring-cream;
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-forest);
+  box-shadow: 0 0 0 2px var(--color-cream);
 }
-
-/* User Profile Trigger */
 .user-menu-trigger {
-  @apply flex items-center gap-2 p-1.5 rounded-full md:rounded-lg hover:bg-sand/20 transition-all cursor-pointer focus:outline-none border border-transparent hover:border-sand/40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 4px 0 4px 16px;
+  border-left: 1px solid var(--color-sand);
+  color: var(--color-forest);
+  text-align: left;
+  cursor: pointer;
 }
-
 .user-avatar {
-  @apply w-9 h-9 rounded-full bg-forest text-cream flex items-center justify-center font-bold text-xs shadow-sm ring-2 ring-sand/50;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-forest);
+  color: var(--color-cream);
+  font-size: 0.875rem;
+  font-weight: 600;
 }
-
-.user-info {
-  @apply hidden md:flex flex-col text-left;
+.user-info { display: flex; flex-direction: column; }
+.user-name { font-size: 1rem; font-weight: 600; line-height: 1.25; }
+.user-role-label { margin-top: 2px; font-size: 0.875rem; color: color-mix(in srgb, var(--color-forest) 85%, white); }
+.user-dropdown, .notification-dropdown {
+  position: absolute;
+  top: calc(100% + 16px);
+  right: 0;
+  z-index: 50;
+  width: 288px;
+  padding-block: 8px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-sand) 50%, white);
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 12px 32px rgb(30 59 47 / 12%);
+  color: var(--color-forest);
+  text-align: left;
 }
-
-.user-name {
-  @apply text-xs font-bold text-forest leading-tight;
+.dropdown-header { padding: 12px 20px 16px; border-bottom: 1px solid color-mix(in srgb, var(--color-sand) 40%, white); }
+.dropdown-title { font-weight: 600; }
+.dropdown-subtitle { margin-top: 4px; font-size: 0.875rem; overflow-wrap: anywhere; }
+.dropdown-meta { display: block; margin-top: 8px; font-size: 0.875rem; }
+.dropdown-section-title { padding: 16px 20px 8px; font-size: 0.875rem; font-weight: 600; }
+.dropdown-link, .dropdown-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
 }
-
-.user-role-label {
-  @apply text-[10px] text-forest/70 font-medium;
+.dropdown-link-active { background: color-mix(in srgb, var(--color-sand) 25%, white); font-weight: 600; }
+.dropdown-link-active > span:last-child { font-size: 0.875rem; }
+.dropdown-logout-btn { justify-content: flex-start; margin-top: 8px; border-top: 1px solid color-mix(in srgb, var(--color-sand) 40%, white); }
+.notification-dropdown { width: 352px; padding: 0; }
+.notification-heading { padding: 16px 20px; border-bottom: 1px solid color-mix(in srgb, var(--color-sand) 40%, white); font-weight: 600; }
+.notification-list { max-height: 360px; overflow-y: auto; }
+.notification-list > li + li { border-top: 1px solid color-mix(in srgb, var(--color-sand) 40%, white); }
+.notification-entry { display: block; padding: 16px 20px; font-size: 1rem; text-decoration: none; }
+.notification-time { display: block; margin-top: 4px; font-size: 0.875rem; color: color-mix(in srgb, var(--color-forest) 85%, white); }
+.site-header :is(button, .dropdown-link, .notification-entry) { transition: background-color 160ms ease; }
+.site-header :is(button, .dropdown-link, a.notification-entry):hover { background: color-mix(in srgb, var(--color-sand) 20%, transparent); }
+.site-header :is(button, a):focus-visible { outline: 2px solid var(--color-forest); outline-offset: 4px; }
+.site-header :is(.dropdown-link, .dropdown-logout-btn, .notification-entry):focus-visible { outline-offset: -4px; }
+/* Retain the existing mobile menu; a mobile redesign is deferred. */
+.mobile-nav-toggle, .mobile-menu-drawer { display: none; }
+@media (min-width: 768px) and (max-width: 1199px) {
+  .site-header[data-role="parent"] .header-container { grid-template-columns: 1fr auto; height: auto; min-height: 80px; padding-block: 12px; row-gap: 8px; }
+  .site-header[data-role="parent"] .header-nav { grid-column: 1 / -1; grid-row: 2; flex-wrap: wrap; }
 }
-
-/* Dropdown Menu */
-.user-dropdown {
-  @apply absolute right-0 top-12 mt-2 w-64 bg-white rounded-xl shadow-xl border border-sand/40 py-2 z-50 text-forest;
+@media (max-width: 767px) {
+  .header-container { gap: 8px; grid-template-columns: 1fr auto; }
+  .header-nav, .user-info { display: none; }
+  .header-actions { gap: 4px; }
+  .mobile-nav-toggle { display: grid; }
+  .mobile-menu-drawer { display: flex; flex-direction: column; padding: 12px 24px; }
+  .mobile-menu-item { min-height: 44px; padding: 10px 12px; border-radius: 8px; text-decoration: none; }
+  .mobile-menu-item-active { background: color-mix(in srgb, var(--color-sand) 35%, transparent); font-weight: 600; }
 }
-
-.dropdown-header {
-  @apply px-4 py-3 border-b border-sand/25 bg-cream/30;
-}
-
-.dropdown-title {
-  @apply font-bold text-sm text-forest;
-}
-
-.dropdown-subtitle {
-  @apply text-xs text-forest/70 truncate;
-}
-
-.dropdown-meta {
-  @apply mt-1.5 inline-block text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-sand/25 text-forest;
-}
-
-.dropdown-divider {
-  @apply my-1 border-t border-sand/20;
-}
-
-.dropdown-section-title {
-  @apply px-4 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-forest/50;
-}
-
-.dropdown-link {
-  @apply flex items-center justify-between px-4 py-2 text-xs text-forest/80 hover:bg-cream hover:text-forest transition-colors w-full text-left;
-}
-
-.dropdown-link-active {
-  @apply bg-sand/20 text-forest font-semibold;
-}
-
-.dropdown-logout-btn {
-  @apply w-full flex items-center gap-2 px-4 py-2.5 text-xs text-red-700 hover:bg-red-50 transition-colors font-medium border-t border-sand/20 mt-1;
-}
-
-/* Mobile Nav Toggle */
-.mobile-nav-toggle {
-  @apply md:hidden p-2 rounded-lg text-forest hover:bg-sand/20 transition-colors focus:outline-none;
-}
-
-.mobile-menu-drawer {
-  @apply md:hidden bg-cream border-b border-sand/40 px-4 py-3 flex flex-col gap-1;
-}
-
-.mobile-menu-item {
-  @apply px-3 py-2 rounded-md text-sm font-medium text-forest hover:bg-sand/20 transition-colors;
-}
-
-.mobile-menu-item-active {
-  @apply bg-sand/35 font-semibold text-forest;
+@media (prefers-reduced-motion: reduce) {
+  .site-header *, .site-header *::after { transition: none; }
 }

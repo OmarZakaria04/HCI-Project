@@ -9,19 +9,17 @@ import "../styles/header.css";
 const ROLE_CONFIG = {
   teacher: {
     title: "Teacher Portal",
-    badgeClass: "brand-badge-teacher",
     basePath: "/teacher",
     meta: "Mathematics Dept",
     navItems: [
-  { label: "Dashboard", path: "/teacher" },
-  { label: "Papers", path: "/teacher/papers" },
-  { label: "Classes", path: "/teacher/classes" },
-  { label: "Schedule", path: "/teacher/schedule" },
-],
+      { label: "Dashboard", path: "/teacher" },
+      { label: "Papers", path: "/teacher/papers" },
+      { label: "Classes", path: "/teacher/classes" },
+      { label: "Schedule", path: "/teacher/schedule" },
+    ],
   },
   student: {
     title: "Student Portal",
-    badgeClass: "brand-badge-student",
     basePath: "/student",
     meta: `${studentData.profile.grade} • ${studentData.profile.section}`,
     navItems: [
@@ -32,7 +30,6 @@ const ROLE_CONFIG = {
   },
   parent: {
     title: "Parent Portal",
-    badgeClass: "brand-badge-parent",
     basePath: "/parent",
     meta: "Parent of Ahmed Ehab",
     navItems: [
@@ -61,6 +58,9 @@ export default function Header({ role: propRole }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const notificationButtonRef = useRef(null);
+  const accountButtonRef = useRef(null);
+  const mobileButtonRef = useRef(null);
 
   // 1. Detect role
   const detectedRole = (() => {
@@ -138,10 +138,17 @@ export default function Header({ role: propRole }) {
   };
 
   return (
-    <header className="site-header">
+    <header className="site-header" data-role={detectedRole} onKeyDown={(event) => {
+      if (event.key !== "Escape") return;
+      if (isNotifOpen) notificationButtonRef.current?.focus();
+      else if (isDropdownOpen) accountButtonRef.current?.focus();
+      else if (isMobileMenuOpen) mobileButtonRef.current?.focus();
+      setIsNotifOpen(false);
+      setIsDropdownOpen(false);
+      setIsMobileMenuOpen(false);
+    }}>
       <div className="header-container">
         {/* Left: School Logo & Portal Identifier */}
-        <div className="flex items-center gap-4">
           <Link to={config.basePath} className="header-brand">
             <div className="brand-icon-box">
               {/* Academic graduation cap icon */}
@@ -154,25 +161,20 @@ export default function Header({ role: propRole }) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 className="w-5 h-5"
+                aria-hidden="true"
               >
                 <path d="M21.42 10.922a1 1 0 0 0-.019-.838L12.83 2.18a2 2 0 0 0-1.66 0L2.6 10.084a1 1 0 0 0 0 1.832l8.57 7.908a2 2 0 0 0 1.66 0l8.57-7.908a1 1 0 0 0 .02-.994z" />
                 <path d="M6 12v5c3 3 9 3 12 0v-5" />
               </svg>
             </div>
             <div>
-              <span className="brand-title">Zinger</span>
-              <span className="text-xs text-forest/70 block font-medium">School Portal</span>
+              <span className="brand-title">ZINGER</span>
+              <span className="brand-portal">{config.title}</span>
             </div>
           </Link>
 
-          {/* Role badge */}
-          <span className={`brand-badge ${config.badgeClass}`}>
-            {config.title}
-          </span>
-        </div>
-
         {/* Middle: Role Navigation Links */}
-        <nav className="header-nav">
+        <nav className="header-nav" aria-label={`${config.title} navigation`}>
           {config.navItems.map((item) => {
             const isActive =
               location.pathname === item.path ||
@@ -183,6 +185,8 @@ export default function Header({ role: propRole }) {
                 key={item.path}
                 to={item.path}
                 className={`nav-item ${isActive ? "nav-item-active" : ""}`}
+                aria-current={isActive ? "page" : undefined}
+                onClick={() => { setIsNotifOpen(false); setIsDropdownOpen(false); }}
               >
                 {item.label}
               </Link>
@@ -196,9 +200,11 @@ export default function Header({ role: propRole }) {
   <button
     type="button"
     className="notification-btn"
+    ref={notificationButtonRef}
     title="Notifications"
     aria-label="View notifications"
     aria-expanded={isNotifOpen}
+    aria-controls="header-notifications"
   onClick={() => {
   setIsDropdownOpen(false);
   setIsNotifOpen((prev) => !prev);
@@ -222,34 +228,32 @@ export default function Header({ role: propRole }) {
   </button>
 
   {isNotifOpen && (
-    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-sand/50 z-50 text-left">
-      <div className="px-4 py-3 border-b border-sand/40 text-sm font-semibold text-forest">
+    <section className="notification-dropdown" id="header-notifications" aria-label="Notifications">
+      <div className="notification-heading">
         Notifications
       </div>
-      <ul className="max-h-72 overflow-y-auto divide-y divide-sand/30">
+      <ul className="notification-list">
         {notifList.length === 0 ? (
-          <li className="px-4 py-3 text-xs text-forest/60">No new notifications</li>
+          <li className="notification-entry">No new notifications</li>
         ) : (
           notifList.map((n) => (
-            <li
-              key={n.id}
-              onClick={() => {
-                if (n.link) {
-                  setIsNotifOpen(false);
-                  navigate(n.link);
-                }
-              }}
-              className={`px-4 py-3 text-xs text-forest transition-colors ${
-                n.link ? "hover:bg-cream/60 cursor-pointer" : ""
-              }`}
-            >
-              <p className="font-medium leading-relaxed">{n.text}</p>
-              <p className="text-forest/50 text-[10px] mt-0.5">{n.time}</p>
+            <li key={n.id}>
+              {n.link ? (
+                <Link className="notification-entry" to={n.link} onClick={() => setIsNotifOpen(false)}>
+                  <span>{n.text}</span>
+                  <span className="notification-time">{n.time}</span>
+                </Link>
+              ) : (
+                <div className="notification-entry">
+                  <span>{n.text}</span>
+                  <span className="notification-time">{n.time}</span>
+                </div>
+              )}
             </li>
           ))
         )}
       </ul>
-    </div>
+    </section>
   )}
 </div>
 
@@ -257,6 +261,9 @@ export default function Header({ role: propRole }) {
           <button
             type="button"
             className="user-menu-trigger"
+            ref={accountButtonRef}
+            aria-label={`Account menu for ${currentUser?.name}`}
+            aria-controls="header-account-menu"
             onClick={() => {
   setIsNotifOpen(false);
   setIsDropdownOpen((prev) => !prev);
@@ -286,8 +293,11 @@ export default function Header({ role: propRole }) {
           <button
             type="button"
             className="mobile-nav-toggle"
+            ref={mobileButtonRef}
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
             aria-label="Toggle navigation menu"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="header-mobile-navigation"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -307,7 +317,7 @@ export default function Header({ role: propRole }) {
 
           {/* User Dropdown Menu */}
           {isDropdownOpen && (
-            <div className="user-dropdown">
+            <div className="user-dropdown" id="header-account-menu">
               <div className="dropdown-header">
                 <p className="dropdown-title">{currentUser?.name}</p>
                 <p className="dropdown-subtitle">{currentUser?.email}</p>
@@ -322,7 +332,7 @@ export default function Header({ role: propRole }) {
                 className={`dropdown-link ${detectedRole === "teacher" ? "dropdown-link-active" : ""}`}
               >
                 <span>Teacher Portal</span>
-                {detectedRole === "teacher" && <span className="text-[10px]">Active</span>}
+                {detectedRole === "teacher" && <span>Active</span>}
               </Link>
               <Link
                 to="/student"
@@ -330,7 +340,7 @@ export default function Header({ role: propRole }) {
                 className={`dropdown-link ${detectedRole === "student" ? "dropdown-link-active" : ""}`}
               >
                 <span>Student Portal</span>
-                {detectedRole === "student" && <span className="text-[10px]">Active</span>}
+                {detectedRole === "student" && <span>Active</span>}
               </Link>
               <Link
                 to="/parent"
@@ -338,7 +348,7 @@ export default function Header({ role: propRole }) {
                 className={`dropdown-link ${detectedRole === "parent" ? "dropdown-link-active" : ""}`}
               >
                 <span>Parent Portal</span>
-                {detectedRole === "parent" && <span className="text-[10px]">Active</span>}
+                {detectedRole === "parent" && <span>Active</span>}
               </Link>
 
               <button
@@ -369,7 +379,7 @@ export default function Header({ role: propRole }) {
 
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
-        <div className="mobile-menu-drawer">
+        <nav className="mobile-menu-drawer" id="header-mobile-navigation" aria-label="Mobile navigation">
           {config.navItems.map((item) => {
             const isActive =
               location.pathname === item.path ||
@@ -381,12 +391,13 @@ export default function Header({ role: propRole }) {
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`mobile-menu-item ${isActive ? "mobile-menu-item-active" : ""}`}
+                aria-current={isActive ? "page" : undefined}
               >
                 {item.label}
               </Link>
             );
           })}
-        </div>
+        </nav>
       )}
     </header>
   );

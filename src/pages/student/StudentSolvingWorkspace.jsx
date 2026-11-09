@@ -107,8 +107,9 @@ export default function StudentSolvingWorkspace() {
   const answeredCount = Object.keys(answers).length;
 
   return (
-    <div className="student-page-wrapper student-workspace">
+    <div className="student-page-wrapper student-themed-page">
       <Header role="student" />
+      <div className="student-workspace">
       <main className="student-container">
         <div className="workspace-heading">
           <div className="workspace-heading-copy">
@@ -327,6 +328,7 @@ export default function StudentSolvingWorkspace() {
       </dialog>
       <div className="workspace-notice" role="status">
         <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      </div>
       </div>
     </div>
   );

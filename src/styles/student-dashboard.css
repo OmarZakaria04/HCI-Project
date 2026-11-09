@@ -10,8 +10,7 @@
   line-height: 1.5;
 }
 
-.student-dashboard .student-container,
-.student-dashboard .header-container {
+.student-dashboard .student-container {
   width: 100%;
   max-width: 1248px;
   padding-inline: 24px;
@@ -26,31 +25,6 @@
 
 .student-dashboard .student-container > * {
   margin-block: 0;
-}
-
-.student-dashboard .site-header {
-  box-shadow: none;
-}
-
-.student-dashboard .header-container {
-  height: 80px;
-}
-
-.student-dashboard .brand-title {
-  font-family: "Bree Serif", Georgia, serif;
-  font-size: 2rem;
-  font-weight: 400;
-  letter-spacing: -0.025em;
-}
-
-.student-dashboard .brand-badge,
-.student-dashboard .user-role-label {
-  font-size: 0.875rem;
-}
-
-.student-dashboard .user-name,
-.student-dashboard .nav-item {
-  font-size: 1rem;
 }
 
 .student-dashboard-welcome h1 {
@@ -578,11 +552,5 @@
 .student-dashboard :is(button, a, input, [tabindex]):focus-visible {
   outline: 2px solid var(--color-forest);
   outline-offset: 4px;
-}
-
-@media (max-width: 1099px) {
-  .student-dashboard .brand-badge {
-    display: none;
-  }
 }
 

@@ -1,408 +1,212 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { Link, useParams } from "react-router-dom";
 import Header from "../../components/Header";
-import ConfirmModal from "../../components/ConfirmModal";
-import Toast from "../../components/Toast";
+import { PrinterIcon } from "../../components/StudentIcons";
 import { studentData } from "../../data/studentData";
-import {
-  GradesIcon,
-  ReportCardIcon,
-  HomeworkIcon,
-  ScienceIcon,
-  MathIcon,
-  EnglishIcon,
-  PrinterIcon,
-  CheckIcon,
-} from "../../components/StudentIcons";
-import "../../styles/student.css";
+import "../../styles/student-grades.css";
 
 export default function StudentGrades() {
   const { subjectId } = useParams();
-  const navigate = useNavigate();
+  const subjects = studentData.subjects ?? [];
+  const currentSubject = subjects.find((subject) => subject.id === subjectId?.toLowerCase());
+  const titleRef = useRef(null);
+  const reportRef = useRef(null);
+  const reportTriggerRef = useRef(null);
+  const profile = studentData.profile;
 
-  // Selected subject index in carousel (0: Science, 1: Math, 2: English)
-  const initialIndex = subjectId
-    ? studentData.subjects.findIndex((s) => s.id === subjectId.toLowerCase())
-    : 0;
-  const [selectedSubjectIndex, setSelectedSubjectIndex] = useState(
-    initialIndex >= 0 ? initialIndex : 0
-  );
+  useEffect(() => {
+    titleRef.current?.focus({ preventScroll: true });
+  }, [subjectId]);
 
-  // Drilldown state: when true, renders the detailed matrix view for that subject (Wireframe Screen 5)
-  const [isDetailView, setIsDetailView] = useState(Boolean(subjectId));
-
-  const currentSubject = studentData.subjects[selectedSubjectIndex] || studentData.subjects[0];
-
-  // Modals & toast states
-  const [modalState, setModalState] = useState({
-    isOpen: false,
-    title: "",
-    message: "",
-    onConfirm: null,
-  });
-  const [toastMessage, setToastMessage] = useState(null);
-
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-
-  const handleDownloadReport = () => {
-    setToastMessage("Downloading Term 1 Official Report Card (PDF)...");
+  const openReport = (event) => {
+    reportTriggerRef.current = event.currentTarget;
+    reportRef.current.showModal();
   };
 
-  const handlePrintReport = () => {
-    window.print();
-  };
-
-  const handleViewReport = () => {
-    setIsReportModalOpen(true);
-  };
-
-  const handleOpenSubjectDetail = (idx) => {
-    setSelectedSubjectIndex(idx);
-    setIsDetailView(true);
+  const printReport = (event) => {
+    if (!reportRef.current.open) openReport(event);
+    requestAnimationFrame(() => window.print());
   };
 
   return (
-    <div className="student-page-wrapper">
+    <div className="student-grades-page">
       <Header role="student" />
+      <div className="student-grades">
+        <main className="student-grades-container">
+          {subjectId ? (
+            <>
+              <header className="grades-intro">
+                <Link className="grades-back-link" to="/student/grades">← Back to grades</Link>
+                <h1 ref={titleRef} tabIndex={-1}>{currentSubject?.name ?? "Subject not found"}</h1>
+                <p>{currentSubject
+                  ? `Grade history · Taught by ${currentSubject.teacher}`
+                  : "Choose a subject from your grades overview."}</p>
+              </header>
 
-      <main className="student-container">
-        {/* ============================================================ */}
-        {/* VIEW A: Detailed Subject Matrix (Screen 5 - Science History) */}
-        {/* Reached directly from clicking a subject, no redundant header button! */}
-        {/* ============================================================ */}
-        {isDetailView ? (
-          <div className="space-y-6">
-            {/* Hero Card: Subject Name (e.g. Science) */}
-            <div className="wireframe-hero-card">
-              <div className="w-12 h-12 rounded-2xl bg-forest/10 text-forest flex items-center justify-center mx-auto mb-2 shadow-2xs">
-                {currentSubject.id === "science" && <ScienceIcon className="w-6 h-6 text-forest" />}
-                {currentSubject.id === "math" && <MathIcon className="w-6 h-6 text-forest" />}
-                {currentSubject.id === "english" && <EnglishIcon className="w-6 h-6 text-forest" />}
-              </div>
-              <h1 className="wireframe-hero-title">{currentSubject.name}</h1>
-              <p className="wireframe-hero-subtitle">
-                Subject Grade History • Taught by {currentSubject.teacher} • Overall: {currentSubject.overall} ({currentSubject.gradeLetter})
-              </p>
-            </div>
+              {currentSubject && (
+                <section className="grades-panel" aria-labelledby="history-title">
+                  <div className="grades-panel-heading">
+                    <h2 id="history-title">Grade history</h2>
+                    <p className="grades-overall">Overall grade: <strong>{currentSubject.overall} ({currentSubject.gradeLetter})</strong></p>
+                  </div>
+                  {currentSubject.history?.length ? (
+                    <div className="grades-record-table-scroll" role="region" aria-label={`${currentSubject.name} grade history`} tabIndex={0}>
+                      <table className="grades-record-table">
+                        <caption className="grades-sr-only">{currentSubject.name} assessment scores, Term 1</caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Assignment</th>
+                            <th scope="col">Quiz</th>
+                            <th scope="col">Class work</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {currentSubject.history.map((row) => (
+                            <tr key={row.rowNumber}>
+                              <th scope="row">{row.rowNumber}</th>
+                              <td>{row.assignment}</td>
+                              <td>{row.quiz}</td>
+                              <td>{row.classWork}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : <p className="grades-empty">No grade history available for this subject yet.</p>}
+                  <div className="grades-history-notes">
+                    <h3>Term 1 assessment weights</h3>
+                    <p>Assignments (40%) · Quizzes (35%) · Class work &amp; lab attendance (25%)</p>
+                    <p className="grades-meta">Demo data. Overall grades are provided examples, not calculated from this history.</p>
+                  </div>
+                </section>
+              )}
+            </>
+          ) : (
+            <>
+              <header className="grades-intro">
+                <h1 ref={titleRef} tabIndex={-1}>Grades</h1>
+                <p>Your report card and grades for each subject.</p>
+              </header>
 
-            {/* Matrix Table */}
-            <div className="student-card space-y-4">
-              <div className="student-card-header">
-                <h2 className="student-card-title">
-                  <GradesIcon className="w-5 h-5 text-forest" /> Subjects Grades History
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setIsDetailView(false)}
-                  className="btn-ghost text-xs"
-                >
-                  ← Back to Overview
-                </button>
-              </div>
+              <section className="grades-panel" aria-labelledby="reports-title">
+                <div className="grades-panel-heading">
+                  <h2 id="reports-title">Report cards</h2>
+                  <p className="grades-meta">Demo data</p>
+                </div>
+                <div className="grades-report-row">
+                  <div className="grades-report-copy">
+                    <h3>Term 1 report card</h3>
+                    <p>Academic year 2026/2027</p>
+                    <p className="grades-meta">GPA: <strong>{profile.gpa} / 4.0</strong></p>
+                  </div>
+                  <div className="grades-report-actions">
+                    <div className="grades-actions">
+                      <button type="button" className="grades-button grades-button-primary" onClick={openReport}>View report</button>
+                      <button type="button" className="grades-button" onClick={printReport}>
+                        <PrinterIcon className="grades-print-icon" /> Print report
+                      </button>
+                      <button type="button" className="grades-button" disabled aria-describedby="grades-pdf-note">Download PDF</button>
+                    </div>
+                    <p id="grades-pdf-note" className="grades-meta">PDF download is unavailable in this demo.</p>
+                  </div>
+                </div>
+              </section>
 
-              <div className="overflow-x-auto rounded-xl border border-sand/40">
-                <table className="grades-history-table">
-                  <thead>
-                    <tr>
-                      <th className="grades-th w-14">#</th>
-                      <th className="grades-th">Assignment</th>
-                      <th className="grades-th">Quiz</th>
-                      <th className="grades-th">Class Work</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentSubject.history.map((row) => (
-                      <tr key={row.rowNumber} className="hover:bg-cream/40 transition-colors">
-                        <td className="grades-td font-bold text-forest/70">{row.rowNumber}</td>
-                        <td className="grades-td">
-                          <span className="font-semibold text-forest">{row.assignment}</span>
-                        </td>
-                        <td className="grades-td">
-                          <span className="font-semibold text-forest">{row.quiz}</span>
-                        </td>
-                        <td className="grades-td">
-                          <span className="font-semibold text-forest">{row.classWork}</span>
-                        </td>
-                      </tr>
+              <section className="grades-panel" aria-labelledby="subjects-title">
+                <div className="grades-panel-heading">
+                  <h2 id="subjects-title">Subject grades</h2>
+                  <p className="grades-meta">View your scores for each subject.</p>
+                </div>
+                {subjects.length ? (
+                  <ul className="grades-subject-list">
+                    {subjects.map((subject) => (
+                      <li key={subject.id} className="grades-subject-row">
+                        <div>
+                          <h3>{subject.name}</h3>
+                          <p className="grades-meta">Taught by {subject.teacher}</p>
+                        </div>
+                        <p className="grades-subject-score">
+                          <strong>{subject.overall}</strong>
+                          <span className="grades-meta">Grade {subject.gradeLetter}</span>
+                        </p>
+                        <Link className="grades-button" to={`/student/grades/${subject.id}`} aria-label={`View ${subject.name} grades`}>View grades <span aria-hidden="true">→</span></Link>
+                      </li>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </ul>
+                ) : <p className="grades-empty">No subject grades available yet.</p>}
+              </section>
+            </>
+          )}
+        </main>
 
-              {/* Assessment Breakdown Summary */}
-              <div className="p-4 rounded-xl bg-cream/30 border border-sand/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <div>
-                  <span className="font-bold text-forest">Term 1 Assessment Weightage:</span>
-                  <p className="text-forest/70 mt-0.5">
-                    Assignments (40%) • Quizzes (35%) • Class Work & Lab Attendance (25%)
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsDetailView(false)}
-                  className="btn-primary text-xs"
-                >
-                  Return to Overview
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          /* ============================================================ */
-          /* VIEW B: Grades Overview (Screen 2 - Grades-S)                */
-          /* ============================================================ */
-          <div className="space-y-6">
-            {/* Hero Card: Grades */}
-            <div className="wireframe-hero-card">
-              <div className="w-12 h-12 rounded-2xl bg-forest/10 text-forest flex items-center justify-center mx-auto mb-2 shadow-2xs">
-                <GradesIcon className="w-6 h-6 text-forest" />
-              </div>
-              <h1 className="wireframe-hero-title">Grades</h1>
-              <p className="wireframe-hero-subtitle">
-                Official quarterly report cards & subject assessment ledger
-              </p>
-            </div>
-
-            {/* Report Cards Section */}
-            <div className="student-card space-y-4">
-              <div className="student-card-header">
-                <h2 className="student-card-title">
-                  <ReportCardIcon className="w-5 h-5 text-forest" /> Report Cards
-                </h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-forest bg-sage/20 border border-sage/30 px-2.5 py-0.5 rounded-full">
-                    Teacher Confirmed & Verified
-                  </span>
-                  <span className="text-xs font-bold text-forest">GPA: {studentData.profile.gpa} / 4.0</span>
-                </div>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-linear-to-br from-cream/50 to-white border border-sand/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-sm font-bold text-forest">Term 1 Official Report Card</h3>
-                  <p className="text-xs text-forest/70 mt-0.5">
-                    Verified and confirmed by class teachers. Ready to download or print to bring home.
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={handleViewReport}
-                    className="btn-primary text-xs flex-1 sm:flex-none"
-                  >
-                    View
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDownloadReport}
-                    className="btn-secondary text-xs flex-1 sm:flex-none"
-                  >
-                    Download PDF
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handlePrintReport}
-                    className="btn-ghost text-xs flex-1 sm:flex-none inline-flex items-center gap-1.5"
-                    title="Print report to bring home"
-                  >
-                    <PrinterIcon className="w-3.5 h-3.5" /> Print
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Subjects Grades History Section */}
-            <div className="student-card space-y-4">
-              <div className="student-card-header">
-                <h2 className="student-card-title">
-                  <HomeworkIcon className="w-5 h-5 text-forest" /> Subjects Grades History
-                </h2>
-                <span className="text-xs text-forest/60">Click any subject to view detailed grade history</span>
-              </div>
-
-              {/* Subject carousel pills with arrows */}
-              <div className="flex items-center justify-center gap-3 py-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedSubjectIndex((prev) =>
-                      prev > 0 ? prev - 1 : studentData.subjects.length - 1
-                    )
-                  }
-                  className="carousel-nav-btn w-8 h-8 text-sm"
-                  title="Previous Subject"
-                  aria-label="Previous Subject"
-                >
-                  ‹
-                </button>
-
-                <div className="flex items-center gap-2 overflow-x-auto">
-                  {studentData.subjects.map((subj, idx) => (
-                    <button
-                      key={subj.id}
-                      type="button"
-                      onClick={() => setSelectedSubjectIndex(idx)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        selectedSubjectIndex === idx
-                          ? "bg-forest text-cream shadow-sm scale-105"
-                          : "bg-cream/80 text-forest border border-sand/40 hover:bg-sand/30"
-                      }`}
-                    >
-                      {subj.name} ({subj.overall})
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedSubjectIndex((prev) => (prev + 1) % studentData.subjects.length)
-                  }
-                  className="carousel-nav-btn w-8 h-8 text-sm"
-                  title="Next Subject"
-                  aria-label="Next Subject"
-                >
-                  ›
-                </button>
-              </div>
-
-              {/* Subject Summary Card with action to open the detailed matrix */}
-              <div className="p-4 rounded-xl bg-cream/30 border border-sand/40 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div>
-                  <span className="text-xs text-forest/70 block">Selected Subject</span>
-                  <h3 className="text-base font-bold text-forest">
-                    {currentSubject.name} — Taught by {currentSubject.teacher}
-                  </h3>
-                  <span className="text-xs text-forest/80 font-medium">
-                    Overall Grade: <strong className="text-forest">{currentSubject.gradeLetter} ({currentSubject.overall})</strong>
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleOpenSubjectDetail(selectedSubjectIndex)}
-                  className="btn-primary text-xs w-full sm:w-auto"
-                >
-                  Open {currentSubject.name} Grade Matrix →
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* S1: Official Report Card Modal */}
-      {isReportModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl border border-sand/50 shadow-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-sand/30">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-forest/10 text-forest flex items-center justify-center">
-                  <ReportCardIcon className="w-5 h-5 text-forest" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-forest">Zinger School Official Report Card</h3>
-                  <span className="text-[11px] text-forest/60">Term 1 • Academic Year 2026/2027</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsReportModalOpen(false)}
-                className="w-7 h-7 rounded-full bg-cream hover:bg-sand/30 text-forest text-xs flex items-center justify-center cursor-pointer font-bold"
-                aria-label="Close"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-xs p-3 bg-cream/40 rounded-xl border border-sand/30">
+        <dialog
+          ref={reportRef}
+          className="student-grades-dialog"
+          aria-labelledby="report-title"
+          aria-describedby="report-demo-note"
+          onClose={() => reportTriggerRef.current?.focus({ preventScroll: true })}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) reportRef.current.close();
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== "Tab") return;
+            const controls = event.currentTarget.querySelectorAll("button:not(:disabled), [tabindex='0']");
+            const first = controls[0];
+            const last = controls[controls.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+              event.preventDefault();
+              last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+              event.preventDefault();
+              first.focus();
+            }
+          }}
+        >
+          <div className="grades-dialog-content">
+            <div className="grades-dialog-heading">
               <div>
-                <span className="text-forest/60 block">Student Name:</span>
-                <strong className="text-forest">{studentData.profile.name}</strong>
+                <p className="grades-meta">Zinger School · 2026/2027</p>
+                <h2 id="report-title">Term 1 report card</h2>
               </div>
-              <div>
-                <span className="text-forest/60 block">Student ID & Grade:</span>
-                <strong className="text-forest">{studentData.profile.id} • {studentData.profile.grade}</strong>
-              </div>
-              <div>
-                <span className="text-forest/60 block">Class Teacher:</span>
-                <strong className="text-forest">{studentData.profile.teacher}</strong>
-              </div>
-              <div>
-                <span className="text-forest/60 block">Term GPA:</span>
-                <strong className="text-forest">{studentData.profile.gpa} / 4.0 (A)</strong>
-              </div>
+              <button type="button" className="grades-close" aria-label="Close report" autoFocus onClick={() => reportRef.current.close()}>×</button>
             </div>
 
-            {/* Subject Grades Table */}
-            <div className="border border-sand/40 rounded-xl overflow-hidden text-xs">
-              <table className="w-full text-left">
-                <thead className="bg-sand/20 text-forest uppercase font-bold text-[11px]">
-                  <tr>
-                    <th className="py-2.5 px-3">Subject</th>
-                    <th className="py-2.5 px-3">Instructor</th>
-                    <th className="py-2.5 px-3 text-center">Score</th>
-                    <th className="py-2.5 px-3 text-center">Grade</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-sand/20">
-                  {studentData.subjects.map((subj) => (
-                    <tr key={subj.id} className="hover:bg-cream/30">
-                      <td className="py-2.5 px-3 font-semibold text-forest">{subj.name}</td>
-                      <td className="py-2.5 px-3 text-forest/70">{subj.teacher}</td>
-                      <td className="py-2.5 px-3 text-center font-bold text-forest">{subj.overall}</td>
-                      <td className="py-2.5 px-3 text-center font-extrabold text-forest">{subj.gradeLetter}</td>
+            <dl className="grades-report-details">
+              <div><dt>Student</dt><dd>{profile.name}</dd></div>
+              <div><dt>Student ID</dt><dd>{profile.id}</dd></div>
+              <div><dt>Grade &amp; class</dt><dd>{profile.grade} · {profile.section}</dd></div>
+              <div><dt>Class teacher</dt><dd>{profile.teacher}</dd></div>
+              <div><dt>Term GPA</dt><dd>{profile.gpa} / 4.0</dd></div>
+            </dl>
+
+            <div className="grades-record-table-scroll" role="region" aria-label="Report card subject scores" tabIndex={0}>
+              <table className="grades-record-table grades-report-table">
+                <caption className="grades-sr-only">Term 1 subject grades for {profile.name}</caption>
+                <thead><tr><th scope="col">Subject</th><th scope="col">Teacher</th><th scope="col">Score</th><th scope="col">Grade</th></tr></thead>
+                <tbody>
+                  {subjects.map((subject) => (
+                    <tr key={subject.id}>
+                      <th scope="row">{subject.name}</th><td>{subject.teacher}</td><td>{subject.overall}</td><td>{subject.gradeLetter}</td>
                     </tr>
                   ))}
+                  {!subjects.length && <tr><td colSpan={4}>No subject grades available yet.</td></tr>}
                 </tbody>
               </table>
             </div>
-
-            <div className="p-3 rounded-xl bg-sage/15 border border-sage/30 text-xs text-forest space-y-1">
-              <div className="flex items-center gap-1.5 font-bold">
-                <CheckIcon className="w-3.5 h-3.5 text-forest" /> Verified by School Academic Board & Class Teachers
+            <p id="report-demo-note" className="grades-meta">Demo report with example grades. These results are not connected to teacher approval.</p>
+            <footer className="grades-dialog-footer">
+              <p className="grades-meta" id="report-pdf-note">PDF download is unavailable in this demo.</p>
+              <div className="grades-actions">
+                <button type="button" className="grades-button" disabled aria-describedby="report-pdf-note">Download PDF</button>
+                <button type="button" className="grades-button grades-button-primary" onClick={printReport}>
+                  <PrinterIcon className="grades-print-icon" /> Print report
+                </button>
               </div>
-              <p className="text-forest/80 text-[11px]">
-                Report confirmed. Suitable for printing to bring home for parent signature.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-sand/30">
-              <button
-                type="button"
-                onClick={handlePrintReport}
-                className="btn-ghost text-xs inline-flex items-center gap-1.5"
-              >
-                <PrinterIcon className="w-3.5 h-3.5" /> Print Report
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  handleDownloadReport();
-                  setIsReportModalOpen(false);
-                }}
-                className="btn-primary text-xs"
-              >
-                Download PDF
-              </button>
-            </div>
+            </footer>
           </div>
-        </div>
-      )}
-
-      <ConfirmModal
-        isOpen={modalState.isOpen}
-        title={modalState.title}
-        message={modalState.message}
-        onConfirm={modalState.onConfirm}
-        onCancel={() => setModalState({ isOpen: false })}
-      />
-
-      <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+        </dialog>
+      </div>
     </div>
   );
 }
-

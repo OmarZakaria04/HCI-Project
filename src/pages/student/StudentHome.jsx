@@ -118,9 +118,9 @@ export default function StudentHome() {
   };
 
   return (
-    <div className="student-page-wrapper student-dashboard">
+    <div className="student-page-wrapper student-themed-page">
       <Header role="student" />
-
+      <div className="student-dashboard">
       <main className="student-container">
         <div className="student-dashboard-welcome">
           <h1>Hi {studentData.profile.name.split(" ")[0]}</h1>
@@ -455,6 +455,7 @@ export default function StudentHome() {
       )}
 
       <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      </div>
     </div>
   );
 }

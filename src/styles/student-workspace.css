@@ -1,4 +1,4 @@
-/* Keep the assessment theme local to this page and its header. */
+/* The assessment theme excludes the shared header. */
 .student-workspace {
   --workspace-muted: color-mix(in srgb, var(--color-forest) 85%, white);
   --workspace-border: color-mix(in srgb, var(--color-sand) 50%, white);
@@ -9,8 +9,7 @@
   line-height: 1.5;
 }
 
-.student-workspace .student-container,
-.student-workspace .header-container {
+.student-workspace .student-container {
   width: 100%;
   max-width: 1248px;
   padding-inline: 24px;
@@ -24,24 +23,6 @@
 }
 
 .student-workspace .student-container > * { margin-block: 0; }
-.student-workspace .site-header { box-shadow: none; }
-.student-workspace .header-container { height: 80px; }
-
-.student-workspace .brand-title {
-  font-family: "Bree Serif", Georgia, serif;
-  font-size: 2rem;
-  font-weight: 400;
-  letter-spacing: -0.025em;
-}
-
-.student-workspace :is(.brand-badge, .user-role-label) { font-size: 0.875rem; }
-.student-workspace :is(.user-name, .nav-item) { font-size: 1rem; }
-
-.student-workspace :is(.notification-btn, .mobile-nav-toggle) {
-  min-width: 44px;
-  min-height: 44px;
-}
-
 .workspace-heading {
   display: flex;
   align-items: flex-start;
@@ -401,20 +382,12 @@
 .student-workspace :is(h1, h2, h3, h4, p, label, output) { overflow-wrap: anywhere; }
 .student-workspace :is(.workspace-question-number, .workspace-calculator-keys button):active { transform: scale(0.98); }
 
-@media (max-width: 1099px) {
-  .student-workspace .brand-badge { display: none; }
-}
-
 @media (max-width: 767px) {
   .workspace-heading { flex-direction: column; }
   .workspace-heading-actions { width: 100%; flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 }
 
 @media (max-width: 639px) {
-  .student-workspace .header-container, .student-workspace .header-brand { gap: 8px; }
-  .student-workspace .header-actions { gap: 4px; }
-  .student-workspace .user-menu-trigger { min-width: 44px; min-height: 44px; padding: 4px; }
-  .student-workspace .user-menu-trigger > svg { display: none; }
   .workspace-heading h1 { font-size: 2rem; }
   .workspace-question-toolbar, .workspace-question-footer { align-items: stretch; flex-direction: column; }
   .workspace-step-actions > button, .workspace-summary-actions > a, .workspace-confirm-actions > button { flex: 1; }
@@ -423,16 +396,11 @@
   .workspace-review-list li { flex-direction: column; gap: 8px; }
 }
 
-@media (max-width: 359px) {
-  .student-workspace .brand-title { font-size: 1.75rem; }
-  .student-workspace .header-actions { gap: 0; }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .student-workspace *, .student-workspace *::before, .student-workspace *::after {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
   }
-  .student-workspace :is(button, a):active, .student-workspace .brand-icon-box:hover { transform: none; }
+  .student-workspace :is(button, a):active { transform: none; }
 }
