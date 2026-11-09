@@ -13,12 +13,16 @@ Review scope: the original reference used source and recorded approval history; 
 When changing a page:
 
 1. Identify its purpose, main action, information hierarchy, and existing working interactions.
-2. Apply the palette, fonts, spacing, surfaces, and control rules below.
-3. Choose a layout suited to its content: form, detail, list, directory, conversation, table, or workspace.
-4. Keep routes, handlers, data relationships, validation, and state transitions working.
-5. Check actual rendering, keyboard access, long content, and relevant empty/error/success states.
+2. Check the already approved pages for an applicable design before creating a different treatment. Reuse the same layout and interaction pattern when the purpose matches; keep role-specific labels, content, and meaningful surface choices such as the teacher's green chalkboard.
+3. Apply the palette, fonts, spacing, surfaces, and control rules below.
+4. Choose a layout suited to its content: form, detail, list, directory, conversation, table, or workspace.
+5. Keep routes, handlers, data relationships, validation, and state transitions working.
+6. Check actual rendering, keyboard access, long content, and relevant empty/error/success states.
+7. Review the page's interactions against all ten Nielsen usability heuristics below and document any remaining gaps.
 
 The reusable system is the visual vocabulary and behavior. A greeting, carousel, chart, summary card, two-column split, or particular section order is optional. Pages do not need these elements to belong to the same product.
+
+**Owner consistency direction — 9 November 2026:** When two pages use the same pattern, their design should match the approved implementation. Both dashboard navigation areas now use `DashboardCarousel.jsx` and `dashboard-carousel.css`: a larger central image card, smaller side cards, forest title overlays, manual arrows and indicators, whole-card actions, keyboard/swipe controls, and no automatic rotation. The teacher starts with Classes left, Papers central, and Schedule right; its review list comes before the retained green analytics board. Reuse this shared component for this existing three-destination pattern instead of introducing another carousel or tile style.
 
 ## 2. Design principles
 
@@ -29,6 +33,25 @@ The reusable system is the visual vocabulary and behavior. A greeting, carousel,
 - **Restrained emphasis.** Forest indicates emphasis; sage and sand support it. Avoid turning every value or category into a colored pill.
 - **Visible consequences.** Actions update the affected content and related summaries together. Give clear feedback and a safe way to cancel edits.
 - **Honest content.** Match labels to implemented behavior. Show demo limitations where they affect the user's decision; do not claim delivery, approval, persistence, or synchronization that does not exist.
+
+### Required usability standard: Nielsen's ten heuristics
+
+**Every new or revised page must follow Jakob Nielsen's ten usability heuristics**, across the teacher, student, and parent portals. Apply them to the visual design, navigation, content, and actual task behavior. Use the [Nielsen Norman Group reference](https://www.nngroup.com/articles/ten-usability-heuristics/) when reviewing a design.
+
+| # | Principle | Apply it in Zinger |
+|---|---|---|
+| 1 | Visible status | Show the current selection, task state, progress, and action outcomes promptly and accurately. |
+| 2 | Familiar language | Use recognizable school terms, clear dates, and wording appropriate to the user's age and role. |
+| 3 | User control | Provide clear Back, Cancel, Close, and reset actions where relevant; preserve saved work when canceling. Keep navigation carousels manual. |
+| 4 | Consistency | Reuse approved designs, components, labels, and interaction patterns wherever their purpose matches. |
+| 5 | Error prevention | Explain requirements before an action, validate inputs, and let users review consequential changes before committing. |
+| 6 | Recognition | Keep choices, labels, instructions, and relevant context visible so users can act without remembering another screen. |
+| 7 | Efficiency | Give frequent tasks direct routes and useful search/filter controls, with keyboard access and sensible defaults. |
+| 8 | Minimalism | Prioritize the current task, group related information, and remove redundant decoration and copy. |
+| 9 | Error recovery | Explain the specific problem in plain language, retain useful input, and offer a concrete recovery action. Include helpful empty and no-results states. |
+| 10 | Contextual help | Give concise, actionable guidance at the point of need; explain unfamiliar metrics and relevant demo limitations. |
+
+Check the relevant success, error, empty, disabled, and cancellation states in the implemented flow. Record unresolved issues and explain any heuristic that does not apply to the page. A heuristic review must describe what was actually checked; it does not establish a whole-app usability or accessibility certification.
 
 ## 3. Color system
 
@@ -295,6 +318,7 @@ Use the existing brand tokens instead of inventing near-identical colors. Apply 
 
 Before considering a restyled page complete:
 
+- All ten Nielsen heuristics have been considered for the page's actual tasks, with applicable behavior checked and unresolved gaps recorded.
 - Shared edges, spacing, font loading, heading hierarchy, and visual emphasis are consistent.
 - White panels, 14px corners, quiet borders, and restrained accents form one system.
 - Main actions are at least 48px tall; compact targets reach 44px; focus is visible.
@@ -308,7 +332,7 @@ Before considering a restyled page complete:
 
 Copy this instruction into a future page-change request:
 
-> Read `context.md` and `desgin langauge.md`, then inspect the target page and its dependencies. Restyle [page/file] using this design language. Choose a layout for that page's actual purpose. Preserve its working behavior, routes, data, validation, and state. Reuse the forest/sage/sand/cream palette, approved fonts, shared content edges, spacing, surfaces, and control rules. Keep edits scoped, distinguish recommended extensions from existing components, and check the changed page's relevant states and viewport sizes. Report what changed and what was verified.
+> Read `context.md` and `desgin langauge.md`, then inspect the target page and its dependencies. Restyle [page/file] using this design language and Nielsen's ten usability heuristics. Reuse applicable approved designs and choose a layout for that page's actual purpose. Preserve its working behavior, routes, data, validation, and state. Reuse the forest/sage/sand/cream palette, approved fonts, shared content edges, spacing, surfaces, and control rules. Keep edits scoped, distinguish recommended extensions from existing components, and check the changed page's relevant states and viewport sizes. Report what changed, what was verified, and any unresolved heuristic issues.
 
 ### Source map
 

@@ -1,0 +1,72 @@
+/* Both dashboards use the approved student navigation design. */
+.dashboard-carousel { width: 100%; }
+.dashboard-carousel-stage { position: relative; padding-inline: 56px; }
+.dashboard-carousel-track { position: relative; height: clamp(260px, 23vw, 330px); touch-action: pan-y pinch-zoom; }
+.dashboard-carousel-card {
+  position: absolute;
+  top: 50%;
+  left: 28%;
+  width: 44%;
+  height: 100%;
+  overflow: hidden;
+  transform: translateY(-50%);
+  border: 1px solid var(--color-sand);
+  border-radius: 18px;
+  background: #f2eee3;
+  box-shadow: 0 3px 8px rgb(30 59 47 / 8%);
+  text-align: left;
+  cursor: pointer;
+  transition: left 300ms ease, width 300ms ease, height 300ms ease, transform 180ms ease;
+}
+.dashboard-carousel-card-previous, .dashboard-carousel-card-next { width: 27%; height: 80%; border-color: color-mix(in srgb, var(--color-sand) 60%, white); }
+.dashboard-carousel-card-previous { left: 0; }
+.dashboard-carousel-card-next { left: 73%; }
+.dashboard-carousel-card:hover { transform: translateY(calc(-50% - 2px)); }
+.dashboard-carousel-backdrop, .dashboard-carousel-image { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; user-select: none; }
+.dashboard-carousel-backdrop { object-fit: cover; filter: blur(14px); opacity: 0.45; transform: scale(1.05); }
+.dashboard-carousel-image { object-fit: contain; }
+.dashboard-carousel-overlay { position: absolute; inset: auto 0 0; padding: 56px 20px 20px; background: linear-gradient(to top, rgb(30 59 47 / 98%), rgb(30 59 47 / 80%) 45%, transparent); color: var(--color-cream); }
+.dashboard-carousel-title { display: block; font-size: 1.625rem; font-weight: 700; line-height: 1.2; }
+.dashboard-carousel-card-active .dashboard-carousel-title { font-size: 2rem; }
+.dashboard-carousel-subtitle { display: block; margin-top: 4px; font-size: 1.125rem; }
+.dashboard-carousel .dashboard-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  transform: translateY(-50%);
+  border: 1px solid color-mix(in srgb, var(--color-sand) 50%, white);
+  border-radius: 50%;
+  background: white;
+  color: var(--color-forest);
+  box-shadow: 0 1px 2px rgb(30 59 47 / 5%);
+  font-size: 1.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+.dashboard-carousel-arrow:hover { background: var(--color-cream); }
+.dashboard-carousel-arrow:active { transform: translateY(-50%) scale(0.98); }
+.dashboard-carousel-previous { left: 0; }
+.dashboard-carousel-next { right: 0; }
+.dashboard-carousel-dots { display: flex; justify-content: center; }
+.dashboard-carousel-dot { display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer; }
+.dashboard-carousel-dot span { width: 12px; height: 12px; border: 1px solid var(--color-sage); border-radius: 50%; }
+.dashboard-carousel-dot[aria-current] span { border-color: var(--color-forest); background: var(--color-forest); }
+.dashboard-carousel button:focus-visible { outline: 2px solid var(--color-forest); outline-offset: 4px; }
+@media (max-width: 700px) {
+  .dashboard-carousel-stage { padding-inline: 0; }
+  .dashboard-carousel-track { overflow: hidden; }
+  .dashboard-carousel-card-active { left: 12%; width: 76%; }
+  .dashboard-carousel-card-previous { left: -66%; width: 76%; }
+  .dashboard-carousel-card-next { left: 90%; width: 76%; }
+  .dashboard-carousel-arrow { z-index: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-carousel-card, .dashboard-carousel-arrow { transition: none; }
+  .dashboard-carousel-card:hover { transform: translateY(-50%); }
+  .dashboard-carousel-arrow:active { transform: translateY(-50%); }
+}

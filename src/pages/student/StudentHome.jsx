@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
+import DashboardCarousel from "../../components/DashboardCarousel";
 import RadarChart from "../../components/RadarChart";
 import Toast from "../../components/Toast";
 import { studentData } from "../../data/studentData";
@@ -23,9 +24,7 @@ const deadlineFormatter = new Intl.DateTimeFormat("en-GB", {
 export default function StudentHome() {
   const navigate = useNavigate();
 
-  const [heroIndex, setHeroIndex] = useState(0);
   const schoolworkRef = useRef(null);
-  const swipeRef = useRef(null);
 
   // S2 & S3: File upload simulation for answer extraction scanner
   const [uploadedFiles, setUploadedFiles] = useState({});
@@ -44,16 +43,7 @@ export default function StudentHome() {
     ? (progressMetrics.reduce((total, metric) => total + metric.value, 0) / progressMetrics.length).toFixed(1)
     : null;
 
-  const handlePrevHero = () => {
-    setHeroIndex((prev) => (prev - 1 + studentData.heroSlides.length) % studentData.heroSlides.length);
-  };
-
-  const handleNextHero = () => {
-    setHeroIndex((prev) => (prev + 1) % studentData.heroSlides.length);
-  };
-
-  const handleHeroAction = () => {
-    const currentSlide = studentData.heroSlides[heroIndex];
+  const handleHeroAction = (currentSlide) => {
     if (currentSlide.id === "teachers") {
       navigate("/student/teachers");
     } else if (currentSlide.id === "grades") {
@@ -64,26 +54,6 @@ export default function StudentHome() {
         behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
         block: "start",
       });
-    }
-  };
-
-  const handleHeroKeyDown = (event) => {
-    if (event.key === "ArrowLeft") handlePrevHero();
-    else if (event.key === "ArrowRight") handleNextHero();
-    else if (event.key === "Home") setHeroIndex(0);
-    else if (event.key === "End") setHeroIndex(studentData.heroSlides.length - 1);
-    else return;
-    event.preventDefault();
-  };
-
-  const handleSwipeEnd = (event) => {
-    if (!swipeRef.current) return;
-    const dx = event.clientX - swipeRef.current.x;
-    const dy = event.clientY - swipeRef.current.y;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
-      swipeRef.current.swiped = true;
-      if (dx < 0) handleNextHero();
-      else handlePrevHero();
     }
   };
 
@@ -129,92 +99,12 @@ export default function StudentHome() {
           </p>
         </div>
 
-        <section
-          className="student-dashboard-carousel"
-          aria-label="Student navigation"
-          aria-roledescription="carousel"
-          onKeyDown={handleHeroKeyDown}
-        >
-          <div className="student-carousel-stage">
-            <button
-              type="button"
-              onClick={handlePrevHero}
-              className="carousel-nav-btn student-carousel-previous"
-              title="Previous slide"
-              aria-label="Previous slide"
-            >
-              ‹
-            </button>
-
-            <div
-              className="student-carousel-track"
-              onPointerDown={(event) => {
-                swipeRef.current = event.pointerType === "mouse" ? null : { x: event.clientX, y: event.clientY, swiped: false };
-              }}
-              onPointerUp={handleSwipeEnd}
-              onPointerCancel={() => { swipeRef.current = null; }}
-              onClickCapture={(event) => {
-                if (swipeRef.current?.swiped) {
-                  event.stopPropagation();
-                  swipeRef.current = null;
-                }
-              }}
-            >
-              {studentData.heroSlides.map((slide, index) => {
-                const isActive = index === heroIndex;
-                const position = isActive ? "active" : index === (heroIndex + 1) % studentData.heroSlides.length ? "next" : "previous";
-                return (
-                  <button
-                    key={slide.id}
-                    type="button"
-                    onClick={() => isActive ? handleHeroAction() : setHeroIndex(index)}
-                    className={`student-carousel-card student-carousel-card-${position}`}
-                    aria-label={isActive ? `Open ${slide.title}` : `Show ${slide.title}`}
-                  >
-                    <img src={heroImages[slide.id]} alt="" className="student-carousel-backdrop" draggable={false} />
-                    <img src={heroImages[slide.id]} alt="" className="student-carousel-image" draggable={false} />
-                    <span className="student-carousel-overlay">
-                      <span className="student-carousel-title">{slide.title}</span>
-                      {slide.id === "homeworks" && (
-                        <span className="student-carousel-subtitle">
-                          {pendingCount} pending {pendingCount === 1 ? "task" : "tasks"}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleNextHero}
-              className="carousel-nav-btn student-carousel-next"
-              title="Next slide"
-              aria-label="Next slide"
-            >
-              ›
-            </button>
-          </div>
-
-          <div className="student-carousel-dots">
-            {studentData.heroSlides.map((slide, i) => (
-              <button
-                key={slide.id}
-                type="button"
-                onClick={() => setHeroIndex(i)}
-                className="student-carousel-dot"
-                aria-label={`Show ${slide.title}`}
-                aria-current={heroIndex === i ? "true" : undefined}
-              >
-                <span />
-              </button>
-            ))}
-          </div>
-          <p className="sr-only" aria-live="polite" aria-atomic="true">
-            {studentData.heroSlides[heroIndex].title}, slide {heroIndex + 1} of {studentData.heroSlides.length}
-          </p>
-        </section>
+        <DashboardCarousel label="Student navigation"
+          slides={studentData.heroSlides.map((slide) => ({ ...slide,
+            image: heroImages[slide.id],
+            subtitle: slide.id === "homeworks" ? `${pendingCount} pending ${pendingCount === 1 ? "task" : "tasks"}` : undefined,
+          }))}
+          onOpen={handleHeroAction} />
 
         {/* Schoolwork */}
         <div
