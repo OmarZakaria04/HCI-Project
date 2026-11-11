@@ -1,7 +1,9 @@
 import { useRef, useState } from "react";
+import { useLanguage } from "../i18n/useLanguage";
 import "../styles/dashboard-carousel.css";
 
 export default function DashboardCarousel({ slides, label, onOpen }) {
+  const { tr } = useLanguage();
   const [activeIndex, setActiveIndex] = useState(0);
   const swipeRef = useRef(null);
   const previous = () => setActiveIndex((index) => (index - 1 + slides.length) % slides.length);
@@ -32,7 +34,7 @@ export default function DashboardCarousel({ slides, label, onOpen }) {
       aria-roledescription="carousel" onKeyDown={handleKeyDown}>
       <div className="dashboard-carousel-stage">
         <button type="button" onClick={previous}
-          className="dashboard-carousel-arrow dashboard-carousel-previous" aria-label="Previous slide">‹</button>
+          className="dashboard-carousel-arrow dashboard-carousel-previous" aria-label={tr("Previous slide", "Vorherige Folie")}>‹</button>
         <div className="dashboard-carousel-track"
           onPointerDown={(event) => {
             swipeRef.current = event.pointerType === "mouse" ? null : { x: event.clientX, y: event.clientY, swiped: false };
@@ -52,7 +54,7 @@ export default function DashboardCarousel({ slides, label, onOpen }) {
               <button key={slide.id} type="button"
                 onClick={() => isActive ? onOpen(slide) : setActiveIndex(index)}
                 className={`dashboard-carousel-card dashboard-carousel-card-${position}`}
-                aria-label={`${isActive ? "Open" : "Show"} ${slide.title}`}>
+                aria-label={`${isActive ? tr("Open", "Öffnen:") : tr("Show", "Anzeigen:")} ${slide.title}`}>
                 <img src={slide.image} alt="" className="dashboard-carousel-backdrop" draggable={false} />
                 <img src={slide.image} alt="" className="dashboard-carousel-image" draggable={false} />
                 <span className="dashboard-carousel-overlay">
@@ -64,17 +66,17 @@ export default function DashboardCarousel({ slides, label, onOpen }) {
           })}
         </div>
         <button type="button" onClick={next}
-          className="dashboard-carousel-arrow dashboard-carousel-next" aria-label="Next slide">›</button>
+          className="dashboard-carousel-arrow dashboard-carousel-next" aria-label={tr("Next slide", "Nächste Folie")}>›</button>
       </div>
       <div className="dashboard-carousel-dots">
         {slides.map((slide, index) => (
           <button key={slide.id} type="button" onClick={() => setActiveIndex(index)}
-            className="dashboard-carousel-dot" aria-label={`Show ${slide.title}`}
+            className="dashboard-carousel-dot" aria-label={`${tr("Show", "Anzeigen:")} ${slide.title}`}
             aria-current={activeIndex === index ? "true" : undefined}><span /></button>
         ))}
       </div>
       <p className="sr-only" aria-live="polite" aria-atomic="true">
-        {slides[activeIndex].title}, slide {activeIndex + 1} of {slides.length}
+        {slides[activeIndex].title}, {tr(`slide ${activeIndex + 1} of ${slides.length}`, `Folie ${activeIndex + 1} von ${slides.length}`)}
       </p>
     </section>
   );

@@ -1,401 +1,1264 @@
-@reference "../index.css";
+/* Scoped styles for the Parent Portal following the Zinger design language. */
+.parent-page {
+  --parent-muted: color-mix(in srgb, var(--color-forest) 85%, white);
+  --parent-border: color-mix(in srgb, var(--color-sand) 50%, white);
+  --parent-divider: color-mix(in srgb, var(--color-sand) 40%, white);
+  --parent-red: #b42318;
+  --parent-red-hover: #912018;
+  --parent-red-soft: #fef3f2;
+  --parent-red-border: #fecdca;
 
-/* Parent Layout & Container */
-.parent-page-wrapper {
-  @apply min-h-screen bg-cream/35 text-forest pb-16;
+  min-height: 100vh;
+  background: var(--color-cream);
+  color: var(--color-forest);
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.parent-page :is(h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote) {
+  margin: 0;
+}
+
+.parent-page :is(h1, h2, h3, h4) {
+  font-weight: 700;
+}
+
+.parent-page h1 {
+  font-size: 2.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.parent-page h2 {
+  font-size: 1.75rem;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+}
+
+.parent-page h3 {
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.parent-page h4 {
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.parent-page strong {
+  font-weight: 600;
+}
+
+.parent-page :is(h1, h2, h3, h4, p, li, dt, dd, td, th, a, button, label, span) {
+  overflow-wrap: anywhere;
+}
+
+.parent-page :is(a, button, input, select, textarea, [tabindex]) {
+  scroll-margin-block: 104px 24px;
+}
+
+.parent-page :is(a, button, input, select, textarea, [tabindex="0"]):focus-visible,
+.parent-dialog :is(a, button, input, select, textarea, [tabindex="0"]):focus-visible {
+  outline: 2px solid var(--color-forest);
+  outline-offset: 4px;
+}
+
+.parent-page h1[tabindex="-1"]:focus,
+.parent-page h2[tabindex="-1"]:focus,
+.parent-dialog [tabindex="-1"]:focus {
+  outline: none;
 }
 
 .parent-container {
-  @apply max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-4;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1248px;
+  margin-inline: auto;
+  padding: 24px 24px 64px;
 }
 
-/* Sub-header Bar (Child Selector, Breadcrumb & Back Button) */
-.parent-subbar {
-  @apply bg-white/90 backdrop-blur-md border-b border-sand/40 sticky top-18 z-40 px-4 py-2.5 transition-all;
+.parent-meta {
+  font-size: 1rem;
+  color: var(--parent-muted);
 }
+
+.parent-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Page intro & Child switcher */
+.parent-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.parent-back-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 8px;
+  min-height: 48px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-forest);
+  text-decoration: none;
+  text-underline-offset: 4px;
+}
+
+.parent-back-link:hover {
+  text-decoration: underline;
+}
+
+.parent-intro-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+}
+
+.parent-intro-copy {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.parent-intro-subtitle {
+  margin-top: 8px;
+  color: var(--parent-muted);
+}
+
+.parent-child-switcher {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.parent-child-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 8px 18px;
+  border: 1px solid color-mix(in srgb, var(--color-sand) 60%, white);
+  border-radius: 12px;
+  background: white;
+  color: var(--color-forest);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.parent-child-btn:hover {
+  background: color-mix(in srgb, var(--color-sand) 20%, white);
+}
+
+.parent-child-btn[aria-pressed="true"] {
+  border-color: var(--color-forest);
+  background: var(--color-forest);
+  color: var(--color-cream);
+}
+
+.parent-child-btn:active {
+  transform: scale(0.98);
+}
+
+/* Panels */
+.parent-panel {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--parent-border);
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 1px 2px rgb(30 59 47 / 3%);
+}
+
+.parent-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--parent-divider);
+}
+
+.parent-panel-heading-copy {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.parent-panel-heading-copy > p {
+  margin-top: 4px;
+}
+
+/* Accessible inline notice banner */
+.parent-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  padding: 16px 24px;
+  border: 1px solid var(--color-sand);
+  border-radius: 14px;
+  background: white;
+}
+
+.parent-notice > p {
+  flex: 1 1 240px;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.parent-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Buttons & actions */
+.parent-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 20px;
+  border: 1px solid color-mix(in srgb, var(--color-sand) 60%, white);
+  border-radius: 12px;
+  background: white;
+  color: var(--color-forest);
+  font: inherit;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.parent-button:hover:not(:disabled) {
+  background: var(--color-cream);
+}
+
+.parent-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.parent-button:disabled {
+  background: var(--color-cream);
+  color: var(--parent-muted);
+  border-color: var(--parent-border);
+  border-style: dashed;
+  cursor: not-allowed;
+}
+
+.parent-button-primary {
+  border-color: var(--color-forest);
+  background: var(--color-forest);
+  color: var(--color-cream);
+}
+
+.parent-button-primary:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--color-forest) 90%, transparent);
+}
+
+.parent-button-quiet {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-color: var(--parent-border);
+  background: color-mix(in srgb, var(--color-sand) 20%, white);
+  font-size: 1rem;
+}
+
+.parent-button-quiet:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-sand) 35%, white);
+}
+
+.parent-button-quiet[aria-pressed="true"] {
+  border-color: var(--color-forest);
+  background: var(--color-forest);
+  color: var(--color-cream);
+}
+
+.parent-button-danger {
+  border-color: var(--parent-red);
+  background: var(--parent-red);
+  color: white;
+}
+
+.parent-button-danger:hover:not(:disabled) {
+  border-color: var(--parent-red-hover);
+  background: var(--parent-red-hover);
+}
+
+.parent-button-danger-outline {
+  border-color: var(--parent-red-border);
+  background: white;
+  color: var(--parent-red);
+}
+
+.parent-button-danger-outline:hover:not(:disabled) {
+  background: var(--parent-red-soft);
+}
+
+.parent-icon-inline {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Form controls */
+.parent-field {
+  display: grid;
+  gap: 8px;
+}
+
+.parent-field label {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.parent-input,
+.parent-select,
+.parent-textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid var(--parent-muted);
+  border-radius: 12px;
+  background: white;
+  color: var(--color-forest);
+  font: inherit;
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.parent-select {
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
+
+.parent-textarea {
+  resize: vertical;
+}
+
+.parent-input::placeholder,
+.parent-textarea::placeholder {
+  color: var(--parent-muted);
+  opacity: 1;
+}
+
+.parent-field-error {
+  color: var(--parent-red);
+  font-size: 1rem;
+  font-weight: 600;
+}
 
-.parent-subbar-inner {
-  @apply max-w-5xl mx-auto flex items-center justify-between gap-3;
+/* Divided lists */
+.parent-divided-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.back-btn {
-  @apply inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-semibold text-forest bg-sand/20 hover:bg-sand/35 transition-colors border border-sand/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-sand;
+.parent-divided-list > li {
+  padding-block: 20px;
+  border-bottom: 1px solid var(--parent-divider);
 }
 
-.child-selector-group {
-  @apply flex items-center gap-1.5 bg-cream/70 p-1 rounded-xl border border-sand/40 shadow-xs;
+.parent-divided-list > li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
-.child-tab-btn {
-  @apply h-8 px-3.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none text-forest/75 hover:text-forest focus-visible:ring-2 focus-visible:ring-sand;
+.parent-empty {
+  padding-top: 24px;
+  color: var(--parent-muted);
 }
 
-.child-tab-btn-active {
-  @apply bg-forest text-cream shadow-sm font-extrabold;
+/* Urgent alert banner on Home and Emergency */
+.parent-alert-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  padding: 20px 24px;
+  border: 1px solid var(--parent-red-border);
+  border-left: 4px solid var(--parent-red);
+  border-radius: 14px;
+  background: var(--parent-red-soft);
+  color: var(--color-forest);
 }
 
-/* ========================================================
-   HCI CHECKLIST: Standardized Buttons (Nielsen H4 Consistency)
-======================================================== */
-.btn-primary {
-  @apply h-10 px-4 rounded-xl bg-forest hover:bg-forest/90 active:scale-98 text-cream font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-sand disabled:opacity-50 disabled:cursor-not-allowed;
+.parent-alert-banner-copy {
+  flex: 1 1 320px;
+  min-width: 0;
 }
 
-.btn-secondary {
-  @apply h-10 px-4 rounded-xl bg-white hover:bg-cream border border-sand/60 active:scale-98 text-forest font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-sand disabled:opacity-50 disabled:cursor-not-allowed;
+.parent-alert-kicker {
+  color: var(--parent-red);
+  font-size: 1rem;
+  font-weight: 700;
 }
 
-.btn-ghost {
-  @apply h-10 px-4 rounded-xl bg-sand/20 hover:bg-sand/35 text-forest font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-sand;
+.parent-alert-banner-copy h2 {
+  margin-top: 4px;
+  font-size: 1.375rem;
 }
 
-.btn-destructive {
-  @apply h-10 px-4 rounded-xl bg-red-700 hover:bg-red-800 text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-red-400;
+.parent-alert-banner-copy p {
+  margin-top: 4px;
 }
 
-/* Nielsen H6 (Recognition over Recall) Suggestion Chips */
-.suggestion-chip {
-  @apply px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-sand/20 hover:bg-sand/35 text-forest border border-sand/50 transition-all cursor-pointer select-none focus-visible:ring-2 focus-visible:ring-sand active:scale-95;
+/* Dashboard progress & subjects */
+.parent-progress-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 24px;
 }
 
-.suggestion-chip-active {
-  @apply bg-forest text-cream border-forest font-bold shadow-2xs;
+.parent-progress-overall {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 20px;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
-/* Nielsen H1 (Status) Loading Spinner */
-.loading-spinner {
-  @apply inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin;
+.parent-progress-overall strong {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Wireframe Hero Banners (Desaturated background, solid clear focus) */
-.wireframe-hero {
-  @apply relative w-full bg-sand/25 border border-sand/60 rounded-2xl p-6 sm:p-8 text-center shadow-xs overflow-hidden;
+.parent-progress-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  margin-block: 24px;
 }
 
-.wireframe-hero-title {
-  @apply text-xl sm:text-2xl font-extrabold tracking-wide text-forest uppercase;
+.parent-radar {
+  min-width: 0;
+  padding-inline: 16px;
 }
 
-.wireframe-hero-subtitle {
-  @apply text-xs text-forest/75 mt-1 font-medium;
+.parent-radar svg {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
 }
 
-/* Carousel Nav Buttons for Hero */
-.hero-nav-link-left {
-  @apply absolute left-3 top-1/2 -translate-y-1/2 px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase bg-white text-forest rounded-lg shadow-sm border border-sand/50 hover:bg-cream hover:scale-105 transition-all;
+.parent-radar text {
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
 }
 
-.hero-nav-link-right {
-  @apply absolute right-3 top-1/2 -translate-y-1/2 px-2.5 py-1 text-[11px] font-bold tracking-wider uppercase bg-white text-forest rounded-lg shadow-sm border border-sand/50 hover:bg-cream hover:scale-105 transition-all;
+.parent-score-bars {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-/* Section Card */
-.parent-card {
-  @apply bg-white rounded-2xl border border-sand/40 p-5 sm:p-6 shadow-sm;
+.parent-score-bar-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-.parent-card-header {
-  @apply flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-sand/20;
+.parent-score-bar-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--color-cream);
 }
 
-.parent-card-title {
-  @apply text-sm sm:text-base font-bold text-forest tracking-wider uppercase flex items-center gap-2;
+.parent-score-bar-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-sage);
 }
 
-/* P1. Teacher Review Verification Badge */
-.verified-review-badge {
-  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sage/20 text-forest border border-sage/40 shadow-xs;
+.parent-divider-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--parent-divider);
 }
 
-/* Strengths & Topics to Work On Grids */
-.strength-card {
-  @apply p-4 rounded-xl bg-sage/10 border border-sage/30 flex items-start gap-3;
+.parent-divider-section h3 {
+  margin-bottom: 12px;
 }
 
-.work-on-card {
-  @apply p-4 rounded-xl bg-sand/20 border border-sand/40 flex items-start gap-3;
+.parent-bullet-list {
+  margin: 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 8px;
 }
 
-/* P3. Progress History Comparison Table */
-.comparison-table-wrap {
-  @apply overflow-x-auto rounded-xl border border-sand/30 bg-white;
+.parent-check-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
 }
 
-.comparison-table {
-  @apply w-full text-left text-xs border-collapse;
+.parent-check-list > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
 }
 
-.comparison-table th {
-  @apply bg-cream/70 text-forest font-bold p-3 border-b border-sand/30 text-center uppercase tracking-wider;
+.parent-check-icon {
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  color: var(--color-sage);
+  flex-shrink: 0;
 }
 
-.comparison-table td {
-  @apply p-3 border-b border-sand/20 text-center font-medium text-forest;
+.parent-progress-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  height: 100%;
 }
 
-.trend-badge-up {
-  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-100 text-green-800 border border-green-200;
+.parent-progress-sidebar > .parent-panel:last-child {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-/* P4. Exam Tickets List & Modal */
-.ticket-row-card {
-  @apply p-4 rounded-xl border border-sand/30 bg-cream/25 hover:bg-cream/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3;
+.parent-progress-sidebar > .parent-panel:last-child > :is(.parent-divided-list, .parent-empty) {
+  margin-bottom: auto;
 }
 
-.ticket-status-badge {
-  @apply px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border;
+.parent-sidebar-action {
+  margin-top: 20px;
+  width: 100%;
 }
 
-.ticket-status-approved {
-  @apply bg-green-50 text-green-800 border-green-300;
+.parent-subject-item {
+  display: grid;
+  gap: 6px;
 }
 
-.ticket-status-pending {
-  @apply bg-amber-50 text-amber-800 border-amber-300;
+.parent-subject-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
 }
 
-.ticket-status-none {
-  @apply bg-gray-50 text-gray-700 border-gray-300;
+.parent-subject-grade {
+  font-size: 1.125rem;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Exam Question Review */
-.question-review-card {
-  @apply p-4 rounded-xl border transition-all;
+.parent-subject-action {
+  margin-top: 8px;
+  width: 100%;
 }
 
-.question-review-correct {
-  @apply bg-green-50/50 border-green-200;
+/* Tabs (ParentGrades) */
+.parent-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.question-review-mistake {
-  @apply bg-red-50/40 border-red-200;
+.parent-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 8px 20px;
+  border: 1px solid color-mix(in srgb, var(--color-sand) 60%, white);
+  border-radius: 12px;
+  background: white;
+  color: var(--color-forest);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 150ms ease;
 }
 
-/* P6. Meetings & Booking */
-.meeting-slot-pill {
-  @apply h-8 px-3 rounded-lg text-xs font-semibold border border-sand/50 bg-white text-forest hover:bg-sand/25 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-sand flex items-center justify-center;
+.parent-tab:hover {
+  background: var(--color-cream);
 }
 
-.meeting-slot-pill-active {
-  @apply bg-forest text-cream border-forest font-bold;
+.parent-tab[aria-selected="true"] {
+  border-color: var(--color-forest);
+  background: var(--color-forest);
+  color: var(--color-cream);
 }
 
-/* P7. Emergency Channel (Dedicated Alert Styling) */
-.emergency-banner-alert {
-  @apply bg-red-50 border-2 border-red-300 rounded-2xl p-5 shadow-sm text-red-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4;
+.parent-tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.emergency-card-row {
-  @apply p-4 rounded-xl border-l-4 transition-all;
+.parent-report-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding-top: 24px;
 }
 
-.emergency-card-alert {
-  @apply bg-red-50/60 border-l-red-600 border border-red-200;
+.parent-report-copy {
+  flex: 1 1 320px;
+  min-width: 0;
 }
 
-.emergency-card-info {
-  @apply bg-sand/20 border-l-sand border border-sand/40;
+.parent-report-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 12px;
+  font-size: 1rem;
 }
 
-/* P8. Behavioral Concerns & Action Plan */
-.behavior-card {
-  @apply p-5 rounded-2xl border border-sand/40 bg-white shadow-xs space-y-3;
+.parent-report-facts > div {
+  display: flex;
+  gap: 6px;
 }
 
-.behavior-status-badge {
-  @apply px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border;
+.parent-report-facts dt {
+  color: var(--parent-muted);
 }
 
-.home-action-box {
-  @apply p-3.5 rounded-xl bg-sand/20 border-l-4 border-sage space-y-1.5 text-xs text-forest;
+.parent-report-facts dd {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-/* General Subjects & Layouts from wireframe */
-.subjects-grid {
-  @apply grid grid-cols-1 md:grid-cols-3 gap-4;
+.parent-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.subject-item-card {
-  @apply bg-cream/40 rounded-xl border border-sand/40 p-4 transition-all hover:shadow-md hover:border-sage/50 flex flex-col justify-between;
+.parent-subject-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  padding-top: 20px;
 }
 
-.subject-badge-title {
-  @apply text-xs font-black tracking-wider uppercase px-2.5 py-1 rounded bg-sand/30 text-forest inline-block self-start;
+.parent-subject-select-wrap {
+  flex: 1 1 260px;
+  max-width: 360px;
 }
 
-.subject-deadline-box {
-  @apply mt-3 p-2.5 rounded-lg bg-white border border-sand/30;
+.parent-subject-step-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.subject-subhead {
-  @apply text-[11px] font-bold uppercase tracking-wider text-forest/70;
+.parent-table-scroll {
+  min-width: 0;
+  overflow-x: auto;
+  margin-top: 20px;
+  border: 1px solid var(--parent-divider);
+  border-radius: 12px;
 }
 
-.subject-subtext {
-  @apply text-xs font-semibold text-forest mt-0.5;
+.parent-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
 }
 
-.subject-grade-box {
-  @apply mt-2.5 p-2.5 rounded-lg bg-forest/5 border border-forest/15 flex items-center justify-between;
+.parent-table :is(th, td) {
+  padding: 16px;
+  border-bottom: 1px solid var(--parent-divider);
+  vertical-align: top;
 }
 
-.subject-grade-val {
-  @apply text-sm font-extrabold text-forest;
+.parent-table thead {
+  background: var(--color-cream);
 }
 
-/* Analysis Layout */
-.analysis-layout {
-  @apply grid grid-cols-1 lg:grid-cols-12 gap-6 items-center;
+.parent-table th {
+  font-weight: 600;
 }
 
-.analysis-info {
-  @apply lg:col-span-7 space-y-4 text-xs;
+.parent-table tbody tr:last-child > * {
+  border-bottom: 0;
 }
 
-.analysis-label {
-  @apply font-black text-forest tracking-wider uppercase text-[11px];
+.parent-table tbody tr:hover {
+  background: color-mix(in srgb, var(--color-cream) 45%, white);
 }
 
-.analysis-list {
-  @apply space-y-1.5 pl-4 list-disc text-forest/80 leading-relaxed;
+.parent-two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
 }
 
-.analysis-takeaway-box {
-  @apply p-3 rounded-xl bg-sand/15 border-l-4 border-sage text-forest/90 font-medium;
+.parent-ticket-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px 24px;
 }
 
-.analysis-chart-col {
-  @apply lg:col-span-5 flex flex-col items-center justify-center bg-cream/30 rounded-2xl p-4 border border-sand/30;
+.parent-ticket-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
 }
 
-.chart-title-caption {
-  @apply text-xs font-extrabold text-forest uppercase tracking-wider mt-2;
+.parent-status-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border: 1px solid var(--parent-border);
+  border-radius: 8px;
+  background: var(--color-cream);
+  color: var(--color-forest);
+  font-size: 1rem;
+  font-weight: 600;
 }
 
-.chart-highlight-pill {
-  @apply mt-2 text-[11px] font-bold px-3 py-1 bg-sage/20 text-forest rounded-full border border-sage/40 text-center;
+.parent-status-tag-urgent {
+  border-color: var(--parent-red-border);
+  background: var(--parent-red-soft);
+  color: var(--parent-red);
 }
 
-/* Teachers Carousel & Cards */
-.teachers-carousel-wrap {
-  @apply relative flex items-center justify-center gap-4 py-4;
+/* Teachers & Meetings */
+.parent-teacher-row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px 24px;
 }
 
-.carousel-arrow-btn {
-  @apply w-9 h-9 rounded-full bg-white border border-sand/50 shadow-sm flex items-center justify-center text-forest hover:bg-cream transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-sand;
+.parent-avatar {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--color-cream);
+  color: var(--color-forest);
+  font-size: 1.125rem;
+  font-weight: 600;
 }
 
-.teacher-cards-grid {
-  @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 w-full;
+.parent-teacher-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.teacher-card {
-  @apply bg-cream/40 rounded-2xl border border-sand/40 p-5 flex flex-col items-center text-center shadow-xs hover:shadow-md transition-all;
+.parent-meeting-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px 24px;
 }
 
-.teacher-avatar-circle {
-  @apply w-20 h-20 rounded-full flex items-center justify-center text-cream font-bold text-lg shadow-md mb-3 ring-4 ring-sand/30;
+.parent-slot-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.teacher-name {
-  @apply text-base font-black text-forest;
+.parent-slot-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
 }
 
-.teacher-subject-tag {
-  @apply text-xs font-semibold text-forest/75 mb-4;
+.parent-slot-fieldset legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
-.teacher-chat-btn {
-  @apply w-full h-10 px-4 rounded-xl bg-forest text-cream font-bold text-xs hover:bg-forest/90 transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer focus-visible:ring-2 focus-visible:ring-sand;
+/* Chat workspace */
+.parent-chat-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
 }
 
-/* Chat Screen */
-.chat-window {
-  @apply bg-white rounded-2xl border border-sand/40 overflow-hidden shadow-sm flex flex-col h-[520px];
+.parent-chat-directory {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
 }
 
-.chat-messages-scroll {
-  @apply flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-cream/20;
+.parent-chat-teacher-link {
+  display: grid;
+  gap: 2px;
+  min-height: 48px;
+  padding: 12px 16px;
+  border: 1px solid var(--parent-divider);
+  border-radius: 12px;
+  color: var(--color-forest);
+  text-decoration: none;
+  transition: background-color 150ms ease;
 }
 
-.chat-bubble-row {
-  @apply flex items-end gap-2.5 max-w-[80%];
+.parent-chat-teacher-link:hover {
+  background: var(--color-cream);
 }
 
-.chat-bubble-row-teacher {
-  @apply mr-auto;
+.parent-chat-teacher-link[aria-current="page"] {
+  border-color: var(--color-forest);
+  background: color-mix(in srgb, var(--color-sand) 25%, white);
 }
 
-.chat-bubble-row-parent {
-  @apply ml-auto flex-row-reverse;
+.parent-chat-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.chat-avatar-mini {
-  @apply w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-xs;
+.parent-chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 240px;
+  max-height: 400px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px;
+  border: 1px solid var(--parent-border);
+  border-radius: 12px;
+  background: var(--color-cream);
 }
 
-.chat-bubble {
-  @apply p-3.5 rounded-2xl text-xs leading-relaxed shadow-xs;
+.parent-chat-message {
+  display: grid;
+  gap: 6px;
+  flex-shrink: 0;
+  max-width: 88%;
+  padding: 16px;
+  border-radius: 12px;
 }
 
-.chat-bubble-teacher {
-  @apply bg-white border border-sand/40 text-forest rounded-bl-xs;
+.parent-chat-teacher {
+  align-self: flex-start;
+  border: 1px solid var(--parent-border);
+  background: white;
 }
 
-.chat-bubble-parent {
-  @apply bg-forest text-cream rounded-br-xs;
+.parent-chat-parent {
+  align-self: flex-end;
+  background: var(--color-forest);
+  color: var(--color-cream);
 }
 
-.chat-time {
-  @apply text-[9px] mt-1 block opacity-75;
+.parent-chat-author {
+  font-size: 1rem;
+  font-weight: 600;
 }
 
-.chat-input-bar {
-  @apply p-3 bg-white border-t border-sand/30 flex items-center gap-2;
+.parent-chat-time {
+  font-size: 1rem;
+  opacity: 0.85;
 }
 
-.chat-input-field {
-  @apply flex-1 h-10 rounded-xl bg-cream/50 border border-sand/40 px-4 text-xs text-forest focus:outline-none focus:ring-2 focus:ring-sand;
+.parent-starter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.chat-send-btn {
-  @apply w-10 h-10 rounded-xl bg-forest text-cream flex items-center justify-center font-bold hover:bg-forest/90 transition-all cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-sand;
+.parent-composer-form {
+  display: grid;
+  gap: 12px;
 }
 
-/* Grades Table */
-.grades-table-wrap {
-  @apply overflow-x-auto rounded-xl border border-sand/30 bg-white;
+.parent-composer-form > button {
+  justify-self: end;
 }
 
-.grades-table {
-  @apply w-full text-left text-xs border-collapse;
+/* Behavior */
+.parent-observation-quote {
+  margin-top: 12px;
+  padding: 16px;
+  border-left: 3px solid var(--color-sage);
+  border-radius: 0 12px 12px 0;
+  background: var(--color-cream);
 }
 
-.grades-table th {
-  @apply bg-cream/70 text-forest font-bold p-3 border-b border-sand/30 text-center uppercase tracking-wider;
+.parent-action-plan {
+  margin-top: 16px;
 }
 
-.grades-table td {
-  @apply p-3 border-b border-sand/20 text-center font-medium text-forest;
+.parent-action-plan h4 {
+  margin-bottom: 8px;
 }
 
-.grades-table tr:last-child td {
-  @apply border-b-0;
+.parent-inline-reply {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
 }
 
-.grades-table tr:hover td {
-  @apply bg-cream/25;
+.parent-inline-reply > input {
+  flex: 1 1 260px;
 }
 
-/* Subject selection pills on Grades page */
-.subject-pill-btn {
-  @apply h-8 px-5 rounded-xl text-xs font-black transition-all cursor-pointer border border-sand/50 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-sand;
+/* Emergency */
+.parent-emergency-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
 }
 
-.subject-pill-btn-active {
-  @apply bg-forest text-cream shadow-sm border-forest;
+.parent-emergency-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
 }
+
+.parent-emergency-record {
+  padding-left: 16px;
+  border-left: 3px solid var(--color-sand);
+}
+
+.parent-emergency-record-alert {
+  border-left-color: var(--parent-red);
+}
+
+.parent-hotline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+/* Native dialogs */
+.parent-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(580px, calc(100% - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  border: 1px solid var(--color-sand);
+  border-radius: 16px;
+  background: white;
+  color: var(--color-forest);
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  box-shadow: 0 16px 48px rgb(0 0 0 / 20%);
+}
+
+.parent-dialog-wide {
+  width: min(760px, calc(100% - 32px));
+}
+
+.parent-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.parent-dialog::backdrop {
+  background: rgb(0 0 0 / 45%);
+}
+
+body:has(.parent-dialog[open]) {
+  overflow: hidden;
+}
+
+.parent-dialog-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.parent-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 16px;
+  padding: 24px;
+  border-bottom: 1px solid var(--parent-divider);
+}
+
+.parent-dialog-header > div {
+  min-width: 0;
+}
+
+.parent-dialog-header h2 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.parent-dialog-header p {
+  margin: 4px 0 0;
+}
+
+.parent-dialog-close {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: white;
+  color: var(--color-forest);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.parent-dialog-close:hover {
+  background: var(--color-cream);
+}
+
+.parent-dialog-body {
+  display: grid;
+  gap: 20px;
+  min-height: 0;
+  padding: 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.parent-dialog-footer {
+  display: grid;
+  flex-shrink: 0;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid var(--parent-divider);
+  background: white;
+}
+
+.parent-dialog-footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.parent-dialog-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 24px;
+  margin: 0;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--parent-divider);
+}
+
+.parent-dialog-facts dt {
+  font-size: 1rem;
+  color: var(--parent-muted);
+}
+
+.parent-dialog-facts dd {
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+
+.parent-question-answer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.parent-answer-box {
+  padding: 12px 16px;
+  border: 1px solid var(--parent-divider);
+  border-radius: 12px;
+  background: var(--color-cream);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1099px) {
+  .parent-progress-layout,
+  .parent-emergency-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .parent-two-col,
+  .parent-chat-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .parent-teacher-row {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .parent-teacher-actions {
+    grid-column: 1 / -1;
+  }
+
+  .parent-ticket-row,
+  .parent-meeting-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 639px) {
+  .parent-progress-charts,
+  .parent-dialog-facts,
+  .parent-question-answer-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .parent-chat-message {
+    max-width: 100%;
+  }
+
+  .parent-composer-form > button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .parent-dialog-header,
+  .parent-dialog-body,
+  .parent-dialog-footer {
+    padding: 20px;
+  }
+
+  .parent-dialog-footer-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parent-page :is(.parent-button, .parent-child-btn, .parent-tab, .parent-chat-teacher-link),
+  .parent-dialog :is(.parent-button, .parent-dialog-close) {
+    transition: none;
+    transform: none !important;
+  }
+}
+
+/* Print ONLY the report card dialog when open */
+@media print {
+  body:has(.parent-page) {
+    overflow: visible;
+  }
+
+  .parent-page {
+    min-height: 0;
+    background: white;
+  }
+
+  .parent-page > .site-header,
+  .parent-container,
+  .parent-dialog-close,
+  .parent-dialog-footer,
+  .parent-dialog:not([open]) {
+    display: none;
+  }
+
+  .parent-dialog[open] {
+    position: static;
+    display: block;
+    width: 100%;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .parent-dialog::backdrop {
+    background: transparent;
+  }
+
+  .parent-dialog-content {
+    display: block;
+  }
+
+  .parent-dialog-header {
+    padding: 0 0 20px;
+  }
+
+  .parent-dialog-body {
+    padding: 20px 0 0;
+    overflow: visible;
+  }
+
+  .parent-table-scroll {
+    overflow: visible;
+  }
+
+  .parent-table {
+    min-width: 0;
+  }
 
-.subject-pill-btn-inactive {
-  @apply bg-white text-forest/75 hover:bg-cream;
+  .parent-table tr {
+    break-inside: avoid;
+  }
 }

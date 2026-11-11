@@ -1,19 +1,23 @@
+import { useLanguage } from "../i18n/useLanguage";
+
 /**
  * Circular Radar / Metrics Graph matching the wireframe's "Child Graph" & "Metrics Graph"
  */
 export default function RadarChart({
-  data = [
-    { label: "Math", value: 90 },
-    { label: "Science", value: 95 },
-    { label: "Languages", value: 85 },
-    { label: "History", value: 88 },
-    { label: "Classwork", value: 92 },
-  ],
+  data,
   size = 220,
 }) {
+  const { tr } = useLanguage();
+  const chartData = data ?? [
+    { label: tr("Math", "Mathematik"), value: 90 },
+    { label: tr("Science", "Naturwissenschaften"), value: 95 },
+    { label: tr("Languages", "Sprachen"), value: 85 },
+    { label: tr("History", "Geschichte"), value: 88 },
+    { label: tr("Classwork", "Mitarbeit"), value: 92 },
+  ];
   const center = size / 2;
   const radius = size * 0.38;
-  const count = data.length;
+  const count = chartData.length;
 
   // Compute vertex coordinates
   const getCoordinates = (index, valuePercent) => {
@@ -29,7 +33,7 @@ export default function RadarChart({
   const levels = [25, 50, 75, 100];
 
   // Polygon points for data values
-  const polygonPoints = data
+  const polygonPoints = chartData
     .map((item, i) => {
       const { x, y } = getCoordinates(i, item.value);
       return `${x},${y}`;
@@ -66,7 +70,7 @@ export default function RadarChart({
         })}
 
         {/* Spokes from center to edge */}
-        {data.map((_, i) => {
+        {chartData.map((_, i) => {
           const { x, y } = getCoordinates(i, 100);
           return (
             <line
@@ -92,7 +96,7 @@ export default function RadarChart({
         />
 
         {/* Vertices & value labels */}
-        {data.map((item, i) => {
+        {chartData.map((item, i) => {
           const point = getCoordinates(i, item.value);
           const labelPos = getCoordinates(i, 118);
 

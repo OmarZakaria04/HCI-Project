@@ -33,6 +33,47 @@
   padding: 48px;
 }
 
+.login-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.login-brand-row .lang-switcher {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border: 1px solid color-mix(in srgb, var(--color-sage) 45%, white);
+  border-radius: 10px;
+  background: var(--color-cream);
+}
+
+.login-brand-row .lang-switcher-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: var(--color-forest);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-brand-row .lang-switcher-btn.is-active {
+  background: var(--color-forest);
+  color: var(--color-cream);
+}
+
+.login-brand-row .lang-switcher-btn:focus-visible {
+  outline: 2px solid var(--color-forest);
+  outline-offset: 2px;
+}
+
 .login-brand {
   margin: 0;
   font-family: "Bree Serif", Georgia, serif;
@@ -155,6 +196,22 @@
   color: #a12b25;
   font-size: 16px;
   line-height: 1.5;
+}
+
+.login-help-note {
+  margin: -4px 0 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-sand);
+  border-radius: 8px;
+  background: white;
+  color: var(--color-forest);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.login-demo-grid {
+  display: grid;
+  gap: 8px;
 }
 
 .login-button,

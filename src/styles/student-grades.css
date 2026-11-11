@@ -32,6 +32,15 @@
 .student-grades strong { font-weight: 600; }
 .student-grades :is(h1, h2, h3, p, dd, td, th) { overflow-wrap: anywhere; }
 .student-grades .grades-meta { font-size: 1rem; color: var(--grades-muted); }
+.grades-confirmed-pill {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-cream);
+  border: 1px solid var(--grades-border);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-forest);
+}
 .grades-intro > p { margin-top: 8px; color: var(--grades-muted); }
 .grades-intro h1:focus { outline: none; }
 

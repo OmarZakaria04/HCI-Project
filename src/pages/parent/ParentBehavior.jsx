@@ -1,249 +1,264 @@
 import { useState } from "react";
 import Header from "../../components/Header";
-import ParentChildBar from "../../components/ParentChildBar";
-import Toast from "../../components/Toast";
-import { parentData } from "../../data/parentData";
+import { translateValue, useLanguage } from "../../i18n/useLanguage";
+import { getTeacherData } from "../../i18n/teacherDataDe";
+import { getTeacherCommState } from "../../utils/teacherStore";
+import {
+  getParentBehaviorNotesMap,
+  saveParentBehaviorNote,
+} from "../../utils/parentStore";
+import ParentPageIntro, { ParentNotice } from "./ParentPageIntro";
+import { useActiveChild } from "./useActiveChild";
 import "../../styles/parent.css";
 
-// Nielsen H6 Recognition over Recall: Quick Home Update Chips
-const HOME_UPDATE_PRESETS = [
-  "Reviewed step-by-step calculation proofs together over the weekend.",
-  "Practiced dinner table debate; confidence notably improved.",
-  "Set up 15-minute quiet focus block before dinner.",
-  "Reinforced double-checking minus signs and algebraic signs.",
-];
-
 export default function ParentBehavior() {
-  const [activeChildId, setActiveChildId] = useState(() => {
-    return localStorage.getItem("parent_active_child") || "ahmed";
-  });
-
-  const handleSelectChild = (id) => {
-    setActiveChildId(id);
-    localStorage.setItem("parent_active_child", id);
-  };
-
-  const child =
-    parentData.children.find((c) => c.id === activeChildId) ||
-    parentData.children[0];
-
-  const [concerns, setConcerns] = useState(child.behavioralConcerns || []);
+  const { lang, tr } = useLanguage();
+  const { activeChildId, child, selectChild } = useActiveChild();
+  const [savedNotesByChild, setSavedNotesByChild] = useState(() =>
+    getParentBehaviorNotesMap()
+  );
   const [replyTextMap, setReplyTextMap] = useState({});
   const [loadingConcernId, setLoadingConcernId] = useState(null);
-  const [toastMessage, setToastMessage] = useState(null);
+  const [notice, setNotice] = useState(null);
 
-  const handleSendParentReply = (concernId) => {
+  const presets = [
+    tr(
+      "Reviewed step-by-step calculation checks together over the weekend.",
+      "Am Wochenende gemeinsam schrittweise Rechenkontrollen geübt."
+    ),
+    tr(
+      "Practiced brief discussion turns at dinner to build speaking confidence.",
+      "Beim Abendessen kurze Gesprächsrunden geübt, um das freie Sprechen zu stärken."
+    ),
+    tr(
+      "Set up a 15-minute quiet focus block before homework.",
+      "Eine 15-minütige ruhige Konzentrationsphase vor den Hausaufgaben eingeführt."
+    ),
+    tr(
+      "Practiced double-checking signs and showing intermediate steps.",
+      "Das Prüfen von Vorzeichen und Aufschreiben der Zwischenschritte geübt."
+    ),
+  ];
+
+  const teacherComm = getTeacherCommState();
+  const teacherLogs = [
+    ...(teacherComm.addedBehaviors || []),
+    ...(getTeacherData(lang).teacherCommunication?.behaviorLogs || []),
+  ]
+    .map((entry) => {
+      const patch = teacherComm.behaviorPatches?.[entry.id];
+      return patch ? { ...entry, ...patch } : entry;
+    })
+    .filter((entry) => entry.studentName === child.name && entry.sharedWithParent)
+    .map((entry) => ({
+      id: entry.id,
+      teacher: tr("Class teacher", "Klassenleitung"),
+      subject: tr("Classroom observation", "Unterrichtsbeobachtung"),
+      date: entry.date,
+      category: entry.category,
+      status: "Shared by teacher",
+      concern: entry.note,
+      homeActionPlan: entry.homeTip ? [entry.homeTip] : [],
+    }));
+
+  const concerns = [...teacherLogs, ...(child.behavioralConcerns || [])].map((item) => {
+    const updatedNote = savedNotesByChild[child.id]?.[item.id];
+    return updatedNote ? { ...item, parentNote: updatedNote } : item;
+  });
+
+  const handleSendParentReply = (concernId, event) => {
+    event?.preventDefault();
     const text = replyTextMap[concernId]?.trim();
-    if (!text) return;
+    if (!text || loadingConcernId) return;
 
+    const targetChildId = child.id;
     setLoadingConcernId(concernId);
 
     setTimeout(() => {
-      setConcerns((prev) =>
-        prev.map((c) =>
-          c.id === concernId
-            ? {
-                ...c,
-                parentNote: text,
-              }
-            : c
-        )
-      );
-
+      setSavedNotesByChild(saveParentBehaviorNote(targetChildId, concernId, text));
       setLoadingConcernId(null);
       setReplyTextMap((prev) => ({ ...prev, [concernId]: "" }));
-      setToastMessage("Home practice update shared with the teacher!");
-    }, 450);
+      setNotice({
+        text: tr(
+          "Home practice update saved for your teacher.",
+          "Rückmeldung für die Lehrkraft gespeichert."
+        ),
+      });
+    }, 300);
   };
 
   return (
-    <div className="parent-page-wrapper">
+    <div className="parent-page">
       <Header role="parent" />
-      <ParentChildBar
-        activeChildId={activeChildId}
-        onSelectChild={handleSelectChild}
-        showBack={true}
-        backTo="/parent"
-        breadcrumbText="Behavioral & Growth Notes"
-      />
 
       <main className="parent-container">
-        {/* Wireframe Hero Banner (Item 1 Core Action) */}
-        <section className="wireframe-hero">
-          <h2 className="wireframe-hero-title">Behavioral & Growth Notes</h2>
-          <p className="wireframe-hero-subtitle">
-            Teacher observations & home partnership action plans for{" "}
-            <strong>{child.name}</strong>
-          </p>
-        </section>
+        <ParentPageIntro
+          title={tr("Behavior & home plan", "Verhalten & Förderplan")}
+          subtitle={tr(
+            `Teacher observations and home support suggestions for ${child.name} (${child.grade}).`,
+            `Beobachtungen der Lehrkräfte und Fördervorschläge für zu Hause für ${child.name} (${child.grade}).`
+          )}
+          activeChildId={activeChildId}
+          onSelectChild={selectChild}
+        />
 
-        {/* Section 1: Overview Card */}
-        <section className="parent-card">
-          <div className="parent-card-header">
-            <div>
-              <h3 className="parent-card-title">
-                <span>Teacher Guidance & Home Partnership (P8)</span>
-              </h3>
-              <p className="text-[11px] text-forest/70 mt-0.5">
-                Constructive feedback shared voluntarily by teachers to align school & home environments
+        <ParentNotice notice={notice} onDismiss={() => setNotice(null)} />
+
+        <section
+          className="parent-panel"
+          aria-labelledby="parent-behavior-heading"
+        >
+          <div className="parent-panel-heading">
+            <div className="parent-panel-heading-copy">
+              <h2 id="parent-behavior-heading">
+                {tr(
+                  "Teacher observations & home partnership",
+                  "Beobachtungen der Lehrkräfte & Zusammenarbeit"
+                )}
+              </h2>
+              <p className="parent-meta">
+                {tr(
+                  "Constructive observations shared by teachers with suggested steps for home",
+                  "Konstruktive Rückmeldungen der Lehrkräfte mit Empfehlungen für zu Hause"
+                )}
               </p>
             </div>
-            <span className="text-xs font-bold text-forest bg-sage/20 px-3 py-1 rounded-full">
-              {concerns.length} Observation Records
+            <span className="parent-meta">
+              {concerns.length}{" "}
+              {concerns.length === 1
+                ? tr("record", "Eintrag")
+                : tr("records", "Einträge")}
             </span>
           </div>
 
           {concerns.length === 0 ? (
-            <div className="text-center py-10 bg-cream/30 rounded-2xl border border-sand/30 space-y-2">
-              <span className="text-3xl">🌟</span>
-              <h4 className="text-sm font-bold text-forest">
-                No Behavioral Concerns Logged
-              </h4>
-              <p className="text-xs text-forest/70 max-w-md mx-auto">
-                Teachers have reported exemplary conduct, focus, and classroom peer engagement for {child.name}.
-              </p>
-            </div>
+            <p className="parent-empty">
+              {tr(
+                `No behavioral notes are recorded for ${child.name}. Teachers have not logged any conduct or focus concerns.`,
+                `Für ${child.name} liegen derzeit keine Verhaltenshinweise vor. Es wurden keine Auffälligkeiten gemeldet.`
+              )}
+            </p>
           ) : (
-            <div className="space-y-6">
+            <ul className="parent-divided-list">
               {concerns.map((item) => {
-                const isResolved = item.status === "Resolved";
                 const isItemLoading = loadingConcernId === item.id;
+                const draftValue = replyTextMap[item.id] || "";
+                const inputId = `behavior-reply-${child.id}-${item.id}`;
 
                 return (
-                  <div key={item.id} className="behavior-card">
-                    {/* Header */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-2 border-b border-sand/30">
-                      <div>
-                        <span className="text-xs font-extrabold text-forest uppercase tracking-wider">
-                          {item.category}
-                        </span>
-                        <p className="text-[11px] text-forest/70">
-                          Shared by <strong>{item.teacher}</strong> ({item.subject}) • {item.date}
-                        </p>
-                      </div>
-
-                      <span
-                        className={`behavior-status-badge ${
-                          isResolved
-                            ? "bg-green-100 text-green-800 border-green-300"
-                            : "bg-amber-100 text-amber-900 border-amber-300"
-                        }`}
-                      >
-                        {item.status}
+                  <li key={item.id}>
+                    <div className="parent-ticket-head">
+                      <h3>{item.category}</h3>
+                      <span className="parent-status-tag">
+                        {translateValue(item.status, lang)}
                       </span>
                     </div>
+                    <p className="parent-meta">
+                      {tr("Shared by", "Geteilt von")} {item.teacher} ({item.subject}) · {item.date}
+                    </p>
 
-                    {/* Teacher Observation */}
-                    <div>
-                      <h5 className="text-xs font-bold text-forest mb-1">
-                        Teacher Observation:
-                      </h5>
-                      <p className="text-xs text-forest/90 leading-relaxed bg-cream/40 p-3 rounded-xl border border-sand/30 italic">
-                        "{item.concern}"
-                      </p>
-                    </div>
+                    <blockquote className="parent-observation-quote">
+                      {item.concern}
+                    </blockquote>
 
-                    {/* Recommended Home Action Plan */}
-                    <div className="home-action-box">
-                      <h5 className="font-bold text-xs uppercase tracking-wider text-forest flex items-center gap-1.5">
-                        <span>🏡</span>
-                        <span>Recommended Home Action Plan:</span>
-                      </h5>
-                      <ul className="space-y-1.5 pl-4 list-disc text-forest/90 leading-relaxed text-xs">
+                    <div className="parent-action-plan">
+                      <h4>{tr("Recommended home action plan", "Empfohlener Maßnahmenplan für zu Hause")}</h4>
+                      <ul className="parent-bullet-list">
                         {item.homeActionPlan.map((step, idx) => (
                           <li key={idx}>{step}</li>
                         ))}
                       </ul>
                     </div>
 
-                    {/* Parent Feedback & Home Progress Loop */}
-                    <div className="pt-2 border-t border-sand/20 space-y-2">
-                      <h5 className="text-xs font-bold text-forest flex items-center justify-between">
-                        <span>Home Feedback & Response:</span>
-                        {item.parentNote && (
-                          <span className="text-[10px] text-sage font-bold">
-                            ✓ Response Shared with Teacher
-                          </span>
-                        )}
-                      </h5>
+                    <div className="parent-divider-section">
+                      <h4>{tr("Home feedback & response", "Rückmeldung von zu Hause")}</h4>
 
                       {item.parentNote ? (
-                        <div className="p-3 rounded-xl bg-forest/5 border border-forest/15 text-xs text-forest">
-                          <span className="font-bold">Mr. Ehab Tawfeek: </span>
-                          <span>"{item.parentNote}"</span>
-                        </div>
+                        <p>
+                          <strong>{tr("Your note:", "Ihre Notiz:")}</strong>{" "}
+                          {item.parentNote}{" "}
+                          <span className="parent-meta">
+                            ({tr("Saved on this page", "Auf dieser Seite gespeichert")})
+                          </span>
+                        </p>
                       ) : (
-                        <div className="space-y-2">
-                          {/* Nielsen H6: Recognition suggestions for reply */}
-                          <div className="flex flex-wrap gap-1.5">
-                            {HOME_UPDATE_PRESETS.map((preset) => (
+                        <form
+                          onSubmit={(event) =>
+                            handleSendParentReply(item.id, event)
+                          }
+                          className="parent-composer-form"
+                        >
+                          <div
+                            className="parent-starter-group"
+                            role="group"
+                            aria-label={tr("Suggested home updates", "Vorgeschlagene Rückmeldungen")}
+                          >
+                            {presets.map((preset) => (
                               <button
                                 key={preset}
                                 type="button"
+                                aria-pressed={draftValue === preset}
                                 onClick={() =>
-                                  setReplyTextMap({
-                                    ...replyTextMap,
+                                  setReplyTextMap((prev) => ({
+                                    ...prev,
                                     [item.id]: preset,
-                                  })
+                                  }))
                                 }
-                                className="suggestion-chip"
+                                className="parent-button parent-button-quiet"
                               >
                                 {preset}
                               </button>
                             ))}
                           </div>
 
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={replyTextMap[item.id] || ""}
-                              onChange={(e) =>
-                                setReplyTextMap({
-                                  ...replyTextMap,
-                                  [item.id]: e.target.value,
-                                })
-                              }
-                              placeholder="Or write custom home progress update..."
-                              className="flex-1 h-10 rounded-xl bg-cream/40 border border-sand/40 px-3 text-xs text-forest focus:outline-none focus:ring-2 focus:ring-sand"
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  e.preventDefault();
-                                  handleSendParentReply(item.id);
+                          <div className="parent-field">
+                            <label htmlFor={inputId}>
+                              {tr("Home progress update for", "Rückmeldung für")} {item.teacher}
+                            </label>
+                            <div className="parent-inline-reply">
+                              <input
+                                id={inputId}
+                                type="text"
+                                className="parent-input"
+                                value={draftValue}
+                                onChange={(event) =>
+                                  setReplyTextMap((prev) => ({
+                                    ...prev,
+                                    [item.id]: event.target.value,
+                                  }))
                                 }
-                              }}
-                            />
-                            <button
-                              type="button"
-                              disabled={isItemLoading}
-                              onClick={() => handleSendParentReply(item.id)}
-                              className="btn-primary shrink-0"
-                            >
-                              {isItemLoading ? (
-                                <>
-                                  <span className="loading-spinner" />
-                                  <span>Sharing...</span>
-                                </>
-                              ) : (
-                                <span>Update Teacher</span>
-                              )}
-                            </button>
+                                placeholder={tr(
+                                  "Write a brief update on home practice",
+                                  "Kurze Rückmeldung zum Üben zu Hause schreiben"
+                                )}
+                              />
+                              <button
+                                type="submit"
+                                disabled={isItemLoading || !draftValue.trim()}
+                                className="parent-button parent-button-primary"
+                              >
+                                {isItemLoading
+                                  ? tr("Saving...", "Speichert...")
+                                  : tr("Save home update", "Rückmeldung speichern")}
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                          <p className="parent-meta">
+                            {tr(
+                              "Demo note. Updates stay on this page and are not delivered to the teacher.",
+                              "Demo-Hinweis. Rückmeldungen bleiben auf dieser Seite und werden nicht an die Lehrkraft gesendet."
+                            )}
+                          </p>
+                        </form>
                       )}
                     </div>
-                  </div>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           )}
         </section>
       </main>
-
-      <Toast
-        message={toastMessage}
-        type="success"
-        onClose={() => setToastMessage(null)}
-      />
     </div>
   );
 }

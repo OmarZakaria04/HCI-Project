@@ -1,209 +1,295 @@
-import { useState, useRef, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import Header from "../../components/Header";
-import ParentChildBar from "../../components/ParentChildBar";
-import { parentData } from "../../data/parentData";
+import { useLanguage } from "../../i18n/useLanguage";
+import {
+  createParentId,
+  getParentChatsMap,
+  saveParentChatMessage,
+} from "../../utils/parentStore";
+import ParentPageIntro from "./ParentPageIntro";
+import { useActiveChild } from "./useActiveChild";
 import "../../styles/parent.css";
-
-// Nielsen H6 Recognition over Recall: Quick Message Presets
-const MESSAGE_PRESETS = [
-  "Thank you for the thorough exam feedback!",
-  "Could we clarify the homework assignment for Thursday?",
-  "Ahmed practiced the recommended exercises this weekend.",
-  "Just confirming our scheduled conference appointment.",
-];
 
 export default function ParentChat() {
   const { teacherId } = useParams();
-  const navigate = useNavigate();
+  const { lang, tr } = useLanguage();
+  const { activeChildId, child, selectChild } = useActiveChild();
 
-  const [activeChildId, setActiveChildId] = useState(() => {
-    return localStorage.getItem("parent_active_child") || "ahmed";
-  });
+  const [addedChats, setAddedChats] = useState(() => getParentChatsMap());
+  const [draft, setDraft] = useState("");
+  const [statusRecord, setStatusRecord] = useState(null);
+  const [isSending, setIsSending] = useState(false);
 
-  const handleSelectChild = (id) => {
-    setActiveChildId(id);
-    localStorage.setItem("parent_active_child", id);
+  const chatLogRef = useRef(null);
+  const composerRef = useRef(null);
+
+  const teachers = child.teachers || [];
+  const selectedTeacher =
+    teachers.find((item) => item.id === teacherId) || teachers[0];
+  const childFirstName = child.name.split(" ")[0];
+  const baseMessages = selectedTeacher
+    ? child.chatMessages?.[selectedTeacher.id] || []
+    : [];
+  const extraMessages = selectedTeacher
+    ? addedChats[child.id]?.[selectedTeacher.id] || []
+    : [];
+  const messages = [...baseMessages, ...extraMessages];
+  const statusKey = `${child.id}:${selectedTeacher?.id || ""}`;
+  const messageStatus =
+    statusRecord?.key === statusKey ? statusRecord.text : "";
+
+  const presets = [
+    tr("Thank you for the feedback and update.", "Vielen Dank für die Rückmeldung und das Update."),
+    tr(
+      `Could we clarify the upcoming ${selectedTeacher?.subject || "class"} work for ${childFirstName}?`,
+      `Könnten wir die nächsten Aufgaben im Fach ${selectedTeacher?.subject || "Unterricht"} für ${childFirstName} kurz absprechen?`
+    ),
+    tr(
+      `${childFirstName} practiced the recommended exercises at home.`,
+      `${childFirstName} hat die empfohlenen Übungen zu Hause bearbeitet.`
+    ),
+    tr(
+      "Confirming our upcoming parent-teacher conference.",
+      "Ich bestätige unseren bevorstehenden Gesprächstermin."
+    ),
+  ];
+
+  useEffect(() => {
+    if (chatLogRef.current) {
+      chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight;
+    }
+  }, [messages.length, selectedTeacher?.id, child.id]);
+
+  const handleDraftStarter = (text) => {
+    setDraft(text);
+    composerRef.current?.focus();
   };
 
-  const child =
-    parentData.children.find((c) => c.id === activeChildId) ||
-    parentData.children[0];
-
-  const selectedTeacher =
-    child.teachers.find((t) => t.id === teacherId) || child.teachers[0];
-
-  const [messages, setMessages] = useState(() => {
-    return child.chatMessages?.[selectedTeacher.id] || [];
-  });
-
-  const [inputVal, setInputVal] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const messagesEndRef = useRef(null);
-
-  useEffect(() => {
-    const thread = child.chatMessages?.[selectedTeacher.id] || [];
-    setMessages(thread);
-  }, [selectedTeacher.id, activeChildId]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const handleSendMessage = (e) => {
-    e?.preventDefault();
-    if (!inputVal.trim() || isSending) return;
+  const handleSendMessage = (event) => {
+    event.preventDefault();
+    const text = draft.trim();
+    if (!text || isSending || !selectedTeacher) return;
 
     setIsSending(true);
+    const targetChildId = child.id;
+    const targetTeacherId = selectedTeacher.id;
 
     setTimeout(() => {
+      const formattedTime = new Date().toLocaleTimeString(
+        lang === "de" ? "de-DE" : [],
+        { hour: "2-digit", minute: "2-digit" }
+      );
       const newMsg = {
-        id: Date.now(),
+        id: createParentId("pchat"),
         sender: "parent",
-        text: inputVal.trim(),
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        text,
+        time: lang === "de" ? `${formattedTime} Uhr` : formattedTime,
       };
 
-      setMessages((prev) => [...prev, newMsg]);
-      setInputVal("");
+      const nextChats = saveParentChatMessage(targetChildId, targetTeacherId, newMsg);
+      setAddedChats(nextChats);
+      setDraft("");
       setIsSending(false);
-    }, 250);
+      setStatusRecord({
+        key: `${targetChildId}:${targetTeacherId}`,
+        text: tr(
+          "Message saved in your browser for your teacher.",
+          "Nachricht für die Lehrkraft im Browser gespeichert."
+        ),
+      });
+      composerRef.current?.focus();
+    }, 200);
   };
 
-  const teacherInitials = selectedTeacher.name
-    .split(" ")
-    .map((w) => w[0])
-    .join("");
-
   return (
-    <div className="parent-page-wrapper">
+    <div className="parent-page">
       <Header role="parent" />
-      <ParentChildBar
-        activeChildId={activeChildId}
-        onSelectChild={handleSelectChild}
-        showBack={true}
-        backTo="/parent/teachers"
-        breadcrumbText={`Chat with ${selectedTeacher.name}`}
-      />
 
       <main className="parent-container">
-        {/* Hero Banner: Teacher Name (Item 1 Core Action) */}
-        <section className="wireframe-hero">
-          <h2 className="wireframe-hero-title">{selectedTeacher.name}</h2>
-          <p className="wireframe-hero-subtitle">
-            {selectedTeacher.subject} Teacher • {selectedTeacher.room} • Liaison regarding{" "}
-            <strong>{child.name}</strong>
-          </p>
-        </section>
+        <ParentPageIntro
+          title={tr("Messages", "Nachrichten")}
+          subtitle={
+            selectedTeacher
+              ? tr(
+                  `Conversation with ${selectedTeacher.name} (${selectedTeacher.subject}) regarding ${child.name} (${child.grade}).`,
+                  `Unterhaltung mit ${selectedTeacher.name} (${selectedTeacher.subject}) zu ${child.name} (${child.grade}).`
+                )
+              : tr(
+                  `No teachers listed for ${child.name}.`,
+                  `Keine Lehrkräfte für ${child.name} hinterlegt.`
+                )
+          }
+          backTo={teacherId ? "/parent/teachers" : undefined}
+          backLabel={
+            teacherId
+              ? tr("Back to teachers", "Zurück zu den Lehrkräften")
+              : undefined
+          }
+          activeChildId={activeChildId}
+          onSelectChild={selectChild}
+        />
 
-        {/* Section: Message */}
-        <section className="parent-card !p-0 overflow-hidden">
-          <div className="parent-card-header px-6 pt-5 pb-3 bg-white">
-            <h3 className="parent-card-title">Message Channel (P5)</h3>
-            <span className="text-xs font-semibold text-forest/70">
-              Direct line regarding {child.name}
-            </span>
-          </div>
+        {selectedTeacher ? (
+          <div className="parent-chat-layout">
+            <aside
+              className="parent-panel"
+              aria-labelledby="parent-chat-teachers-title"
+            >
+              <div className="parent-panel-heading">
+                <h2 id="parent-chat-teachers-title">
+                  {tr("Teachers", "Lehrkräfte")}
+                </h2>
+              </div>
 
-          <div className="chat-window !border-0 !rounded-none">
-            {/* Messages Scroll Area */}
-            <div className="chat-messages-scroll">
-              {messages.length === 0 ? (
-                <div className="text-center py-12 text-forest/50 text-xs">
-                  No previous messages. Send a message to start the conversation!
-                </div>
-              ) : (
-                messages.map((msg) => {
-                  const isParent = msg.sender === "parent";
+              <ul className="parent-chat-directory">
+                {teachers.map((teacher) => {
+                  const isCurrent = teacher.id === selectedTeacher.id;
                   return (
-                    <div
-                      key={msg.id}
-                      className={`chat-bubble-row ${
-                        isParent ? "chat-bubble-row-parent" : "chat-bubble-row-teacher"
-                      }`}
-                    >
-                      <div
-                        className={`chat-avatar-mini ${
-                          isParent ? "bg-forest" : "bg-sage"
-                        }`}
+                    <li key={teacher.id}>
+                      <Link
+                        to={`/parent/chat/${teacher.id}`}
+                        className="parent-chat-teacher-link"
+                        aria-current={isCurrent ? "page" : undefined}
                       >
-                        {isParent ? "ME" : teacherInitials}
-                      </div>
-
-                      <div
-                        className={`chat-bubble ${
-                          isParent ? "chat-bubble-parent" : "chat-bubble-teacher"
-                        }`}
-                      >
-                        <p>{msg.text}</p>
-                        <span className="chat-time flex items-center justify-end gap-1">
-                          <span>{msg.time}</span>
-                          {isParent && <span>✓✓</span>}
+                        <strong>{teacher.name}</strong>
+                        <span className="parent-meta">
+                          {teacher.subject} · {teacher.room}
                         </span>
-                      </div>
-                    </div>
+                      </Link>
+                    </li>
                   );
-                })
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+                })}
+              </ul>
+            </aside>
 
-            {/* Quick Suggestion Chips (Nielsen H6 Recognition) */}
-            <div className="px-4 py-2 bg-cream/40 border-t border-sand/20 flex flex-wrap gap-1.5">
-              {MESSAGE_PRESETS.map((preset) => (
-                <button
-                  key={preset}
-                  type="button"
-                  onClick={() => setInputVal(preset)}
-                  className="suggestion-chip"
-                >
-                  {preset}
-                </button>
-              ))}
-            </div>
+            <section
+              className="parent-panel parent-chat-panel"
+              aria-labelledby="parent-chat-heading"
+            >
+              <div className="parent-panel-heading">
+                <div className="parent-panel-heading-copy">
+                  <h2 id="parent-chat-heading">{selectedTeacher.name}</h2>
+                  <p className="parent-meta">
+                    {selectedTeacher.subject} · {selectedTeacher.room} ·{" "}
+                    {tr("Regarding", "Betrifft")} {child.name}
+                  </p>
+                </div>
+              </div>
 
-            {/* Input Bar with send button (KLM Efficiency Enter key) */}
-            <form onSubmit={handleSendMessage} className="chat-input-bar">
-              <input
-                type="text"
-                autoFocus
-                value={inputVal}
-                onChange={(e) => setInputVal(e.target.value)}
-                placeholder={`Write a message to ${selectedTeacher.name}... (Press Enter to send)`}
-                className="chat-input-field"
-              />
-              <button
-                type="submit"
-                disabled={isSending || !inputVal.trim()}
-                className="chat-send-btn"
-                title="Send Message"
-                aria-label="Send Message"
-              >
-                {isSending ? (
-                  <span className="loading-spinner text-cream" />
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M14 5l7 7m0 0l-7 7m7-7H3"
-                    />
-                  </svg>
+              <p id="parent-chat-note" className="parent-meta">
+                {tr(
+                  "Demo conversation. Messages stay on this page and are not delivered to the teacher.",
+                  "Demo-Unterhaltung. Nachrichten bleiben auf dieser Seite und werden nicht an die Lehrkraft gesendet."
                 )}
-              </button>
-            </form>
+              </p>
+
+              <div
+                ref={chatLogRef}
+                className="parent-chat-log"
+                role="log"
+                aria-label={tr(
+                  `Conversation with ${selectedTeacher.name} about ${child.name}`,
+                  `Unterhaltung mit ${selectedTeacher.name} über ${child.name}`
+                )}
+                aria-live="polite"
+                aria-relevant="additions"
+                tabIndex={0}
+              >
+                {messages.length ? (
+                  messages.map((msg) => {
+                    const isParent = msg.sender === "parent";
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`parent-chat-message ${
+                          isParent
+                            ? "parent-chat-parent"
+                            : "parent-chat-teacher"
+                        }`}
+                      >
+                        <p className="parent-chat-author">
+                          {isParent ? tr("You", "Sie") : selectedTeacher.name}
+                        </p>
+                        <p>{msg.text}</p>
+                        <p className="parent-chat-time">{msg.time}</p>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="parent-meta">
+                    {tr(
+                      "No previous messages. Write a note below to start this demo conversation.",
+                      "Noch keine Nachrichten. Schreiben Sie unten, um die Demo-Unterhaltung zu starten."
+                    )}
+                  </p>
+                )}
+              </div>
+
+              <div
+                className="parent-starter-group"
+                role="group"
+                aria-label={tr("Message starters", "Nachrichtenvorschläge")}
+              >
+                {presets.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => handleDraftStarter(preset)}
+                    className="parent-button parent-button-quiet"
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+
+              <form
+                onSubmit={handleSendMessage}
+                className="parent-composer-form"
+              >
+                <div className="parent-field">
+                  <label htmlFor="parent-chat-input">
+                    {tr("Your message to", "Ihre Nachricht an")} {selectedTeacher.name}
+                  </label>
+                  <textarea
+                    id="parent-chat-input"
+                    ref={composerRef}
+                    rows={3}
+                    className="parent-textarea"
+                    value={draft}
+                    onChange={(event) => setDraft(event.target.value)}
+                    aria-describedby="parent-chat-note"
+                    placeholder={tr(
+                      `Write a message to ${selectedTeacher.name}`,
+                      `Nachricht an ${selectedTeacher.name} schreiben`
+                    )}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSending || !draft.trim()}
+                  className="parent-button parent-button-primary"
+                >
+                  {isSending
+                    ? tr("Sending...", "Wird gesendet...")
+                    : tr("Send message", "Nachricht senden")}
+                </button>
+              </form>
+
+              {messageStatus && (
+                <p className="parent-meta" role="status">
+                  {messageStatus}
+                </p>
+              )}
+            </section>
           </div>
-        </section>
+        ) : (
+          <section className="parent-panel">
+            <p className="parent-empty">
+              {tr("No teachers available for messaging.", "Keine Lehrkräfte zum Schreiben verfügbar.")}
+            </p>
+          </section>
+        )}
       </main>
     </div>
   );

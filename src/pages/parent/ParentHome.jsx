@@ -1,271 +1,380 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "../../components/Header";
-import ParentChildBar from "../../components/ParentChildBar";
+import DashboardCarousel from "../../components/DashboardCarousel";
 import RadarChart from "../../components/RadarChart";
-import { parentData } from "../../data/parentData";
+import { CheckIcon } from "../../components/StudentIcons";
+import ParentPageIntro from "./ParentPageIntro";
+import { useActiveChild } from "./useActiveChild";
+import { useLanguage } from "../../i18n/useLanguage";
+import { getTeacherData } from "../../i18n/teacherDataDe";
+import { getTeacherCommState } from "../../utils/teacherStore";
+import { getParentEmergenciesMap } from "../../utils/parentStore";
+import classImg from "../../assets/class.png";
+import papersImg from "../../assets/papers.png";
+import scheduleImg from "../../assets/schedule.png";
 import "../../styles/parent.css";
 
 export default function ParentHome() {
-  const [activeChildId, setActiveChildId] = useState(() => {
-    return localStorage.getItem("parent_active_child") || "ahmed";
-  });
+  const navigate = useNavigate();
+  const { lang, tr } = useLanguage();
+  const { activeChildId, child, selectChild } = useActiveChild();
 
-  const handleSelectChild = (id) => {
-    setActiveChildId(id);
-    localStorage.setItem("parent_active_child", id);
-  };
+  const storedEmergencies = getParentEmergenciesMap()[child.id] || [];
+  const emergencyAlert = [...storedEmergencies, ...(child.emergencies || [])].find(
+    (item) => item.severity === "alert"
+  );
+  const teacherCommState = getTeacherCommState();
+  const teacherFixtures = getTeacherData(lang).teacherCommunication?.parentAnnouncements || [];
+  const dailyUpdates = [
+    ...(teacherCommState.addedParentAnnouncements || []),
+    ...teacherFixtures,
+  ];
+  const metrics = child.metrics;
+  const isMetricsReviewed =
+    metrics?.teacherReview?.status === "Verified & Approved";
+  const isGradesConfirmed =
+    child.reportCard?.status === "Confirmed by Faculty";
+  const radarValues = metrics?.radarValues || [];
+  const subjects = child.subjects || [];
+  const concernsCount = child.behavioralConcerns?.length || 0;
+  const teachersCount = child.teachers?.length || 0;
 
-  const child =
-    parentData.children.find((c) => c.id === activeChildId) ||
-    parentData.children[0];
-
-  const emergencyAlert = child.emergencies?.find((e) => e.severity === "alert");
+  const slides = [
+    {
+      id: "grades",
+      title: tr("Grades & exams", "Noten & Prüfungen"),
+      subtitle: isMetricsReviewed
+        ? tr(`${metrics.overallScore} overall`, `${metrics.overallScore} gesamt`)
+        : tr("Pending teacher review", "Lehrkräfteprüfung ausstehend"),
+      image: papersImg,
+      to: "/parent/grades",
+    },
+    {
+      id: "behavior",
+      title: tr("Behavior & home plan", "Verhalten & Förderplan"),
+      subtitle: `${concernsCount} ${
+        concernsCount === 1
+          ? tr("note", "Hinweis")
+          : tr("notes", "Hinweise")
+      }`,
+      image: scheduleImg,
+      to: "/parent/behavior",
+    },
+    {
+      id: "teachers",
+      title: tr("Teachers & meetings", "Lehrkräfte & Gespräche"),
+      subtitle: `${teachersCount} ${
+        teachersCount === 1
+          ? tr("teacher", "Lehrkraft")
+          : tr("teachers", "Lehrkräfte")
+      }`,
+      image: classImg,
+      to: "/parent/teachers",
+    },
+  ];
 
   return (
-    <div className="parent-page-wrapper">
+    <div className="parent-page">
       <Header role="parent" />
-      <ParentChildBar
-        activeChildId={activeChildId}
-        onSelectChild={handleSelectChild}
-        showBack={false}
-      />
 
       <main className="parent-container">
-        {/* P7 Quick Emergency Notice if active */}
+        <ParentPageIntro
+          title={tr("Parent dashboard", "Elternübersicht")}
+          subtitle={`${tr("Viewing", "Ansicht für")} ${child.name} · ${child.grade}`}
+          activeChildId={activeChildId}
+          onSelectChild={selectChild}
+        />
+
         {emergencyAlert && (
-          <div className="emergency-banner-alert">
-            <div className="flex items-start gap-3">
-              <span className="p-2 bg-red-100 text-red-700 rounded-xl font-bold text-lg">
-                ⚠️
-              </span>
-              <div>
-                <h4 className="font-extrabold text-sm text-red-950">
-                  {emergencyAlert.title}
-                </h4>
-                <p className="text-xs text-red-800 mt-0.5 line-clamp-2">
-                  {emergencyAlert.message}
-                </p>
-                <span className="text-[10px] text-red-700 font-semibold mt-1 inline-block">
-                  From: {emergencyAlert.sender} • {emergencyAlert.date}
-                </span>
-              </div>
+          <section
+            className="parent-alert-banner"
+            aria-labelledby="parent-urgent-notice-title"
+          >
+            <div className="parent-alert-banner-copy">
+              <p className="parent-alert-kicker">
+                {tr("Urgent clinic notice", "Dringende Mitteilung der Krankenstation")}
+              </p>
+              <h2 id="parent-urgent-notice-title">{emergencyAlert.title}</h2>
+              <p>{emergencyAlert.message}</p>
+              <p className="parent-meta">
+                {tr("From", "Von")} {emergencyAlert.sender} · {emergencyAlert.date}
+              </p>
             </div>
             <Link
               to="/parent/emergency"
-              className="px-4 py-2 bg-red-700 text-white rounded-xl text-xs font-bold shadow-xs hover:bg-red-800 transition-all shrink-0 text-center"
+              className="parent-button parent-button-danger"
             >
-              View Urgent Channel →
+              {tr("Open emergency channel", "Notfallkanal öffnen")}{" "}
+              <span aria-hidden="true">→</span>
             </Link>
-          </div>
+          </section>
         )}
 
-        {/* 1. Hero Card: Student Progress Carousel Banner */}
-        <section className="wireframe-hero">
-          {/* Wireframe carousel quick links */}
-          <Link to="/parent/teachers" className="hero-nav-link-left">
-            ← Teachers
-          </Link>
-          <Link to="/parent/grades" className="hero-nav-link-right">
-            Grades →
-          </Link>
+        <DashboardCarousel
+          label={tr("Parent navigation", "Eltern-Navigation")}
+          slides={slides}
+          onOpen={(slide) => navigate(slide.to)}
+        />
 
-          <h2 className="wireframe-hero-title">Student Progress</h2>
-          <p className="wireframe-hero-subtitle">
-            {child.name} • {child.grade}
-          </p>
-
-          <div className="flex items-center justify-center gap-1.5 mt-4">
-            <span className="w-2.5 h-2.5 rounded-full bg-forest shadow-xs" />
-            <span className="w-2 h-2 rounded-full bg-sand/60" />
-            <span className="w-2 h-2 rounded-full bg-sand/60" />
-          </div>
-        </section>
-
-        {/* Quick Portal Feature Cards */}
-        <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Link
-            to="/parent/grades"
-            className="p-3.5 rounded-xl bg-white border border-sand/40 hover:border-forest hover:shadow-xs transition-all flex flex-col items-center text-center group"
+        <div className="parent-progress-layout">
+          <section
+            className="parent-panel"
+            aria-labelledby="parent-progress-title"
           >
-            <span className="text-xl mb-1">📊</span>
-            <span className="text-xs font-bold text-forest group-hover:text-forest">
-              Grades & History
-            </span>
-            <span className="text-[10px] text-forest/60">P2 & P3</span>
-          </Link>
-
-          <Link
-            to="/parent/grades#exams"
-            className="p-3.5 rounded-xl bg-white border border-sand/40 hover:border-forest hover:shadow-xs transition-all flex flex-col items-center text-center group"
-          >
-            <span className="text-xl mb-1">📝</span>
-            <span className="text-xs font-bold text-forest group-hover:text-forest">
-              Exam Tickets
-            </span>
-            <span className="text-[10px] text-forest/60">P4 Details</span>
-          </Link>
-
-          <Link
-            to="/parent/teachers"
-            className="p-3.5 rounded-xl bg-white border border-sand/40 hover:border-forest hover:shadow-xs transition-all flex flex-col items-center text-center group"
-          >
-            <span className="text-xl mb-1">📅</span>
-            <span className="text-xs font-bold text-forest group-hover:text-forest">
-              Book Meeting
-            </span>
-            <span className="text-[10px] text-forest/60">P6 Scheduler</span>
-          </Link>
-
-          <Link
-            to="/parent/behavior"
-            className="p-3.5 rounded-xl bg-white border border-sand/40 hover:border-forest hover:shadow-xs transition-all flex flex-col items-center text-center group"
-          >
-            <span className="text-xl mb-1">🤝</span>
-            <span className="text-xs font-bold text-forest group-hover:text-forest">
-              Behavior Notes
-            </span>
-            <span className="text-[10px] text-forest/60">P8 Home Plan</span>
-          </Link>
-        </section>
-
-        {/* 2. Subjects Section */}
-        <section className="parent-card">
-          <div className="parent-card-header">
-            <h3 className="parent-card-title">Subjects</h3>
-            <Link
-              to="/parent/grades"
-              className="text-xs font-bold text-sage hover:text-forest transition-colors flex items-center gap-1"
-            >
-              <span>View All Grades & Exams</span>
-              <span>→</span>
-            </Link>
-          </div>
-
-          <div className="subjects-grid">
-            {child.subjects.map((sub) => (
-              <div key={sub.id} className="subject-item-card">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="subject-badge-title">{sub.name}</span>
-                    <span className="text-[11px] font-semibold text-forest/60">
-                      {sub.teacher}
-                    </span>
-                  </div>
-
-                  <div className="subject-deadline-box">
-                    <span className="subject-subhead">Upcoming Deadlines</span>
-                    <p className="subject-subtext">{sub.upcoming}</p>
-                  </div>
-                </div>
-
-                <div className="subject-grade-box">
-                  <span className="subject-subhead">Last Grade</span>
-                  <span className="subject-grade-val">{sub.lastGrade}</span>
-                </div>
+            <div className="parent-panel-heading">
+              <div className="parent-panel-heading-copy">
+                <h2 id="parent-progress-title">
+                  {tr("Child progress", "Lernfortschritt")}
+                </h2>
+                <p className="parent-meta">
+                  {isMetricsReviewed
+                    ? tr(
+                        `Individual growth profile · Verified by ${metrics.teacherReview.reviewedBy} (${metrics.teacherReview.date})`,
+                        `Individuelles Entwicklungsprofil · Geprüft von ${metrics.teacherReview.reviewedBy} (${metrics.teacherReview.date})`
+                      )
+                    : tr(
+                        "Individual growth profile · Pending teacher review",
+                        "Individuelles Entwicklungsprofil · Lehrkräfteprüfung ausstehend"
+                      )}
+                </p>
               </div>
-            ))}
-          </div>
+              <span className="parent-meta">{tr("Demo data", "Demodaten")}</span>
+            </div>
 
-          <div className="flex items-center justify-center gap-1.5 mt-4">
-            <span className="w-2.5 h-2.5 rounded-full bg-forest" />
-            <span className="w-2 h-2 rounded-full bg-sand/60" />
-            <span className="w-2 h-2 rounded-full bg-sand/60" />
-          </div>
-        </section>
+            {isMetricsReviewed ? (
+              <>
+                <p className="parent-progress-overall">
+                  <span>{tr("Overall standing", "Gesamtstand")}</span>
+                  <strong>{metrics.overallScore}</strong>
+                  <span className="parent-meta">
+                    {metrics.status} · {tr("Attendance", "Anwesenheit")}{" "}
+                    {metrics.attendance}
+                  </span>
+                </p>
 
-        {/* 3. P1: Child Progress Metrics (Strictly individual & teacher verified) */}
-        <section className="parent-card">
-          <div className="parent-card-header">
-            <div>
-              <h3 className="parent-card-title">
-                <span>Child Progress Metrics</span>
-              </h3>
-              <p className="text-[11px] text-forest/60 mt-0.5">
-                Individual growth profile only • Confidential to parent & teachers
+                {radarValues.length > 0 ? (
+                  <div className="parent-progress-charts">
+                    <div
+                      className="parent-radar"
+                      role="img"
+                      aria-label={tr(
+                        "Subject progress radar chart. Exact scores are listed alongside.",
+                        "Netzdiagramm zum Fachfortschritt. Genaue Werte stehen daneben."
+                      )}
+                    >
+                      <RadarChart data={radarValues} size={320} />
+                    </div>
+
+                    <ul
+                      className="parent-score-bars"
+                      aria-label={tr("Progress scores", "Fortschrittswerte")}
+                    >
+                      {radarValues.map((metric) => (
+                        <li key={metric.label}>
+                          <div className="parent-score-bar-label">
+                            <span>{metric.label}</span>
+                            <span>{metric.value}%</span>
+                          </div>
+                          <div
+                            className="parent-score-bar-track"
+                            role="meter"
+                            aria-label={metric.label}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-valuenow={metric.value}
+                          >
+                            <span style={{ width: `${metric.value}%` }} />
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <p className="parent-empty">
+                    {tr("No progress scores to show yet.", "Noch keine Fortschrittswerte vorhanden.")}
+                  </p>
+                )}
+
+                <div className="parent-divider-section">
+                  <h3>{tr("Teacher key takeaways", "Wichtigste Einschätzung der Lehrkraft")}</h3>
+                  <p>{metrics.keyTakeaways}</p>
+                </div>
+
+                <div className="parent-divider-section">
+                  <h3>{tr("Evaluation details", "Details zur Auswertung")}</h3>
+                  <ul className="parent-bullet-list">
+                    {metrics.details.map((detail, index) => (
+                      <li key={index}>{detail}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="parent-divider-section">
+                  <h3>{tr("Individual strengths", "Individuelle Stärken")}</h3>
+                  <ul className="parent-check-list">
+                    {metrics.strengths.map((strength, index) => (
+                      <li key={index}>
+                        <CheckIcon className="parent-check-icon" />
+                        <span>{strength}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            ) : (
+              <p className="parent-empty">
+                {tr(
+                  "Individual progress metrics, strengths, and teacher observations will appear here after the teacher completes their review.",
+                  "Individuelle Lernwerte, Stärken und Beobachtungen der Lehrkraft erscheinen hier nach Abschluss der Prüfung."
+                )}
               </p>
-            </div>
+            )}
+          </section>
 
-            {/* P1 Teacher Review Verification Badge */}
-            <div className="verified-review-badge">
-              <span>✓</span>
-              <span>
-                Verified by {child.metrics.teacherReview.reviewedBy} (
-                {child.metrics.teacherReview.date})
-              </span>
-            </div>
-          </div>
+          <div className="parent-progress-sidebar">
+            <section
+              className="parent-panel"
+              aria-labelledby="parent-focus-title"
+            >
+              <div className="parent-panel-heading">
+                <h2 id="parent-focus-title">
+                  {tr("Topics to work on", "Übungsschwerpunkte")}
+                </h2>
+              </div>
 
-          <div className="analysis-layout">
-            {/* Left: Individual details & Key takeaways */}
-            <div className="analysis-info">
-              <div>
-                <h4 className="analysis-label">Evaluation Details:</h4>
-                <ul className="analysis-list mt-2">
-                  {child.metrics.details.map((detail, index) => (
-                    <li key={index}>{detail}</li>
+              {!isMetricsReviewed ? (
+                <p className="parent-empty">
+                  {tr(
+                    "Topics to work on will appear here after teacher review.",
+                    "Übungsschwerpunkte erscheinen hier nach Prüfung durch die Lehrkraft."
+                  )}
+                </p>
+              ) : metrics.topicsToWorkOn?.length ? (
+                <ul className="parent-divided-list">
+                  {metrics.topicsToWorkOn.map((topic, index) => (
+                    <li key={index}>{topic}</li>
                   ))}
                 </ul>
-              </div>
+              ) : (
+                <p className="parent-empty">
+                  {tr(
+                    "No priority focus topics listed right now.",
+                    "Derzeit sind keine vorrangigen Übungsthemen eingetragen."
+                  )}
+                </p>
+              )}
 
-              <div>
-                <h4 className="analysis-label">Teacher Key Takeaways:</h4>
-                <div className="analysis-takeaway-box mt-1.5">
-                  {child.metrics.keyTakeaways}
+              <Link
+                to="/parent/chat"
+                className="parent-button parent-sidebar-action"
+              >
+                {tr("Message a teacher", "Lehrkraft schreiben")}
+              </Link>
+            </section>
+
+            <section
+              className="parent-panel"
+              aria-labelledby="parent-subjects-title"
+            >
+              <div className="parent-panel-heading">
+                <div className="parent-panel-heading-copy">
+                  <h2 id="parent-subjects-title">{tr("Subjects", "Fächer")}</h2>
+                  <p className="parent-meta">
+                    {tr(
+                      "Upcoming deadlines and latest standings",
+                      "Nächste Termine und aktueller Leistungsstand"
+                    )}
+                  </p>
                 </div>
               </div>
-            </div>
 
-            {/* Right: Child Graph */}
-            <div className="analysis-chart-col">
-              <RadarChart data={child.metrics.radarValues} size={210} />
-              <span className="chart-title-caption">Child Graph</span>
-              <div className="chart-highlight-pill">
-                ⭐ Overall Standing:{" "}
-                <span className="font-extrabold text-forest">
-                  {child.metrics.status} ({child.metrics.overallScore})
-                </span>
-              </div>
-            </div>
-          </div>
+              {!isGradesConfirmed ? (
+                <p className="parent-empty">
+                  {tr(
+                    "Current subject grades will appear once confirmed by the teacher.",
+                    "Aktuelle Fachnoten erscheinen nach Bestätigung durch die Lehrkraft."
+                  )}
+                </p>
+              ) : subjects.length ? (
+                <ul className="parent-divided-list">
+                  {subjects.map((sub) => (
+                    <li key={sub.id} className="parent-subject-item">
+                      <div className="parent-subject-top">
+                        <h3>{sub.name}</h3>
+                        <strong className="parent-subject-grade">
+                          {sub.lastGrade}
+                        </strong>
+                      </div>
+                      <p className="parent-meta">
+                        {sub.teacher} · {tr("Upcoming:", "Demnächst:")} {sub.upcoming}
+                      </p>
+                      <Link
+                        to={`/parent/grades?subject=${sub.id}`}
+                        className="parent-button parent-subject-action"
+                        aria-label={tr(
+                          `Inspect ${sub.name} grades`,
+                          `Noten in ${sub.name} ansehen`
+                        )}
+                      >
+                        {tr("Inspect grades", "Noten ansehen")}{" "}
+                        <span aria-hidden="true">→</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="parent-empty">
+                  {tr("No subject records available yet.", "Noch keine Fachdaten vorhanden.")}
+                </p>
+              )}
 
-          {/* Strengths & Topics to Work On (P1 Core Requirements) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-5 border-t border-sand/30">
-            <div>
-              <h4 className="text-xs font-extrabold text-forest uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <span className="text-green-700">★</span>
-                <span>Individual Strengths</span>
-              </h4>
-              <div className="space-y-2">
-                {child.metrics.strengths.map((str, idx) => (
-                  <div key={idx} className="strength-card">
-                    <span className="text-sage font-bold text-sm">✓</span>
-                    <span className="text-xs font-semibold text-forest leading-relaxed">
-                      {str}
-                    </span>
+              <Link
+                to="/parent/grades"
+                className="parent-button parent-button-primary parent-sidebar-action"
+              >
+                {tr("View all grades & exams", "Alle Noten & Prüfungen ansehen")}{" "}
+                <span aria-hidden="true">→</span>
+              </Link>
+            </section>
+
+            {dailyUpdates.length > 0 && (
+              <section
+                className="parent-panel"
+                aria-labelledby="parent-daily-updates-title"
+              >
+                <div className="parent-panel-heading">
+                  <div className="parent-panel-heading-copy">
+                    <h2 id="parent-daily-updates-title">
+                      {tr("Daily class updates", "Tagesupdates aus dem Unterricht")}
+                    </h2>
+                    <p className="parent-meta">
+                      {tr(
+                        "Classroom summaries & upcoming quizzes from teachers",
+                        "Unterrichtsrückblick & kommende Tests von Lehrkräften"
+                      )}
+                    </p>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-extrabold text-forest uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <span className="text-sand font-black">🎯</span>
-                <span>Topics To Work On</span>
-              </h4>
-              <div className="space-y-2">
-                {child.metrics.topicsToWorkOn.map((topic, idx) => (
-                  <div key={idx} className="work-on-card">
-                    <span className="text-sand font-black text-sm">→</span>
-                    <span className="text-xs font-semibold text-forest leading-relaxed">
-                      {topic}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+                </div>
+                <ul className="parent-divided-list">
+                  {dailyUpdates.slice(0, 3).map((post) => (
+                    <li key={post.id} className="parent-subject-item">
+                      <p className="parent-meta">
+                        {tr("Class", "Klasse")} {post.classId} · {post.date}
+                      </p>
+                      <p>{post.summary}</p>
+                      {post.upcomingAssessments && (
+                        <p className="parent-meta">
+                          <strong>{tr("Upcoming:", "Demnächst:")}</strong>{" "}
+                          {post.upcomingAssessments}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
-        </section>
+        </div>
       </main>
     </div>
   );

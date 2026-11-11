@@ -1,485 +1,711 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import Header from "../../components/Header";
-import ParentChildBar from "../../components/ParentChildBar";
 import RadarChart from "../../components/RadarChart";
-import Toast from "../../components/Toast";
-import { parentData } from "../../data/parentData";
+import { DownloadIcon, PrinterIcon } from "../../components/StudentIcons";
+import { translateValue, useLanguage } from "../../i18n/useLanguage";
+import keepDialogFocus from "../../utils/dialogFocus";
+import { getParentTicketsMap, saveParentTicket } from "../../utils/parentStore";
+import { getTeacherCommState, saveTeacherCommState } from "../../utils/teacherStore";
+import ParentPageIntro, {
+  DialogCloseIcon,
+  ParentNotice,
+} from "./ParentPageIntro";
+import { useActiveChild } from "./useActiveChild";
 import "../../styles/parent.css";
 
-// Quick suggestion chips for Exam Ticket Reason (Nielsen H6 Recognition over Recall)
-const REASON_SUGGESTIONS = [
-  "Review calculation mistakes over the weekend",
-  "Prepare for upcoming semester cumulative final",
-  "Clarify multi-step proof grading with child",
-  "Target specific weaknesses in problem solving",
-];
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function buildReportHtml(child, lang, tr) {
+  const rows = (child.reportCard?.subjects || [])
+    .map(
+      (sub) => `<tr>
+        <td>${escapeHtml(sub.name)}</td>
+        <td>${escapeHtml(sub.teacher)}</td>
+        <td>${escapeHtml(sub.credits)}</td>
+        <td>${escapeHtml(sub.grade)}</td>
+        <td><strong>${escapeHtml(sub.letter)}</strong></td>
+      </tr>`
+    )
+    .join("\n");
+
+  return `<!doctype html>
+<html lang="${escapeHtml(lang)}">
+<head>
+  <meta charset="utf-8" />
+  <title>${escapeHtml(tr("Report Card", "Zeugnis"))} - ${escapeHtml(child.name)}</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; color: #1e3b2f; max-width: 780px; margin: 40px auto; padding: 0 24px; line-height: 1.5; }
+    h1 { margin: 0 0 4px; font-size: 24px; }
+    p.meta { margin: 0 0 20px; color: #54665c; }
+    dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; border: 1px solid #d5ddd6; border-radius: 10px; padding: 16px; margin: 0 0 24px; }
+    dt { font-size: 13px; color: #54665c; }
+    dd { margin: 2px 0 0; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #e2e8e3; }
+    th { font-size: 13px; color: #54665c; }
+  </style>
+</head>
+<body>
+  <h1>${escapeHtml(tr("Zinger School — Official Academic Report Card", "Zinger School — Offizielles Halbjahreszeugnis"))}</h1>
+  <p class="meta">${escapeHtml(child.name)} · ${escapeHtml(child.grade)} · ${escapeHtml(child.reportCard?.term)}</p>
+  <dl>
+    <div><dt>${escapeHtml(tr("Status", "Status"))}</dt><dd>${escapeHtml(translateValue(child.reportCard?.status, lang))} (${escapeHtml(child.reportCard?.confirmationDate)})</dd></div>
+    <div><dt>${escapeHtml(tr("Certified by", "Bestätigt durch"))}</dt><dd>${escapeHtml(child.reportCard?.confirmedBy)}</dd></div>
+    <div><dt>${escapeHtml(tr("Cumulative GPA", "Gesamtschnitt (GPA)"))}</dt><dd>${escapeHtml(child.reportCard?.cumulativeGpa)}</dd></div>
+    <div><dt>${escapeHtml(tr("Attendance & Conduct", "Anwesenheit & Verhalten"))}</dt><dd>${escapeHtml(child.reportCard?.attendancePercentage)} · ${escapeHtml(child.reportCard?.conduct)}</dd></div>
+  </dl>
+  <table>
+    <thead><tr><th>${escapeHtml(tr("Subject", "Fach"))}</th><th>${escapeHtml(tr("Teacher", "Lehrkraft"))}</th><th>${escapeHtml(tr("Credits", "Wochenstd."))}</th><th>${escapeHtml(tr("Score", "Punkte"))}</th><th>${escapeHtml(tr("Grade", "Note"))}</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+</body>
+</html>`;
+}
 
 export default function ParentGrades() {
-  const [activeChildId, setActiveChildId] = useState(() => {
-    return localStorage.getItem("parent_active_child") || "ahmed";
+  const location = useLocation();
+  const { lang, tr } = useLanguage();
+  const { activeChildId, child, selectChild } = useActiveChild();
+
+  const REASON_SUGGESTIONS = [
+    tr("Review calculation mistakes over the weekend", "Rechenfehler am Wochenende gemeinsam ansehen"),
+    tr("Prepare for upcoming cumulative assessment", "Auf die bevorstehende Gesamtklausur vorbereiten"),
+    tr("Clarify multi-step proof grading together", "Bewertung mehrschrittiger Beweise gemeinsam klären"),
+    tr("Focus on problem-solving steps at home", "Lösungsschritte zu Hause gezielt üben"),
+  ];
+
+  const routeSignature = `${location.search}${location.hash}`;
+  const urlParams = new URLSearchParams(location.search);
+  const urlSubject = urlParams.get("subject");
+  const urlTab = (() => {
+    const tabParam = urlParams.get("tab");
+    if (tabParam === "history" || tabParam === "exams" || tabParam === "overview") {
+      return tabParam;
+    }
+    if (location.hash === "#exams") return "exams";
+    if (urlSubject) return "overview";
+    return "overview";
+  })();
+
+  const [tabSelection, setTabSelection] = useState({ sig: routeSignature, tab: urlTab });
+  const [subjectSelection, setSubjectSelection] = useState({
+    sig: routeSignature,
+    subjectId: urlSubject || "math",
   });
 
-  const handleSelectChild = (id) => {
-    setActiveChildId(id);
-    localStorage.setItem("parent_active_child", id);
-  };
+  const activeTab =
+    tabSelection.sig === routeSignature ? tabSelection.tab : urlTab;
+  const selectedSubjectId =
+    subjectSelection.sig === routeSignature
+      ? subjectSelection.subjectId
+      : urlSubject || "math";
 
-  const child =
-    parentData.children.find((c) => c.id === activeChildId) ||
-    parentData.children[0];
+  const setActiveTab = (tab) => setTabSelection({ sig: routeSignature, tab });
+  const setSelectedSubjectId = (subjectId) =>
+    setSubjectSelection({ sig: routeSignature, subjectId });
 
-  const [activeTab, setActiveTab] = useState("overview"); // "overview" | "history" | "exams"
-  const [selectedSubjectId, setSelectedSubjectId] = useState("math");
-  const [showReportCardModal, setShowReportCardModal] = useState(false);
-
-  // Nielsen H1 (Status) & H3 (Toast)
-  const [isSubmittingTicket, setIsSubmittingTicket] = useState(false);
-  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
-  const [toastMessage, setToastMessage] = useState(null);
-
-  // P4 Ticket State
-  const [examTickets, setExamTickets] = useState(child.examTickets || []);
-  const [selectedExamForReview, setSelectedExamForReview] = useState(null);
-  const [requestTicketModalExam, setRequestTicketModalExam] = useState(null);
-  const [ticketReason, setTicketReason] = useState("");
-
-  const selectedSubject =
-    child.subjects.find((s) => s.id === selectedSubjectId) ||
-    child.subjects[0];
-
-  const subjectIndex = child.subjects.findIndex(
-    (s) => s.id === selectedSubject.id
+  const [ticketRequestsByChild, setTicketRequestsByChild] = useState(() =>
+    getParentTicketsMap()
   );
+  const [notice, setNotice] = useState(null);
 
-  const prevSubject = () => {
-    const prevIdx =
-      subjectIndex === 0 ? child.subjects.length - 1 : subjectIndex - 1;
-    setSelectedSubjectId(child.subjects[prevIdx].id);
-  };
+  const reportDialogRef = useRef(null);
+  const reportTriggerRef = useRef(null);
 
-  const nextSubject = () => {
-    const nextIdx =
-      subjectIndex === child.subjects.length - 1 ? 0 : subjectIndex + 1;
-    setSelectedSubjectId(child.subjects[nextIdx].id);
-  };
+  const [requestExam, setRequestExam] = useState(null);
+  const [ticketReason, setTicketReason] = useState("");
+  const [isSubmittingTicket, setIsSubmittingTicket] = useState(false);
+  const requestDialogRef = useRef(null);
+  const requestTriggerRef = useRef(null);
 
-  // Keyboard navigation for modals (KLM Efficiency Item 8 & Nielsen H3 Freedom)
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        setShowReportCardModal(false);
-        setRequestTicketModalExam(null);
-        setSelectedExamForReview(null);
-      }
+  const [reviewExam, setReviewExam] = useState(null);
+  const reviewDialogRef = useRef(null);
+  const reviewTriggerRef = useRef(null);
+
+  const subjects = child.subjects || [];
+  const selectedSubject =
+    subjects.find((item) => item.id === selectedSubjectId) || subjects[0];
+  const subjectIndex = subjects.findIndex(
+    (item) => item.id === selectedSubject?.id
+  );
+  const teacherComm = getTeacherCommState();
+  const childTickets = (child.examTickets || []).map((ticket) => {
+    const req = ticketRequestsByChild[child.id]?.[ticket.id];
+    const inboxId = `ptick-${child.id}-${ticket.id}`;
+    const teacherDecision = teacherComm.inboxPatches?.[inboxId];
+    if (teacherDecision) {
+      return {
+        ...ticket,
+        status: teacherDecision.status,
+        requestDate: req?.requestDate || ticket.requestDate,
+        teacherNote: teacherDecision.reply || ticket.teacherNote,
+      };
+    }
+    if (!req) return ticket;
+    return {
+      ...ticket,
+      status: "Pending Approval",
+      requestDate: req.requestDate,
+      teacherNote: tr(
+        "Request sent to teacher inbox. Awaiting teacher approval.",
+        "Anfrage an das Lehrkraft-Postfach gesendet. Freigabe steht aus."
+      ),
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  });
+  const childFirstName = child.name.split(" ")[0];
+  const isReportCardConfirmed =
+    child.reportCard?.status === "Confirmed by Faculty";
 
-  // Async submit ticket with progress spinner (Nielsen H1 Status)
-  const handleSubmitTicket = (e) => {
-    e.preventDefault();
-    if (!requestTicketModalExam) return;
+  const stepSubject = (direction) => {
+    if (subjects.length <= 1) return;
+    const nextIdx =
+      (subjectIndex + direction + subjects.length) % subjects.length;
+    setSelectedSubjectId(subjects[nextIdx].id);
+  };
 
+  const openReportDialog = (event) => {
+    reportTriggerRef.current = event.currentTarget;
+    reportDialogRef.current?.showModal();
+  };
+
+  const printReport = (event) => {
+    if (!isReportCardConfirmed) return;
+    if (!reportDialogRef.current?.open) openReportDialog(event);
+    requestAnimationFrame(() => window.print());
+  };
+
+  const downloadReport = () => {
+    if (!isReportCardConfirmed) return;
+    const blob = new Blob([buildReportHtml(child, lang, tr)], {
+      type: "text/html;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `report-card-${child.id}.html`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setNotice({
+      text: tr(
+        `Downloaded printable report card for ${child.name}.`,
+        `Druckfähiges Zeugnis für ${child.name} heruntergeladen.`
+      ),
+    });
+  };
+
+  useEffect(() => {
+    if (!requestExam) return;
+    const dialog = requestDialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+    return () => {
+      if (dialog.open) dialog.close();
+    };
+  }, [requestExam]);
+
+  const openRequestDialog = (ticket, event) => {
+    requestTriggerRef.current = event.currentTarget;
+    setTicketReason("");
+    setRequestExam(ticket);
+  };
+
+  const closeRequestDialog = () => {
+    setRequestExam(null);
+    requestAnimationFrame(() =>
+      requestTriggerRef.current?.focus({ preventScroll: true })
+    );
+  };
+
+  const handleSubmitTicket = (event) => {
+    event.preventDefault();
+    if (!requestExam || isSubmittingTicket) return;
+    const targetExam = requestExam;
+    const targetChildId = child.id;
     setIsSubmittingTicket(true);
 
     setTimeout(() => {
-      setExamTickets((prev) =>
-        prev.map((t) =>
-          t.id === requestTicketModalExam.id
-            ? {
-                ...t,
-                status: "Pending Approval",
-                requestDate: new Date().toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                }),
-                teacherNote: "Request submitted to teacher. Awaiting review.",
-              }
-            : t
-        )
+      const requestDate = new Date().toLocaleDateString(
+        lang === "de" ? "de-DE" : "en-US",
+        { month: "short", day: "numeric", year: "numeric" }
       );
+      const nextTickets = saveParentTicket(targetChildId, targetExam.id, {
+        requestDate,
+        reason: ticketReason.trim(),
+      });
+      setTicketRequestsByChild(nextTickets);
 
+      const inboxId = `ptick-${targetChildId}-${targetExam.id}`;
+      const prevTeacherComm = getTeacherCommState();
+      const existingInbox = prevTeacherComm.addedInboxItems || [];
+      if (!existingInbox.some((item) => item.id === inboxId)) {
+        saveTeacherCommState({
+          ...prevTeacherComm,
+          addedInboxItems: [
+            {
+              id: inboxId,
+              parentName: `Parent of ${child.name}`,
+              studentName: child.name,
+              classId: "5A",
+              type: "exam_ticket",
+              subject: `Request to view ${targetExam.examTitle}`,
+              assessment: `${targetExam.examTitle} (${targetExam.subject})`,
+              message:
+                ticketReason.trim() ||
+                `Please approve parent access to inspect ${child.name}'s graded booklet.`,
+              time: requestDate,
+              status: "Pending Approval",
+              reply: "",
+            },
+            ...existingInbox,
+          ],
+        });
+      }
       setIsSubmittingTicket(false);
-      setToastMessage(
-        `Ticket submitted to ${requestTicketModalExam.teacher} for ${requestTicketModalExam.examTitle}.`
-      );
-      setRequestTicketModalExam(null);
+      setNotice({
+        text: tr(
+          `View ticket recorded for ${targetExam.examTitle} (${targetExam.teacher}).`,
+          `Einsichtsanfrage für ${targetExam.examTitle} (${targetExam.teacher}) erfasst.`
+        ),
+      });
+      setRequestExam(null);
       setTicketReason("");
-    }, 600);
+      requestAnimationFrame(() =>
+        requestTriggerRef.current?.focus({ preventScroll: true })
+      );
+    }, 350);
   };
 
-  // Async Print / PDF Download with spinner (Nielsen H1 Status)
-  const handlePrint = () => {
-    setIsDownloadingPdf(true);
-    setTimeout(() => {
-      setIsDownloadingPdf(false);
-      window.print();
-    }, 400);
+  useEffect(() => {
+    if (!reviewExam) return;
+    const dialog = reviewDialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+    return () => {
+      if (dialog.open) dialog.close();
+    };
+  }, [reviewExam]);
+
+  const openReviewDialog = (ticket, event) => {
+    reviewTriggerRef.current = event.currentTarget;
+    setReviewExam(ticket);
   };
+
+  const closeReviewDialog = () => {
+    setReviewExam(null);
+    requestAnimationFrame(() =>
+      reviewTriggerRef.current?.focus({ preventScroll: true })
+    );
+  };
+
+  const activeReviewExam = reviewExam
+    ? childTickets.find((item) => item.id === reviewExam.id) || reviewExam
+    : null;
+  const activeRequestExam = requestExam
+    ? childTickets.find((item) => item.id === requestExam.id) || requestExam
+    : null;
 
   return (
-    <div className="parent-page-wrapper">
+    <div className="parent-page">
       <Header role="parent" />
-      <ParentChildBar
-        activeChildId={activeChildId}
-        onSelectChild={handleSelectChild}
-        showBack={true}
-        backTo="/parent"
-        breadcrumbText="Grades & Assessments"
-      />
 
       <main className="parent-container">
-        {/* Wireframe Hero Banner (Item 1: Core Action Identified) */}
-        <section className="wireframe-hero">
-          <h2 className="wireframe-hero-title">Academic Assessment Hub</h2>
-          <p className="wireframe-hero-subtitle">
-            Verified report cards, multi-term progress comparison, and graded exam review for{" "}
-            <strong>{child.name}</strong> ({child.grade})
-          </p>
-        </section>
+        <ParentPageIntro
+          title={tr("Grades & exams", "Noten & Prüfungen")}
+          subtitle={tr(
+            `Report card, term progress, and graded exam review for ${child.name} (${child.grade}).`,
+            `Zeugnis, Halbjahresverlauf und Prüfungseinsicht für ${child.name} (${child.grade}).`
+          )}
+          activeChildId={activeChildId}
+          onSelectChild={selectChild}
+        />
 
-        {/* Navigation Tabs for P2, P3, P4 */}
+        <ParentNotice notice={notice} onDismiss={() => setNotice(null)} />
+
         <div
-          className="flex border-b border-sand/40 gap-2 sm:gap-3 overflow-x-auto pb-1"
+          className="parent-tabs"
           role="tablist"
+          aria-label={tr("Grades and assessment sections", "Bereiche für Noten und Prüfungen")}
         >
           <button
             type="button"
             role="tab"
+            id="tab-overview"
             aria-selected={activeTab === "overview"}
+            aria-controls="panel-overview"
             onClick={() => setActiveTab("overview")}
-            className={`h-9 px-4 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-sand ${
-              activeTab === "overview"
-                ? "bg-forest text-cream shadow-xs"
-                : "bg-white text-forest/75 hover:bg-sand/20"
-            }`}
+            className="parent-tab"
           >
-            <span>📜</span>
-            <span>Current Report Card (P2)</span>
+            {tr("Report card & subjects", "Zeugnis & Fächer")}
           </button>
           <button
             type="button"
             role="tab"
+            id="tab-history"
             aria-selected={activeTab === "history"}
+            aria-controls="panel-history"
             onClick={() => setActiveTab("history")}
-            className={`h-9 px-4 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-sand ${
-              activeTab === "history"
-                ? "bg-forest text-cream shadow-xs"
-                : "bg-white text-forest/75 hover:bg-sand/20"
-            }`}
+            className="parent-tab"
           >
-            <span>📈</span>
-            <span>Progress History (P3)</span>
+            {tr("Progress history", "Entwicklungsverlauf")}
           </button>
           <button
             type="button"
             role="tab"
+            id="tab-exams"
             aria-selected={activeTab === "exams"}
+            aria-controls="panel-exams"
             onClick={() => setActiveTab("exams")}
-            className={`h-9 px-4 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-sand ${
-              activeTab === "exams"
-                ? "bg-forest text-cream shadow-xs"
-                : "bg-white text-forest/75 hover:bg-sand/20"
-            }`}
+            className="parent-tab"
           >
-            <span>📝</span>
-            <span>Exam Paper Tickets ({examTickets.length}) (P4)</span>
+            {tr("Exam access tickets", "Prüfungseinsicht")} ({childTickets.length})
           </button>
         </div>
 
-        {/* ========================================================
-            TAB 1: P2. Current Report Cards & Subject Wireframe
-        ======================================================== */}
         {activeTab === "overview" && (
-          <div className="space-y-6">
-            {/* P2 Report Card Section */}
-            <section className="parent-card">
-              <div className="parent-card-header">
-                <div>
-                  <h3 className="parent-card-title">Official Term Report Card</h3>
-                  <p className="text-[11px] text-forest/70 mt-0.5">
-                    {child.reportCard.term}
-                  </p>
+          <div
+            id="panel-overview"
+            role="tabpanel"
+            aria-labelledby="tab-overview"
+            className="parent-tab-panel"
+          >
+            <section
+              className="parent-panel"
+              aria-labelledby="parent-report-heading"
+            >
+              <div className="parent-panel-heading">
+                <div className="parent-panel-heading-copy">
+                  <h2 id="parent-report-heading">
+                    {tr("Term report card", "Halbjahreszeugnis")}
+                  </h2>
+                  <p className="parent-meta">{child.reportCard?.term}</p>
                 </div>
-                <div className="verified-review-badge">
-                  <span>✓</span>
-                  <span>
-                    {child.reportCard.status} ({child.reportCard.confirmationDate})
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-2xl bg-sand/20 border border-sand/40">
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-forest">
-                    Confirmed Academic Record
-                  </h4>
-                  <p className="text-xs text-forest/80">
-                    Cumulative GPA:{" "}
-                    <span className="font-extrabold text-forest">
-                      {child.reportCard.cumulativeGpa}
-                    </span>{" "}
-                    • Attendance:{" "}
-                    <span className="font-extrabold text-forest">
-                      {child.reportCard.attendancePercentage}
-                    </span>{" "}
-                    • Conduct:{" "}
-                    <span className="font-extrabold text-forest">
-                      {child.reportCard.conduct}
-                    </span>
-                  </p>
-                  <p className="text-[10px] text-forest/60 italic">
-                    Certified by: {child.reportCard.confirmedBy}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2.5 w-full sm:w-auto">
-                  <button
-                    type="button"
-                    onClick={() => setShowReportCardModal(true)}
-                    className="btn-primary flex-1 sm:flex-none"
-                  >
-                    <span>View Full Card</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handlePrint}
-                    disabled={isDownloadingPdf}
-                    className="btn-secondary flex-1 sm:flex-none"
-                  >
-                    {isDownloadingPdf ? (
-                      <>
-                        <span className="loading-spinner" />
-                        <span>Preparing PDF...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>🖨️</span>
-                        <span>Print / PDF</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </section>
-
-            {/* Wireframe Subject Carousel */}
-            <section className="parent-card">
-              <div className="parent-card-header">
-                <h3 className="parent-card-title">Subject's Grades</h3>
-                <span className="text-xs text-forest/70">
-                  Select a subject to inspect evaluation breakdown
+                <span className="parent-meta">
+                  {isReportCardConfirmed
+                    ? `${translateValue(child.reportCard.status, lang)} · ${child.reportCard.confirmationDate}`
+                    : translateValue(child.reportCard?.status, lang) ||
+                      tr("Pending teacher confirmation", "Bestätigung durch Lehrkraft ausstehend")}
                 </span>
               </div>
 
-              <div className="flex items-center justify-center gap-3 py-2">
-                <button
-                  type="button"
-                  onClick={prevSubject}
-                  className="carousel-arrow-btn"
-                  title="Previous Subject"
-                  aria-label="Previous Subject"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  {child.subjects.map((sub) => {
-                    const isSelected = sub.id === selectedSubject.id;
-                    return (
-                      <button
-                        key={sub.id}
-                        type="button"
-                        onClick={() => setSelectedSubjectId(sub.id)}
-                        className={`subject-pill-btn ${
-                          isSelected
-                            ? "subject-pill-btn-active"
-                            : "subject-pill-btn-inactive"
-                        }`}
-                      >
-                        {sub.name}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={nextSubject}
-                  className="carousel-arrow-btn"
-                  title="Next Subject"
-                  aria-label="Next Subject"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </section>
-
-            {/* Wireframe Subject Header */}
-            <section className="wireframe-hero">
-              <h2 className="wireframe-hero-title">{selectedSubject.name}</h2>
-              <p className="wireframe-hero-subtitle">
-                Teacher: {selectedSubject.teacher} • Current Standing:{" "}
-                {selectedSubject.lastGrade}
-              </p>
-            </section>
-
-            {/* Wireframe Evaluation Table */}
-            <section className="parent-card">
-              <div className="parent-card-header">
-                <h3 className="parent-card-title">Grades</h3>
-                <span className="text-xs font-semibold text-sage">
-                  Teacher Verified Class Records
-                </span>
-              </div>
-
-              <div className="grades-table-wrap">
-                <table className="grades-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: "80px" }}>Evaluation</th>
-                      <th>Assignment</th>
-                      <th>Quiz</th>
-                      <th>Class Work</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedSubject.gradesTable.map((row) => (
-                      <tr key={row.id}>
-                        <td className="font-bold text-forest/70">Set #{row.id}</td>
-                        <td>{row.assignment}</td>
-                        <td>{row.quiz}</td>
-                        <td>{row.classWork}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            {/* Wireframe Subject Analysis */}
-            <section className="parent-card">
-              <div className="parent-card-header">
-                <h3 className="parent-card-title">Subject Analysis</h3>
-                <span className="text-xs font-bold text-forest bg-sage/20 px-2.5 py-1 rounded-full">
-                  Individual Assessment
-                </span>
-              </div>
-
-              <div className="analysis-layout">
-                <div className="analysis-info">
-                  <div>
-                    <h4 className="analysis-label">Teacher Observations:</h4>
-                    <ul className="analysis-list mt-2">
-                      {selectedSubject.analysis.details.map((detail, index) => (
-                        <li key={index}>{detail}</li>
-                      ))}
-                    </ul>
+              {isReportCardConfirmed ? (
+                <div className="parent-report-row">
+                  <div className="parent-report-copy">
+                    <h3>{tr("Confirmed academic record", "Bestätigter Leistungsnachweis")}</h3>
+                    <dl className="parent-report-facts">
+                      <div>
+                        <dt>{tr("Cumulative GPA", "Gesamtschnitt (GPA)")}</dt>
+                        <dd>{child.reportCard.cumulativeGpa}</dd>
+                      </div>
+                      <div>
+                        <dt>{tr("Attendance", "Anwesenheit")}</dt>
+                        <dd>{child.reportCard.attendancePercentage}</dd>
+                      </div>
+                      <div>
+                        <dt>{tr("Conduct", "Verhalten")}</dt>
+                        <dd>{child.reportCard.conduct}</dd>
+                      </div>
+                    </dl>
+                    <p className="parent-meta">
+                      {tr("Certified by", "Bestätigt durch")}{" "}
+                      {child.reportCard.confirmedBy}
+                    </p>
                   </div>
 
-                  <div>
-                    <h4 className="analysis-label">Key Takeaways:</h4>
-                    <div className="analysis-takeaway-box mt-1.5">
-                      {selectedSubject.analysis.keyTakeaways}
+                  <div className="parent-actions-row">
+                    <button
+                      type="button"
+                      onClick={openReportDialog}
+                      className="parent-button parent-button-primary"
+                    >
+                      {tr("View report", "Zeugnis ansehen")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={downloadReport}
+                      className="parent-button"
+                    >
+                      <DownloadIcon className="parent-icon-inline" />
+                      {tr("Download report", "Zeugnis herunterladen")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={printReport}
+                      className="parent-button"
+                    >
+                      <PrinterIcon className="parent-icon-inline" />
+                      {tr("Print report", "Zeugnis drucken")}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="parent-empty">
+                  {tr(
+                    "This term report card is awaiting teacher confirmation. Grades and printable/downloadable copies will appear once confirmed.",
+                    "Dieses Halbjahreszeugnis wartet auf die Bestätigung der Lehrkraft. Noten sowie Druck- und Download-Optionen erscheinen danach."
+                  )}
+                </p>
+              )}
+            </section>
+
+            <section
+              className="parent-panel"
+              aria-labelledby="parent-subject-breakdown-heading"
+            >
+              <div className="parent-panel-heading">
+                <div className="parent-panel-heading-copy">
+                  <h2 id="parent-subject-breakdown-heading">
+                    {tr("Subject breakdown", "Fachübersicht")}
+                  </h2>
+                  <p className="parent-meta">
+                    {tr(
+                      "Select a subject to inspect evaluation scores and teacher observations",
+                      "Wählen Sie ein Fach aus, um Einzelnoten und Beobachtungen anzusehen"
+                    )}
+                  </p>
+                </div>
+                <span className="parent-meta">{tr("Demo data", "Demodaten")}</span>
+              </div>
+
+              {!isReportCardConfirmed ? (
+                <p className="parent-empty">
+                  {tr(
+                    `Current subject grades for ${child.name} will appear here once confirmed by the teacher.`,
+                    `Aktuelle Fachnoten für ${child.name} erscheinen nach Bestätigung durch die Lehrkraft.`
+                  )}
+                </p>
+              ) : selectedSubject ? (
+                <>
+                  <div className="parent-subject-toolbar">
+                    <div className="parent-field parent-subject-select-wrap">
+                      <label htmlFor="parent-subject-select">
+                        {tr("Subject", "Fach")}
+                      </label>
+                      <select
+                        id="parent-subject-select"
+                        className="parent-select"
+                        value={selectedSubject.id}
+                        onChange={(event) =>
+                          setSelectedSubjectId(event.target.value)
+                        }
+                      >
+                        {subjects.map((sub) => (
+                          <option key={sub.id} value={sub.id}>
+                            {sub.name} — {sub.lastGrade}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {subjects.length > 1 && (
+                      <div className="parent-subject-step-buttons">
+                        <button
+                          type="button"
+                          onClick={() => stepSubject(-1)}
+                          className="parent-button"
+                        >
+                          <span aria-hidden="true">←</span>{" "}
+                          {tr("Previous subject", "Vorheriges Fach")}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => stepSubject(1)}
+                          className="parent-button"
+                        >
+                          {tr("Next subject", "Nächstes Fach")}{" "}
+                          <span aria-hidden="true">→</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="parent-divider-section">
+                    <h3>
+                      {selectedSubject.name} · {selectedSubject.lastGrade}
+                    </h3>
+                    <p className="parent-meta">
+                      {tr("Teacher:", "Lehrkraft:")} {selectedSubject.teacher} ·{" "}
+                      {tr("Upcoming:", "Demnächst:")} {selectedSubject.upcoming}
+                    </p>
+
+                    <div
+                      className="parent-table-scroll"
+                      role="region"
+                      aria-label={tr(
+                        `${selectedSubject.name} evaluation scores`,
+                        `Einzelbewertungen in ${selectedSubject.name}`
+                      )}
+                      tabIndex={0}
+                    >
+                      <table className="parent-table">
+                        <caption className="parent-sr-only">
+                          {tr(
+                            `${selectedSubject.name} assignments, quizzes, and class work`,
+                            `${selectedSubject.name}: Aufgaben, Kurztests und Mitarbeit`
+                          )}
+                        </caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">{tr("Evaluation", "Bewertung")}</th>
+                            <th scope="col">{tr("Assignment", "Aufgabe")}</th>
+                            <th scope="col">{tr("Quiz", "Kurztest")}</th>
+                            <th scope="col">{tr("Class work", "Unterricht")}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedSubject.gradesTable.map((row) => (
+                            <tr key={row.id}>
+                              <th scope="row">
+                                {tr(`Set #${row.id}`, `Block #${row.id}`)}
+                              </th>
+                              <td>{row.assignment}</td>
+                              <td>{row.quiz}</td>
+                              <td>{row.classWork}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-                </div>
 
-                <div className="analysis-chart-col">
-                  <RadarChart
-                    data={selectedSubject.analysis.radarValues}
-                    size={210}
-                  />
-                  <span className="chart-title-caption">Metrics Graph</span>
-                  <div className="chart-highlight-pill">
-                    ⭐ Excellent work:{" "}
-                    <span className="font-extrabold text-forest">
-                      {selectedSubject.analysis.excellentWork}
-                    </span>
+                  <div className="parent-divider-section parent-two-col">
+                    <div>
+                      <h3>{tr("Teacher observations", "Beobachtungen der Lehrkraft")}</h3>
+                      <ul className="parent-bullet-list">
+                        {selectedSubject.analysis.details.map((detail, idx) => (
+                          <li key={idx}>{detail}</li>
+                        ))}
+                      </ul>
+
+                      <div className="parent-divider-section">
+                        <h3>{tr("Key takeaways", "Wichtigste Einschätzung")}</h3>
+                        <p>{selectedSubject.analysis.keyTakeaways}</p>
+                        <p className="parent-meta">
+                          {tr("Notable work:", "Besondere Leistung:")}{" "}
+                          {selectedSubject.analysis.excellentWork}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3>{tr("Skill metrics", "Kompetenzprofil")}</h3>
+                      <div
+                        className="parent-radar"
+                        role="img"
+                        aria-label={tr(
+                          `${selectedSubject.name} metrics chart. Exact values listed below.`,
+                          `Kompetenzdiagramm für ${selectedSubject.name}. Genaue Werte stehen darunter.`
+                        )}
+                      >
+                        <RadarChart
+                          data={selectedSubject.analysis.radarValues}
+                          size={280}
+                        />
+                      </div>
+                      <ul className="parent-score-bars">
+                        {selectedSubject.analysis.radarValues.map((metric) => (
+                          <li key={metric.label}>
+                            <div className="parent-score-bar-label">
+                              <span>{metric.label}</span>
+                              <span>{metric.value}%</span>
+                            </div>
+                            <div
+                              className="parent-score-bar-track"
+                              role="meter"
+                              aria-label={metric.label}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
+                              aria-valuenow={metric.value}
+                            >
+                              <span style={{ width: `${metric.value}%` }} />
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </>
+              ) : (
+                <p className="parent-empty">
+                  {tr(
+                    `No subject records are available for ${child.name} yet.`,
+                    `Für ${child.name} liegen noch keine Fachdaten vor.`
+                  )}
+                </p>
+              )}
             </section>
           </div>
         )}
 
-        {/* ========================================================
-            TAB 2: P3. Progress History & Comparisons
-        ======================================================== */}
         {activeTab === "history" && (
-          <div className="space-y-6">
-            <section className="parent-card">
-              <div className="parent-card-header">
-                <div>
-                  <h3 className="parent-card-title">Progress Comparison</h3>
-                  <p className="text-[11px] text-forest/70 mt-0.5">
-                    Compare previous grades to see what has improved and what needs attention
+          <div
+            id="panel-history"
+            role="tabpanel"
+            aria-labelledby="tab-history"
+            className="parent-tab-panel"
+          >
+            <section
+              className="parent-panel"
+              aria-labelledby="parent-history-heading"
+            >
+              <div className="parent-panel-heading">
+                <div className="parent-panel-heading-copy">
+                  <h2 id="parent-history-heading">
+                    {tr("Term progress comparison", "Halbjahresvergleich")}
+                  </h2>
+                  <p className="parent-meta">
+                    {tr(
+                      "Compare previous year, midterm, and current term scores",
+                      "Vergleich von Vorjahr, Zwischenstand und aktuellem Halbjahr"
+                    )}
                   </p>
                 </div>
-                <span className="text-xs font-bold text-forest bg-sand/30 px-3 py-1 rounded-full">
-                  Historical Records
-                </span>
+                <span className="parent-meta">{tr("Demo data", "Demodaten")}</span>
               </div>
 
-              <div className="comparison-table-wrap">
-                <table className="comparison-table">
+              <div
+                className="parent-table-scroll"
+                role="region"
+                aria-label={tr("Term progress comparison table", "Vergleichstabelle Halbjahre")}
+                tabIndex={0}
+              >
+                <table className="parent-table">
+                  <caption className="parent-sr-only">
+                    {tr(
+                      `Term-by-term score comparison for ${child.name}`,
+                      `Notenvergleich über mehrere Halbjahre für ${child.name}`
+                    )}
+                  </caption>
                   <thead>
                     <tr>
-                      <th className="text-left pl-4">Subject</th>
-                      <th>Previous Year</th>
-                      <th>Midterm</th>
-                      <th>Current Term</th>
-                      <th>Growth</th>
-                      <th className="text-left pl-4">Teacher Notes</th>
+                      <th scope="col">{tr("Subject", "Fach")}</th>
+                      <th scope="col">{tr("Previous year", "Vorjahr")}</th>
+                      <th scope="col">{tr("Midterm", "Zwischenstand")}</th>
+                      <th scope="col">{tr("Current term", "Aktuelles Halbjahr")}</th>
+                      <th scope="col">{tr("Change", "Veränderung")}</th>
+                      <th scope="col">{tr("Teacher notes", "Anmerkungen")}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {child.progressHistory.comparisons.map((item, idx) => (
-                      <tr key={idx}>
-                        <td className="text-left pl-4 font-bold text-forest">
-                          {item.subject}
-                        </td>
+                    {child.progressHistory.comparisons.map((item) => (
+                      <tr key={item.subject}>
+                        <th scope="row">{item.subject}</th>
                         <td>{item.previous}%</td>
                         <td>{item.midterm}%</td>
-                        <td className="font-bold text-forest">{item.current}%</td>
                         <td>
-                          <span className="trend-badge-up">
-                            <span>▲</span>
-                            <span>{item.change}</span>
-                          </span>
+                          <strong>{item.current}%</strong>
                         </td>
-                        <td className="text-left pl-4 text-forest/75 text-[11px]">
-                          {item.notes}
-                        </td>
+                        <td>{item.change}</td>
+                        <td>{item.notes}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -487,470 +713,496 @@ export default function ParentGrades() {
               </div>
             </section>
 
-            {/* What Improved vs What Still Needs Work (P3 Core) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="parent-card">
-                <h4 className="text-xs font-extrabold text-forest uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                  <span className="text-green-800">📈</span>
-                  <span>What Has Improved</span>
-                </h4>
-                <ul className="space-y-2.5">
+            <div className="parent-two-col">
+              <section
+                className="parent-panel"
+                aria-labelledby="parent-improved-heading"
+              >
+                <div className="parent-panel-heading">
+                  <h2 id="parent-improved-heading">
+                    {tr("What has improved", "Was sich verbessert hat")}
+                  </h2>
+                </div>
+                <ul className="parent-divided-list">
                   {child.progressHistory.improvements.map((item, idx) => (
-                    <li
-                      key={idx}
-                      className="p-3 rounded-xl bg-sage/15 border border-sage/30 text-xs font-semibold text-forest leading-relaxed flex items-start gap-2"
-                    >
-                      <span className="text-green-800 font-bold">✓</span>
-                      <span>{item}</span>
-                    </li>
+                    <li key={idx}>{item}</li>
                   ))}
                 </ul>
-              </div>
+              </section>
 
-              <div className="parent-card">
-                <h4 className="text-xs font-extrabold text-forest uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                  <span className="text-sand font-black">🎯</span>
-                  <span>What Still Needs Work</span>
-                </h4>
-                <ul className="space-y-2.5">
+              <section
+                className="parent-panel"
+                aria-labelledby="parent-needs-work-heading"
+              >
+                <div className="parent-panel-heading">
+                  <h2 id="parent-needs-work-heading">
+                    {tr("What still needs work", "Wo noch Übungsbedarf besteht")}
+                  </h2>
+                </div>
+                <ul className="parent-divided-list">
                   {child.progressHistory.areasNeedingWork.map((item, idx) => (
-                    <li
-                      key={idx}
-                      className="p-3 rounded-xl bg-sand/20 border border-sand/40 text-xs font-semibold text-forest leading-relaxed flex items-start gap-2"
-                    >
-                      <span className="text-sand font-black">→</span>
-                      <span>{item}</span>
-                    </li>
+                    <li key={idx}>{item}</li>
                   ))}
                 </ul>
-              </div>
+              </section>
             </div>
           </div>
         )}
 
-        {/* ========================================================
-            TAB 3: P4. Graded Exam & Quiz Tickets
-        ======================================================== */}
         {activeTab === "exams" && (
-          <div className="space-y-6">
-            <section className="parent-card">
-              <div className="parent-card-header">
-                <div>
-                  <h3 className="parent-card-title">Exam & Quiz Access Tickets</h3>
-                  <p className="text-[11px] text-forest/70 mt-0.5">
-                    Submit a ticket to view graded exam booklets, questions, mistakes, and teacher comments
+          <div
+            id="panel-exams"
+            role="tabpanel"
+            aria-labelledby="tab-exams"
+            className="parent-tab-panel"
+          >
+            <section
+              className="parent-panel"
+              aria-labelledby="parent-tickets-heading"
+            >
+              <div className="parent-panel-heading">
+                <div className="parent-panel-heading-copy">
+                  <h2 id="parent-tickets-heading">
+                    {tr("Exam & quiz access tickets", "Anträge auf Prüfungseinsicht")}
+                  </h2>
+                  <p className="parent-meta">
+                    {tr(
+                      "Request access to view graded exam booklets, questions, and teacher comments",
+                      "Beantragen Sie Einsicht in korrigierte Arbeiten, Aufgaben und Kommentare der Lehrkraft"
+                    )}
                   </p>
                 </div>
-                <span className="text-xs font-bold text-forest bg-sage/20 px-3 py-1 rounded-full">
-                  Confidential Verification
-                </span>
+                <span className="parent-meta">{tr("Demo data", "Demodaten")}</span>
               </div>
 
-              <div className="space-y-3">
-                {examTickets.map((ticket) => {
-                  const isApproved = ticket.status === "Approved";
-                  const isPending = ticket.status === "Pending Approval";
+              {childTickets.length ? (
+                <ul className="parent-divided-list">
+                  {childTickets.map((ticket) => {
+                    const isApproved = ticket.status === "Approved";
+                    const isPending = ticket.status === "Pending Approval";
 
-                  return (
-                    <div key={ticket.id} className="ticket-row-card">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-bold text-forest">
-                            {ticket.examTitle}
-                          </h4>
-                          <span
-                            className={`ticket-status-badge ${
-                              isApproved
-                                ? "ticket-status-approved"
-                                : isPending
-                                ? "ticket-status-pending"
-                                : "ticket-status-none"
-                            }`}
-                          >
-                            {ticket.status}
-                          </span>
+                    return (
+                      <li key={ticket.id} className="parent-ticket-row">
+                        <div>
+                          <div className="parent-ticket-head">
+                            <h3>{ticket.examTitle}</h3>
+                            <span className="parent-status-tag">
+                              {translateValue(ticket.status, lang)}
+                            </span>
+                          </div>
+                          <p className="parent-meta">
+                            {ticket.subject} · {ticket.teacher} ·{" "}
+                            {tr("Exam date", "Prüfungsdatum")} {ticket.examDate} ·{" "}
+                            {tr("Score", "Ergebnis")} {ticket.score}
+                          </p>
+                          <p>{ticket.teacherNote}</p>
                         </div>
-                        <p className="text-xs text-forest/80">
-                          {ticket.subject} • Teacher:{" "}
-                          <span className="font-semibold">{ticket.teacher}</span>{" "}
-                          • Exam Date: {ticket.examDate} • Score:{" "}
-                          <span className="font-bold text-forest">
-                            {ticket.score}
-                          </span>
-                        </p>
-                        <p className="text-[11px] text-forest/65 italic">
-                          Teacher Status Note: "{ticket.teacherNote}"
-                        </p>
-                      </div>
 
-                      <div className="flex items-center gap-2 w-full sm:w-auto">
-                        {isApproved ? (
-                          <button
-                            type="button"
-                            onClick={() => setSelectedExamForReview(ticket)}
-                            className="btn-primary w-full sm:w-auto"
-                          >
-                            <span>🔍</span>
-                            <span>View Graded Paper</span>
-                          </button>
-                        ) : isPending ? (
-                          <span className="w-full sm:w-auto text-center px-4 py-2 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs font-bold">
-                            Ticket Under Teacher Review
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setRequestTicketModalExam(ticket)}
-                            className="btn-secondary w-full sm:w-auto"
-                          >
-                            <span>Submit View Ticket</span>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                        <div>
+                          {isApproved ? (
+                            <button
+                              type="button"
+                              onClick={(event) => openReviewDialog(ticket, event)}
+                              className="parent-button parent-button-primary"
+                            >
+                              {tr("View graded paper", "Korrigierte Arbeit ansehen")}
+                            </button>
+                          ) : isPending ? (
+                            <p className="parent-meta">
+                              {tr("Awaiting teacher review", "Wartet auf Freigabe durch Lehrkraft")}
+                              {ticket.requestDate
+                                ? ` · ${tr("Requested", "Beantragt")} ${ticket.requestDate}`
+                                : ""}
+                            </p>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(event) => openRequestDialog(ticket, event)}
+                              className="parent-button"
+                            >
+                              {tr("Request view ticket", "Einsicht beantragen")}
+                            </button>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="parent-empty">
+                  {tr(
+                    `No graded exam records listed for ${child.name} yet.`,
+                    `Für ${child.name} sind noch keine korrigierten Prüfungen hinterlegt.`
+                  )}
+                </p>
+              )}
             </section>
           </div>
         )}
       </main>
 
-      {/* ========================================================
-          MODAL 1: P2. Official Report Card Modal
-      ======================================================== */}
-      {showReportCardModal && (
-        <div
-          className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-center justify-center p-4"
-          onClick={() => setShowReportCardModal(false)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className="bg-white rounded-2xl border border-sand/50 shadow-2xl max-w-lg w-full p-6 space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-sand/30 pb-3">
+      <dialog
+        ref={reportDialogRef}
+        className="parent-dialog parent-dialog-wide"
+        aria-labelledby="parent-report-dialog-title"
+        aria-describedby="parent-report-demo-note"
+        onClose={() =>
+          reportTriggerRef.current?.focus({ preventScroll: true })
+        }
+        onClick={(event) => {
+          if (event.target === event.currentTarget) {
+            reportDialogRef.current?.close();
+          }
+        }}
+        onKeyDown={keepDialogFocus}
+      >
+        <div className="parent-dialog-content">
+          <header className="parent-dialog-header">
+            <div>
+              <h2 id="parent-report-dialog-title">
+                {tr("Official academic report card", "Offizielles Halbjahreszeugnis")}
+              </h2>
+              <p className="parent-meta">
+                {child.name} · {child.grade} · {child.reportCard?.term}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="parent-dialog-close"
+              aria-label={tr("Close report card", "Zeugnis schließen")}
+              autoFocus
+              onClick={() => reportDialogRef.current?.close()}
+            >
+              <DialogCloseIcon />
+            </button>
+          </header>
+
+          <div className="parent-dialog-body">
+            <dl className="parent-dialog-facts">
               <div>
-                <h3 className="text-base font-bold text-forest">
-                  Official Academic Report Card
-                </h3>
-                <p className="text-xs text-forest/70">
-                  {child.name} • {child.grade}
-                </p>
+                <dt>{tr("Status", "Status")}</dt>
+                <dd>
+                  {translateValue(child.reportCard?.status, lang)} (
+                  {child.reportCard?.confirmationDate})
+                </dd>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowReportCardModal(false)}
-                className="w-8 h-8 rounded-full bg-cream text-forest flex items-center justify-center font-bold text-sm hover:bg-sand/30 cursor-pointer"
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
+              <div>
+                <dt>{tr("Certified by", "Bestätigt durch")}</dt>
+                <dd>{child.reportCard?.confirmedBy}</dd>
+              </div>
+              <div>
+                <dt>{tr("Cumulative GPA", "Gesamtschnitt (GPA)")}</dt>
+                <dd>{child.reportCard?.cumulativeGpa}</dd>
+              </div>
+              <div>
+                <dt>{tr("Attendance & conduct", "Anwesenheit & Verhalten")}</dt>
+                <dd>
+                  {child.reportCard?.attendancePercentage} ·{" "}
+                  {child.reportCard?.conduct}
+                </dd>
+              </div>
+            </dl>
 
-            <div className="p-3 rounded-xl bg-sage/10 border border-sage/30 text-xs">
-              <span className="font-bold text-forest">Status: </span>
-              <span className="text-forest/80">
-                {child.reportCard.status} ({child.reportCard.confirmationDate})
-              </span>
-            </div>
-
-            <div className="space-y-2 text-xs">
-              <table className="w-full text-left border-collapse">
+            <div
+              className="parent-table-scroll"
+              role="region"
+              aria-label={tr("Report card subject scores", "Fachnoten im Zeugnis")}
+              tabIndex={0}
+            >
+              <table className="parent-table">
+                <caption className="parent-sr-only">
+                  {tr(
+                    `Term report card grades for ${child.name}`,
+                    `Halbjahresnoten für ${child.name}`
+                  )}
+                </caption>
                 <thead>
-                  <tr className="border-b border-sand/30 text-forest/75">
-                    <th className="py-1">Subject</th>
-                    <th className="py-1 text-center">Credits</th>
-                    <th className="py-1 text-center">Score</th>
-                    <th className="py-1 text-right">Grade</th>
+                  <tr>
+                    <th scope="col">{tr("Subject", "Fach")}</th>
+                    <th scope="col">{tr("Teacher", "Lehrkraft")}</th>
+                    <th scope="col">{tr("Credits", "Wochenstd.")}</th>
+                    <th scope="col">{tr("Score", "Punkte")}</th>
+                    <th scope="col">{tr("Grade", "Note")}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {child.reportCard.subjects.map((sub, idx) => (
-                    <tr key={idx} className="border-b border-sand/15">
-                      <td className="py-2 font-semibold text-forest">
-                        {sub.name}
-                        <span className="block text-[10px] text-forest/60">
-                          {sub.teacher}
-                        </span>
-                      </td>
-                      <td className="py-2 text-center">{sub.credits}</td>
-                      <td className="py-2 text-center font-bold">{sub.grade}</td>
-                      <td className="py-2 text-right font-extrabold text-forest">
-                        {sub.letter}
+                  {(child.reportCard?.subjects || []).map((sub, idx) => (
+                    <tr key={idx}>
+                      <th scope="row">{sub.name}</th>
+                      <td>{sub.teacher}</td>
+                      <td>{sub.credits}</td>
+                      <td>{sub.grade}</td>
+                      <td>
+                        <strong>{sub.letter}</strong>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-
-              <div className="pt-3 border-t border-sand/30 flex justify-between font-bold text-forest text-sm">
-                <span>Cumulative GPA:</span>
-                <span>{child.reportCard.cumulativeGpa}</span>
-              </div>
             </div>
 
-            <div className="pt-2 flex justify-end gap-2.5">
-              <button
-                type="button"
-                onClick={() => setShowReportCardModal(false)}
-                className="btn-ghost"
-              >
-                Close (Esc)
-              </button>
-              <button
-                type="button"
-                onClick={handlePrint}
-                className="btn-primary"
-              >
-                <span>Print / Save PDF</span>
-              </button>
-            </div>
+            <p id="parent-report-demo-note" className="parent-meta">
+              {tr(
+                "Demo report with example grades. Printing uses your browser's print dialog.",
+                "Demo-Zeugnis mit Beispielnoten. Zum Drucken wird der Druckdialog Ihres Browsers geöffnet."
+              )}
+            </p>
           </div>
-        </div>
-      )}
 
-      {/* ========================================================
-          MODAL 2: P4. Request View Ticket Modal (With Recognition Suggestions)
-      ======================================================== */}
-      {requestTicketModalExam && (
-        <div
-          className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-center justify-center p-4"
-          onClick={() => setRequestTicketModalExam(null)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <form
-            onSubmit={handleSubmitTicket}
-            className="bg-white rounded-2xl border border-sand/50 shadow-2xl max-w-md w-full p-6 space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-sand/30 pb-3">
+          <footer className="parent-dialog-footer">
+            <div className="parent-dialog-footer-actions">
+              <button
+                type="button"
+                className="parent-button"
+                onClick={downloadReport}
+                aria-describedby="parent-report-export-note"
+              >
+                <DownloadIcon className="parent-icon-inline" />
+                {tr("Download report", "Zeugnis herunterladen")}
+              </button>
+              <button
+                type="button"
+                className="parent-button parent-button-primary"
+                onClick={printReport}
+              >
+                <PrinterIcon className="parent-icon-inline" />
+                {tr("Print report", "Zeugnis drucken")}
+              </button>
+            </div>
+            <p className="parent-meta" id="parent-report-export-note">
+              {tr(
+                "Downloads an offline printable HTML copy, or use Print to save as PDF.",
+                "Lädt eine druckfähige HTML-Kopie herunter, oder nutzen Sie Drucken zum Speichern als PDF."
+              )}
+            </p>
+          </footer>
+        </div>
+      </dialog>
+
+      <dialog
+        ref={requestDialogRef}
+        className="parent-dialog"
+        aria-labelledby="parent-ticket-dialog-title"
+        onClose={closeRequestDialog}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) {
+            requestDialogRef.current?.close();
+          }
+        }}
+        onKeyDown={keepDialogFocus}
+      >
+        {activeRequestExam && (
+          <form className="parent-dialog-content" onSubmit={handleSubmitTicket}>
+            <header className="parent-dialog-header">
               <div>
-                <h3 className="text-sm font-bold text-forest">
-                  Request Exam Access Ticket
-                </h3>
-                <p className="text-xs text-forest/70">
-                  {requestTicketModalExam.examTitle}
-                </p>
+                <h2 id="parent-ticket-dialog-title">
+                  {tr("Request exam access ticket", "Prüfungseinsicht beantragen")}
+                </h2>
+                <p className="parent-meta">{activeRequestExam.examTitle}</p>
               </div>
               <button
                 type="button"
-                onClick={() => setRequestTicketModalExam(null)}
-                className="w-8 h-8 rounded-full bg-cream text-forest flex items-center justify-center font-bold text-sm hover:bg-sand/30 cursor-pointer"
-                aria-label="Close"
+                className="parent-dialog-close"
+                aria-label={tr("Close ticket request", "Antragsfenster schließen")}
+                onClick={() => requestDialogRef.current?.close()}
               >
-                ✕
+                <DialogCloseIcon />
               </button>
-            </div>
+            </header>
 
-            <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-xl bg-sand/20 border border-sand/30">
-                <p>
-                  <strong>Recipient:</strong> {requestTicketModalExam.teacher} (
-                  {requestTicketModalExam.subject})
-                </p>
-                <p className="mt-1">
-                  <strong>Exam Date:</strong> {requestTicketModalExam.examDate}
-                </p>
-              </div>
+            <div className="parent-dialog-body">
+              <dl className="parent-dialog-facts">
+                <div>
+                  <dt>{tr("Teacher", "Lehrkraft")}</dt>
+                  <dd>
+                    {activeRequestExam.teacher} ({activeRequestExam.subject})
+                  </dd>
+                </div>
+                <div>
+                  <dt>{tr("Exam date", "Prüfungsdatum")}</dt>
+                  <dd>{activeRequestExam.examDate}</dd>
+                </div>
+              </dl>
 
-              {/* Nielsen H6: Recognition Suggestions */}
-              <div>
-                <label className="block font-bold text-forest mb-1.5">
-                  Suggested Reasons (Click to apply):
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {REASON_SUGGESTIONS.map((sug) => (
+              <div className="parent-field">
+                <label>{tr("Suggested reasons", "Vorgeschlagene Begründung")}</label>
+                <div className="parent-starter-group">
+                  {REASON_SUGGESTIONS.map((suggestion) => (
                     <button
-                      key={sug}
+                      key={suggestion}
                       type="button"
-                      onClick={() => setTicketReason(sug)}
-                      className={`suggestion-chip ${
-                        ticketReason === sug ? "suggestion-chip-active" : ""
-                      }`}
+                      aria-pressed={ticketReason === suggestion}
+                      onClick={() => setTicketReason(suggestion)}
+                      className="parent-button parent-button-quiet"
                     >
-                      {sug}
+                      {suggestion}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="ticket-reason-input" className="block font-bold text-forest mb-1">
-                  Or write specific note to teacher:
+              <div className="parent-field">
+                <label htmlFor="parent-ticket-reason">
+                  {tr("Note to teacher (optional)", "Nachricht an Lehrkraft (optional)")}
                 </label>
                 <textarea
-                  id="ticket-reason-input"
-                  autoFocus
-                  value={ticketReason}
-                  onChange={(e) => setTicketReason(e.target.value)}
-                  placeholder="e.g. Would like to review mistakes with Ahmed over the weekend..."
+                  id="parent-ticket-reason"
                   rows={3}
-                  className="w-full rounded-xl bg-cream/40 border border-sand/40 p-3 text-xs text-forest focus:outline-none focus:ring-2 focus:ring-sand"
+                  autoFocus
+                  className="parent-textarea"
+                  value={ticketReason}
+                  onChange={(event) => setTicketReason(event.target.value)}
+                  placeholder={tr(
+                    `e.g. Would like to review mistakes with ${childFirstName} over the weekend.`,
+                    `z. B. Wir möchten die Fehler am Wochenende gemeinsam mit ${childFirstName} ansehen.`
+                  )}
                 />
               </div>
-            </div>
 
-            <div className="pt-2 flex justify-end gap-2.5">
-              <button
-                type="button"
-                onClick={() => setRequestTicketModalExam(null)}
-                className="btn-ghost"
-              >
-                Cancel (Esc)
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmittingTicket}
-                className="btn-primary"
-              >
-                {isSubmittingTicket ? (
-                  <>
-                    <span className="loading-spinner" />
-                    <span>Submitting Ticket...</span>
-                  </>
-                ) : (
-                  <span>Submit Ticket</span>
+              <p className="parent-meta">
+                {tr(
+                  "Demo request. Status updates stay on this page and are not sent to the teacher.",
+                  "Demo-Anfrage. Statusänderungen bleiben auf dieser Seite und werden nicht an die Lehrkraft gesendet."
                 )}
-              </button>
+              </p>
             </div>
-          </form>
-        </div>
-      )}
 
-      {/* ========================================================
-          MODAL 3: P4. Graded Exam Paper Viewer
-      ======================================================== */}
-      {selectedExamForReview && (
-        <div
-          className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-center justify-center p-4"
-          onClick={() => setSelectedExamForReview(null)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className="bg-white rounded-2xl border border-sand/50 shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-sand/30 pb-3">
+            <footer className="parent-dialog-footer">
+              <div className="parent-dialog-footer-actions">
+                <button
+                  type="button"
+                  className="parent-button"
+                  onClick={() => requestDialogRef.current?.close()}
+                >
+                  {tr("Cancel", "Abbrechen")}
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingTicket}
+                  className="parent-button parent-button-primary"
+                >
+                  {isSubmittingTicket
+                    ? tr("Submitting...", "Wird gesendet...")
+                    : tr("Submit ticket", "Antrag senden")}
+                </button>
+              </div>
+            </footer>
+          </form>
+        )}
+      </dialog>
+
+      <dialog
+        ref={reviewDialogRef}
+        className="parent-dialog parent-dialog-wide"
+        aria-labelledby="parent-exam-review-title"
+        onClose={closeReviewDialog}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) {
+            reviewDialogRef.current?.close();
+          }
+        }}
+        onKeyDown={keepDialogFocus}
+      >
+        {activeReviewExam && (
+          <div className="parent-dialog-content">
+            <header className="parent-dialog-header">
               <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-forest">
-                    {selectedExamForReview.examTitle}
-                  </h3>
-                  <span className="ticket-status-badge ticket-status-approved">
-                    Teacher Approved
-                  </span>
-                </div>
-                <p className="text-xs text-forest/70">
-                  {selectedExamForReview.subject} • Scored:{" "}
-                  <span className="font-bold text-forest">
-                    {selectedExamForReview.score}
-                  </span>{" "}
-                  • Reviewed by {selectedExamForReview.teacher}
+                <h2 id="parent-exam-review-title">{activeReviewExam.examTitle}</h2>
+                <p className="parent-meta">
+                  {activeReviewExam.subject} · {tr("Score", "Ergebnis")}{" "}
+                  {activeReviewExam.score} · {tr("Reviewed by", "Geprüft von")}{" "}
+                  {activeReviewExam.teacher}
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setSelectedExamForReview(null)}
-                className="w-8 h-8 rounded-full bg-cream text-forest flex items-center justify-center font-bold text-sm hover:bg-sand/30 cursor-pointer"
-                aria-label="Close"
+                className="parent-dialog-close"
+                aria-label={tr("Close graded paper", "Korrigierte Arbeit schließen")}
+                autoFocus
+                onClick={() => reviewDialogRef.current?.close()}
               >
-                ✕
+                <DialogCloseIcon />
               </button>
-            </div>
+            </header>
 
-            <div className="p-3 rounded-xl bg-sage/15 border border-sage/40 text-xs">
-              <span className="font-bold text-forest">Teacher Annotation: </span>
-              <span className="text-forest/80 italic">
-                "{selectedExamForReview.teacherNote}"
-              </span>
-            </div>
+            <div className="parent-dialog-body">
+              <p>
+                <strong>{tr("Teacher note:", "Hinweis der Lehrkraft:")}</strong>{" "}
+                {activeReviewExam.teacherNote}
+              </p>
 
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-              {selectedExamForReview.questions?.map((q) => (
-                <div
-                  key={q.num}
-                  className={`question-review-card ${
-                    q.isCorrect
-                      ? "question-review-correct"
-                      : "question-review-mistake"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-bold text-xs text-forest">
-                      Question #{q.num}
-                    </span>
-                    <span
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                        q.isCorrect
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {q.isCorrect ? `Correct (${q.points})` : `Mistake (${q.points})`}
-                    </span>
-                  </div>
-
-                  <p className="text-xs text-forest font-medium">{q.prompt}</p>
-
-                  <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                    <div className="p-2 rounded-lg bg-white/80 border border-sand/30">
-                      <span className="block font-bold text-forest/70">
-                        Ahmed's Answer:
-                      </span>
-                      <span
-                        className={
-                          q.isCorrect
-                            ? "text-forest font-semibold"
-                            : "text-red-700 font-semibold"
-                        }
-                      >
-                        {q.studentAnswer}
-                      </span>
-                    </div>
-
-                    {!q.isCorrect && (
-                      <div className="p-2 rounded-lg bg-white/80 border border-sand/30">
-                        <span className="block font-bold text-green-800">
-                          Correct Solution:
-                        </span>
-                        <span className="text-forest font-semibold">
-                          {q.correctAnswer}
+              {activeReviewExam.questions?.length ? (
+                <ul className="parent-divided-list">
+                  {activeReviewExam.questions.map((q) => (
+                    <li key={q.num}>
+                      <div className="parent-ticket-head">
+                        <h3>{tr(`Question ${q.num}`, `Aufgabe ${q.num}`)}</h3>
+                        <span
+                          className={`parent-status-tag ${
+                            q.isCorrect ? "" : "parent-status-tag-urgent"
+                          }`}
+                        >
+                          {q.isCorrect
+                            ? tr(`Correct (${q.points})`, `Richtig (${q.points})`)
+                            : tr(`Needs review (${q.points})`, `Prüfen (${q.points})`)}
                         </span>
                       </div>
-                    )}
-                  </div>
 
-                  <div className="mt-2 p-2 rounded-lg bg-sand/15 text-[11px] text-forest/90">
-                    <span className="font-bold">Teacher Feedback: </span>
-                    <span>{q.feedback}</span>
-                  </div>
-                </div>
-              ))}
+                      <p>{q.prompt}</p>
+
+                      <div className="parent-question-answer-grid">
+                        <div className="parent-answer-box">
+                          <p className="parent-meta">
+                            {tr(`${childFirstName}'s answer`, `Antwort von ${childFirstName}`)}
+                          </p>
+                          <p>
+                            <strong>{q.studentAnswer}</strong>
+                          </p>
+                        </div>
+
+                        {!q.isCorrect && (
+                          <div className="parent-answer-box">
+                            <p className="parent-meta">
+                              {tr("Expected solution", "Erwartete Lösung")}
+                            </p>
+                            <p>
+                              <strong>{q.correctAnswer}</strong>
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      <p className="parent-meta">
+                        <strong>{tr("Teacher feedback:", "Rückmeldung:")}</strong>{" "}
+                        {q.feedback}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="parent-empty">
+                  {tr(
+                    "No question details are attached to this paper.",
+                    "Für diese Arbeit liegen keine Aufgabendetails vor."
+                  )}
+                </p>
+              )}
             </div>
 
-            <div className="pt-2 flex justify-end gap-2 border-t border-sand/20">
-              <button
-                type="button"
-                onClick={() => setSelectedExamForReview(null)}
-                className="btn-primary"
-              >
-                Close Exam Paper (Esc)
-              </button>
-            </div>
+            <footer className="parent-dialog-footer">
+              <div className="parent-dialog-footer-actions">
+                <button
+                  type="button"
+                  className="parent-button parent-button-primary"
+                  onClick={() => reviewDialogRef.current?.close()}
+                >
+                  {tr("Close", "Schließen")}
+                </button>
+              </div>
+            </footer>
           </div>
-        </div>
-      )}
-
-      {/* Nielsen H1 & H3 Toast Notice */}
-      <Toast
-        message={toastMessage}
-        type="success"
-        onClose={() => setToastMessage(null)}
-      />
+        )}
+      </dialog>
     </div>
   );
 }

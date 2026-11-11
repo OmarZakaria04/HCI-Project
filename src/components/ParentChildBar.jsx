@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { parentData } from "../data/parentData";
+import { getParentData } from "../i18n/parentDataDe";
+import { useLanguage } from "../i18n/useLanguage";
 
 /**
  * Information Architecture Breadcrumbs & Child Selector Tablist (Item 2 & Item 8 KLM)
@@ -13,21 +14,23 @@ export default function ParentChildBar({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { lang, tr } = useLanguage();
+  const parentData = getParentData(lang);
 
   // Compute breadcrumb trail for Information Architecture (Item 2)
   const getBreadcrumb = () => {
     if (breadcrumbText) return breadcrumbText;
     const path = location.pathname;
-    if (path.includes("/grades")) return "Grades & Assessment Hub";
-    if (path.includes("/teachers")) return "Faculty & Conferences";
-    if (path.includes("/chat")) return "Direct Teacher Messages";
-    if (path.includes("/behavior")) return "Behavioral Observations";
-    if (path.includes("/emergency")) return "Emergency Channel";
-    return "Dashboard";
+    if (path.includes("/grades")) return tr("Grades & Assessment Hub", "Noten- & Prüfungsbereich");
+    if (path.includes("/teachers")) return tr("Faculty & Conferences", "Lehrkräfte & Gespräche");
+    if (path.includes("/chat")) return tr("Direct Teacher Messages", "Direkte Nachrichten an Lehrkräfte");
+    if (path.includes("/behavior")) return tr("Behavioral Observations", "Verhaltensbeobachtungen");
+    if (path.includes("/emergency")) return tr("Emergency Channel", "Notfallkanal");
+    return tr("Dashboard", "Übersicht");
   };
 
   return (
-    <div className="parent-subbar" role="navigation" aria-label="Parent Portal Subnavigation">
+    <div className="parent-subbar" role="navigation" aria-label={tr("Parent Portal Subnavigation", "Untermenü des Elternportals")}>
       <div className="parent-subbar-inner">
         {/* Left: Back button & Breadcrumb (Item 2 & Item 4) */}
         <div className="flex items-center gap-2">
@@ -36,7 +39,7 @@ export default function ParentChildBar({
               type="button"
               onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
               className="back-btn"
-              aria-label="Navigate back"
+              aria-label={tr("Navigate back", "Zurück navigieren")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -52,7 +55,7 @@ export default function ParentChildBar({
                   d="M15 19l-7-7 7-7"
                 />
               </svg>
-              <span>Back</span>
+              <span>{tr("Back", "Zurück")}</span>
             </button>
           ) : null}
 
@@ -62,7 +65,7 @@ export default function ParentChildBar({
               onClick={() => navigate("/parent")}
               className="hover:underline cursor-pointer font-bold text-forest"
             >
-              Parent Portal
+              {tr("Parent Portal", "Elternportal")}
             </span>
             <span>/</span>
             <span className="font-semibold text-forest/90">{getBreadcrumb()}</span>
@@ -73,7 +76,7 @@ export default function ParentChildBar({
         <div
           className="child-selector-group"
           role="tablist"
-          aria-label="Select Child Profile"
+          aria-label={tr("Select Child Profile", "Kinderprofil auswählen")}
         >
           {parentData.children.map((child) => {
             const isActive = child.id === activeChildId;
@@ -97,7 +100,7 @@ export default function ParentChildBar({
         {/* Right status badge */}
         <div className="text-right hidden sm:block">
           <span className="text-[11px] font-bold text-sage bg-sage/15 px-2.5 py-1 rounded-full border border-sage/30">
-            Term 1 Active
+            {tr("Term 1 Active", "1. Halbjahr aktiv")}
           </span>
         </div>
       </div>

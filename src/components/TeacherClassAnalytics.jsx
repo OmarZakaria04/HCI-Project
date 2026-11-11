@@ -1,12 +1,15 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { classes, classAnalysis } from "../data/teacherData";
+import { useLanguage } from "../i18n/useLanguage";
+import { getTeacherData } from "../i18n/teacherDataDe";
 import RadarChart from "./RadarChart";
 
-const topicName = (name) => name === "Word Probs" ? "Word problems" : name;
-const score = (value) => Number.isFinite(value) ? `${value}%` : "Not available";
-
 export default function TeacherClassAnalytics() {
+  const { lang, tr } = useLanguage();
+  const { classes, classAnalysis } = getTeacherData(lang);
+  const topicName = (name) => (name === "Word Probs" ? tr("Word problems", "Textaufgaben") : name);
+  const score = (value) => (Number.isFinite(value) ? `${value}%` : tr("Not available", "Nicht verfügbar"));
+
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(classes[0]?.id);
   const searchRef = useRef(null);
@@ -31,12 +34,12 @@ export default function TeacherClassAnalytics() {
   return (
     <section className="class-analytics" aria-labelledby="class-analytics-title">
       <header className="teacher-panel-heading">
-        <h2 id="class-analytics-title">Class analytics</h2>
-        <span>Demo data</span>
+        <h2 id="class-analytics-title">{tr("Class analytics", "Klassenanalyse")}</h2>
+        <span>{tr("Demo data", "Demodaten")}</span>
       </header>
 
       <div className="class-analytics-controls">
-        <div className="class-analytics-classes" role="group" aria-label="Choose a class">
+        <div className="class-analytics-classes" role="group" aria-label={tr("Choose a class", "Klasse auswählen")}>
           {classes.map((item) => (
             <button key={item.id} type="button" aria-pressed={item.id === current?.id}
               disabled={!matchingClasses.some((match) => match.id === item.id)}
@@ -46,32 +49,32 @@ export default function TeacherClassAnalytics() {
           ))}
         </div>
         <div className="class-analytics-search">
-          <label htmlFor="class-topic-search">Search classes or topics</label>
+          <label htmlFor="class-topic-search">{tr("Search classes or topics", "Klassen oder Themen suchen")}</label>
           <div>
             <input ref={searchRef} id="class-topic-search" type="search" value={query}
-              placeholder="Try 5A or fractions" aria-describedby="class-search-status"
+              placeholder={tr("Try 5A or fractions", "z. B. 5A oder Brüche")} aria-describedby="class-search-status"
               onChange={(event) => setQuery(event.target.value)} />
-            <button type="button" onClick={clearSearch} disabled={!query}>Clear search</button>
+            <button type="button" onClick={clearSearch} disabled={!query}>{tr("Clear search", "Suche leeren")}</button>
           </div>
         </div>
       </div>
 
       <p id="class-search-status" className="class-analytics-status" role="status">
-        {matchingClasses.length} {matchingClasses.length === 1 ? "class" : "classes"}
-        {search ? " matching your search" : " available"}
-        {current ? ` · Showing ${current.name}` : ""}.
+        {matchingClasses.length} {matchingClasses.length === 1 ? tr("class", "Klasse") : tr("classes", "Klassen")}{" "}
+        {search ? tr("matching your search", "passend zur Suche") : tr("available", "verfügbar")}
+        {current ? ` · ${tr("Showing", "Angezeigt:")} ${current.name}` : ""}.
       </p>
 
       {!current ? (
         <div className="class-analytics-empty">
-          <h3>{classes.length ? "No matching classes" : "No classes available"}</h3>
-          <p>{classes.length ? "Try a class name or topic, or clear your search to see all classes." : "Class analytics will appear when class data is available."}</p>
+          <h3>{classes.length ? tr("No matching classes", "Keine passenden Klassen") : tr("No classes available", "Keine Klassen verfügbar")}</h3>
+          <p>{classes.length ? tr("Try a class name or topic, or clear your search to see all classes.", "Versuchen Sie einen Klassennamen oder ein Thema, oder leeren Sie die Suche.") : tr("Class analytics will appear when class data is available.", "Klassenanalysen erscheinen, sobald Klassendaten vorliegen.")}</p>
         </div>
       ) : !analysis ? (
         <div className="class-analytics-empty">
           <h3>{current.name}</h3>
-          <p>Analytics are not available for this class yet. Choose another class or open its details.</p>
-          <Link className="teacher-dashboard-button" to={`/teacher/classes/${current.id}`}>View class details</Link>
+          <p>{tr("Analytics are not available for this class yet. Choose another class or open its details.", "Für diese Klasse sind noch keine Analysen verfügbar. Wählen Sie eine andere Klasse oder öffnen Sie die Details.")}</p>
+          <Link className="teacher-dashboard-button" to={`/teacher/classes/${current.id}`}>{tr("View class details", "Klassendetails ansehen")}</Link>
         </div>
       ) : (
         <>
@@ -79,24 +82,24 @@ export default function TeacherClassAnalytics() {
             <div className="class-analytics-summary">
               <h3>{current.name}</h3>
               <dl className="class-analytics-stats">
-                {[['Average', current.average], ['Highest', analysis.highest], ['Lowest', analysis.lowest]].map(([label, value]) => (
+                {[[tr("Average", "Durchschnitt"), current.average], [tr("Highest", "Bestwert"), analysis.highest], [tr("Lowest", "Tiefstwert"), analysis.lowest]].map(([label, value]) => (
                   <div key={label}><dt>{label}</dt><dd>{score(value)}</dd></div>
                 ))}
               </dl>
               <div className="class-analytics-feedback">
-                <h4>Strengths</h4>
-                <p>{analysis.strengths?.length ? analysis.strengths.join(" · ") : "No strengths recorded."}</p>
+                <h4>{tr("Strengths", "Stärken")}</h4>
+                <p>{analysis.strengths?.length ? analysis.strengths.join(" · ") : tr("No strengths recorded.", "Keine Stärken hinterlegt.")}</p>
               </div>
               <div className="class-analytics-feedback">
-                <h4>Topics needing practice</h4>
-                <p>{analysis.weaknesses?.length ? analysis.weaknesses.join(" · ") : "No practice topics recorded."}</p>
+                <h4>{tr("Topics needing practice", "Übungsthemen")}</h4>
+                <p>{analysis.weaknesses?.length ? analysis.weaknesses.join(" · ") : tr("No practice topics recorded.", "Keine Übungsthemen hinterlegt.")}</p>
               </div>
               <Link className="teacher-dashboard-button" to={`/teacher/classes/${current.id}`}>
-                View class details <span aria-hidden="true">→</span>
+                {tr("View class details", "Klassendetails ansehen")} <span aria-hidden="true">→</span>
               </Link>
             </div>
             <div className="class-analytics-topics">
-              <h4>Topic scores</h4>
+              <h4>{tr("Topic scores", "Themenwerte")}</h4>
               {topics.length ? (
                 <>
                   {topics.length >= 3 && <div className="class-analytics-radar" aria-hidden="true"><RadarChart data={topics} size={400} /></div>}
@@ -104,7 +107,7 @@ export default function TeacherClassAnalytics() {
                     {topics.map((topic) => <div key={topic.label}><dt>{topic.label}</dt><dd>{topic.value}%</dd></div>)}
                   </dl>
                 </>
-              ) : <p>No topic scores are available for this class yet.</p>}
+              ) : <p>{tr("No topic scores are available for this class yet.", "Für diese Klasse liegen noch keine Themenwerte vor.")}</p>}
             </div>
           </div>
         </>

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useLanguage } from "../i18n/useLanguage";
 
 /**
  * Nielsen H1 (Status) & H3 (Freedom / Undo) Toast
@@ -7,10 +8,13 @@ export default function Toast({
   message,
   type = "success", // "success" | "info" | "warning"
   undoAction,
-  undoLabel = "Undo",
+  undoLabel,
   onClose,
   duration = 6000,
 }) {
+  const { tr } = useLanguage();
+  const resolvedUndoLabel = undoLabel || tr("Undo", "Rückgängig");
+
   useEffect(() => {
     if (!message) return;
     const timer = setTimeout(() => {
@@ -41,14 +45,14 @@ export default function Toast({
               }}
               className="px-2.5 py-1 rounded-lg bg-sand/30 hover:bg-sand/50 text-cream font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
             >
-              {undoLabel}
+              {resolvedUndoLabel}
             </button>
           )}
           <button
             type="button"
             onClick={onClose}
             className="w-6 h-6 rounded-full hover:bg-white/10 flex items-center justify-center text-xs opacity-75 hover:opacity-100 transition-opacity cursor-pointer"
-            aria-label="Dismiss notice"
+            aria-label={tr("Dismiss notice", "Hinweis ausblenden")}
           >
             ✕
           </button>

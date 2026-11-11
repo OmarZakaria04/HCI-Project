@@ -238,6 +238,13 @@
 
 .workspace-option:has(input:checked) .workspace-option-letter { background: var(--color-forest); color: var(--color-cream); }
 .workspace-option input { width: 20px; height: 20px; accent-color: var(--color-forest); cursor: pointer; }
+.workspace-text-answer { display: grid; gap: 8px; margin-top: 4px; }
+.workspace-text-answer label { font-size: 1rem; font-weight: 600; }
+.workspace-text-answer textarea {
+  width: 100%; min-height: 112px; padding: 14px 16px;
+  border: 1px solid var(--color-sand); border-radius: 12px;
+  background: white; color: var(--color-forest); font: inherit; line-height: 1.5; resize: vertical;
+}
 .workspace-question-footer { padding-top: 24px; border-top: 1px solid var(--workspace-divider); }
 .workspace-tools {
   position: fixed;

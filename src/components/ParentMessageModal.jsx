@@ -1,13 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import keepDialogFocus from "../utils/dialogFocus";
-
-const suggestedMessages = [
-  { label: "Call the school", text: "Please call the school as soon as possible." },
-  { label: "Arrange pickup", text: "Your child needs to be picked up today." },
-  { label: "Urgent update", text: "Please check the app for an urgent update." },
-];
+import { useLanguage } from "../i18n/useLanguage";
 
 export default function ParentMessageModal({ isOpen, parentName, studentName, messages, onSend, onClose }) {
+  const { tr } = useLanguage();
   const [draft, setDraft] = useState("");
   const [emergency, setEmergency] = useState(false);
   const [reviewing, setReviewing] = useState(false);
@@ -19,6 +15,21 @@ export default function ParentMessageModal({ isOpen, parentName, studentName, me
   const reviewTitleRef = useRef(null);
   const logRef = useRef(null);
   const bodyRef = useRef(null);
+
+  const suggestedMessages = [
+    {
+      label: tr("Call the school", "Schule anrufen"),
+      text: tr("Please call the school as soon as possible.", "Bitte rufen Sie so bald wie möglich in der Schule an."),
+    },
+    {
+      label: tr("Arrange pickup", "Abholung organisieren"),
+      text: tr("Your child needs to be picked up today.", "Ihr Kind muss heute abgeholt werden."),
+    },
+    {
+      label: tr("Urgent update", "Dringendes Update"),
+      text: tr("Please check the app for an urgent update.", "Bitte prüfen Sie die App für ein dringendes Update."),
+    },
+  ];
 
   useEffect(() => {
     if (!isOpen) return;
@@ -54,7 +65,11 @@ export default function ParentMessageModal({ isOpen, parentName, studentName, me
       return;
     }
     onSend(draft.trim(), emergency);
-    setStatus(emergency ? "Emergency message added to this conversation." : "Message added to this conversation.");
+    setStatus(
+      emergency
+        ? tr("Emergency message added to this conversation.", "Notfallnachricht zu dieser Unterhaltung hinzugefügt.")
+        : tr("Message added to this conversation.", "Nachricht zu dieser Unterhaltung hinzugefügt.")
+    );
     setDraft("");
     setSuggestion("");
     setEmergency(false);
@@ -68,10 +83,10 @@ export default function ParentMessageModal({ isOpen, parentName, studentName, me
     }} onClose={() => { setReviewing(false); onClose(); }}>
       <header className="tsd-parent-heading">
         <div>
-          <h2 id="tsd-parent-title">Contact parent</h2>
-          <p className="tsd-parent-recipient">To: {parentName}</p>
+          <h2 id="tsd-parent-title">{tr("Contact parent", "Elternteil kontaktieren")}</h2>
+          <p className="tsd-parent-recipient">{tr("To:", "An:")} {parentName}</p>
         </div>
-        <button ref={closeRef} type="button" className="tsd-parent-close" aria-label="Close parent conversation" onClick={() => dialogRef.current.close()}>
+        <button ref={closeRef} type="button" className="tsd-parent-close" aria-label={tr("Close parent conversation", "Eltern-Unterhaltung schließen")} onClick={() => dialogRef.current.close()}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
         </button>
       </header>
@@ -81,37 +96,37 @@ export default function ParentMessageModal({ isOpen, parentName, studentName, me
           {reviewing ? (
             <section className="tsd-parent-review" aria-labelledby="tsd-emergency-review-title">
               <div className="tsd-emergency-notice">
-                <h3 ref={reviewTitleRef} tabIndex={-1} id="tsd-emergency-review-title">Review emergency message</h3>
-                <p>Check the recipient and message before adding it to the conversation.</p>
+                <h3 ref={reviewTitleRef} tabIndex={-1} id="tsd-emergency-review-title">{tr("Review emergency message", "Notfallnachricht prüfen")}</h3>
+                <p>{tr("Check the recipient and message before adding it to the conversation.", "Prüfen Sie Empfänger und Nachricht vor dem Hinzufügen zur Unterhaltung.")}</p>
               </div>
-              <dl className="tsd-review-recipient"><dt>To</dt><dd>{parentName}</dd></dl>
-              <div className="tsd-parent-preview"><h3>Your message</h3><p>{draft.trim()}</p></div>
+              <dl className="tsd-review-recipient"><dt>{tr("To", "An")}</dt><dd>{parentName}</dd></dl>
+              <div className="tsd-parent-preview"><h3>{tr("Your message", "Ihre Nachricht")}</h3><p>{draft.trim()}</p></div>
             </section>
           ) : (
             <>
               <section className="tsd-parent-conversation" aria-labelledby="tsd-parent-conversation-title">
-                <h3 id="tsd-parent-conversation-title">Conversation</h3>
-                <div ref={logRef} className="tsd-chat-log" role="log" aria-label={`Conversation with ${parentName} about ${studentName}`} aria-live="polite" aria-relevant="additions" tabIndex={messages.length ? 0 : undefined}>
+                <h3 id="tsd-parent-conversation-title">{tr("Conversation", "Unterhaltung")}</h3>
+                <div ref={logRef} className="tsd-chat-log" role="log" aria-label={tr(`Conversation with ${parentName} about ${studentName}`, `Unterhaltung mit ${parentName} über ${studentName}`)} aria-live="polite" aria-relevant="additions" tabIndex={messages.length ? 0 : undefined}>
                   {messages.length ? messages.map((message, index) => (
                     <div key={index} className={`tsd-chat-message${message.emergency ? " tsd-parent-emergency-message" : ""}`}>
-                      <div className="tsd-message-heading"><p>{message.from === "teacher" ? "You" : parentName}</p><p>{message.time}</p></div>
-                      {message.emergency && <p className="tsd-emergency-label">Emergency</p>}
+                      <div className="tsd-message-heading"><p>{message.from === "teacher" ? tr("You", "Sie") : parentName}</p><p>{message.time}</p></div>
+                      {message.emergency && <p className="tsd-emergency-label">{tr("Emergency", "Notfall")}</p>}
                       <p>{message.text}</p>
                     </div>
-                  )) : <p className="tsd-meta">No previous messages.</p>}
+                  )) : <p className="tsd-meta">{tr("No previous messages.", "Keine vorherigen Nachrichten.")}</p>}
                 </div>
               </section>
 
               <fieldset className="tsd-message-type">
-                <legend>Message type</legend>
+                <legend>{tr("Message type", "Nachrichtentyp")}</legend>
                 <div className="tsd-type-options">
                   <label className="tsd-type-option">
                     <input type="radio" name="parent-message-type" value="standard" checked={!emergency} onChange={() => { setEmergency(false); setStatus(""); }} />
-                    <span>Standard message</span>
+                    <span>{tr("Standard message", "Standardnachricht")}</span>
                   </label>
                   <label className="tsd-type-option tsd-type-emergency">
                     <input type="radio" name="parent-message-type" value="emergency" checked={emergency} onChange={() => { setEmergency(true); setStatus(""); }} />
-                    <span>Emergency</span>
+                    <span>{tr("Emergency", "Notfall")}</span>
                   </label>
                 </div>
               </fieldset>
@@ -119,11 +134,11 @@ export default function ParentMessageModal({ isOpen, parentName, studentName, me
               {emergency && (
                 <div className="tsd-emergency-details">
                   <div className="tsd-emergency-notice" id="tsd-emergency-help">
-                    <h3>Emergency message</h3>
-                    <p>Use when the parent needs to act immediately.</p>
+                    <h3>{tr("Emergency message", "Notfallnachricht")}</h3>
+                    <p>{tr("Use when the parent needs to act immediately.", "Verwenden, wenn Eltern sofort handeln müssen.")}</p>
                   </div>
                   <div className="tsd-parent-field">
-                    <label htmlFor="tsd-parent-suggestion">Suggested message</label>
+                    <label htmlFor="tsd-parent-suggestion">{tr("Suggested message", "Nachrichtenvorlage")}</label>
                     <select id="tsd-parent-suggestion" value={suggestion} onChange={(event) => {
                       const value = event.target.value;
                       setSuggestion(value);
@@ -133,7 +148,7 @@ export default function ParentMessageModal({ isOpen, parentName, studentName, me
                         composerRef.current.focus();
                       }
                     }}>
-                      <option value="">Choose a starting message</option>
+                      <option value="">{tr("Choose a starting message", "Vorlage auswählen")}</option>
                       {suggestedMessages.map((item, index) => <option key={item.label} value={index}>{item.label}</option>)}
                     </select>
                   </div>
@@ -141,8 +156,8 @@ export default function ParentMessageModal({ isOpen, parentName, studentName, me
               )}
 
               <div className="tsd-parent-field">
-                <label htmlFor="tsd-parent-message">Your message</label>
-                <textarea id="tsd-parent-message" ref={composerRef} rows={4} value={draft} onChange={(event) => { setDraft(event.target.value); setSuggestion(""); setStatus(""); }} aria-describedby={emergency ? "tsd-emergency-help tsd-parent-note" : "tsd-parent-note"} placeholder="Write your message" />
+                <label htmlFor="tsd-parent-message">{tr("Your message", "Ihre Nachricht")}</label>
+                <textarea id="tsd-parent-message" ref={composerRef} rows={4} value={draft} onChange={(event) => { setDraft(event.target.value); setSuggestion(""); setStatus(""); }} aria-describedby={emergency ? "tsd-emergency-help tsd-parent-note" : "tsd-parent-note"} placeholder={tr("Write your message", "Nachricht schreiben")} />
               </div>
             </>
           )}
@@ -150,13 +165,15 @@ export default function ParentMessageModal({ isOpen, parentName, studentName, me
 
         <footer className="tsd-parent-footer">
           <div className="tsd-parent-actions">
-            {reviewing && <button type="button" className="tsd-button" onClick={editMessage}>Back to edit</button>}
+            {reviewing && <button type="button" className="tsd-button" onClick={editMessage}>{tr("Back to edit", "Zurück zum Bearbeiten")}</button>}
             <button type="submit" className={`tsd-button ${emergency ? "tsd-emergency-action" : "tsd-primary"}`} disabled={!draft.trim()}>
-              {emergency ? reviewing ? "Send emergency message" : "Review emergency message" : "Send message"}
+              {emergency
+                ? reviewing ? tr("Send emergency message", "Notfallnachricht senden") : tr("Review emergency message", "Notfallnachricht prüfen")
+                : tr("Send message", "Nachricht senden")}
             </button>
           </div>
           <p className="tsd-parent-status" role="status">{status}</p>
-          <p id="tsd-parent-note" className="tsd-meta">Messages stay on this page and are not delivered.</p>
+          <p id="tsd-parent-note" className="tsd-meta">{tr("Messages stay on this page and are not delivered.", "Nachrichten bleiben auf dieser Seite und werden nicht zugestellt.")}</p>
         </footer>
       </form>
     </dialog>

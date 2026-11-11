@@ -29,6 +29,12 @@
 .homework-upload .hu-close:hover { background: var(--color-cream); }
 .homework-upload .hu-form { display: flex; flex-direction: column; min-height: 0; }
 .homework-upload .hu-body { display: grid; gap: 24px; min-height: 0; padding: 24px; overflow-y: auto; overscroll-behavior: contain; }
+.homework-upload .hu-brief { display: grid; gap: 8px; padding: 14px 16px; border: 1px solid var(--hu-divider); border-radius: 12px; background: var(--color-cream); }
+.homework-upload .hu-brief-list { display: grid; gap: 8px; margin: 0; font-size: 1rem; }
+.homework-upload .hu-brief-list dt { font-weight: 700; font-size: 0.9rem; color: #40584e; }
+.homework-upload .hu-brief-list dd { margin: 2px 0 0; }
+.homework-upload .hu-confirm-check { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+.homework-upload .hu-confirm-check input { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--color-forest); }
 .homework-upload .hu-current { display: grid; gap: 4px; padding-bottom: 20px; border-bottom: 1px solid var(--hu-divider); }
 .homework-upload .hu-meta { color: #40584e; font-size: 1rem; }
 .homework-upload .hu-file-group > .hu-meta { margin-top: 4px; }
@@ -48,7 +54,24 @@
 .homework-upload .hu-sample-button:hover { text-decoration-thickness: 2px; }
 .homework-upload .hu-footer { display: grid; flex-shrink: 0; gap: 16px; padding: 20px 24px; border-top: 1px solid var(--hu-divider); background: white; }
 .homework-upload .hu-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
-.homework-upload button:focus-visible { outline: 2px solid var(--color-forest); outline-offset: 4px; }
+.homework-upload .hu-hard-group { display: grid; gap: 10px; padding-top: 16px; border-top: 1px solid var(--hu-divider); }
+.homework-upload .hu-hard-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.homework-upload .hu-tag-btn {
+  min-width: 52px; min-height: 44px; padding: 6px 14px;
+  border: 1px solid var(--color-sand); border-radius: 10px;
+  background: white; color: var(--color-forest);
+  font: inherit; font-size: 1rem; font-weight: 600; cursor: pointer;
+}
+.homework-upload .hu-tag-btn.is-selected {
+  background: var(--color-forest); border-color: var(--color-forest); color: var(--color-cream);
+}
+.homework-upload .hu-note-label { font-size: 1rem; font-weight: 600; }
+.homework-upload .hu-note-input {
+  width: 100%; min-height: 44px; padding: 10px 14px;
+  border: 1px solid var(--hu-divider); border-radius: 10px;
+  background: white; color: var(--color-forest); font: inherit; font-size: 1rem;
+}
+.homework-upload button:focus-visible, .homework-upload .hu-note-input:focus-visible { outline: 2px solid var(--color-forest); outline-offset: 4px; }
 @media (max-width: 599px) {
   .homework-upload :is(.hu-header, .hu-body, .hu-footer) { padding: 20px; }
   .homework-upload .hu-file-area > button { width: 100%; }

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useLanguage } from "../i18n/useLanguage";
 
 /**
  * Nielsen H5 (Error Prevention) & H3 (Freedom) & KLM (Efficiency)
@@ -6,15 +7,20 @@ import { useEffect, useRef } from "react";
  */
 export default function ConfirmModal({
   isOpen,
-  title = "Are you sure?",
-  message = "This action will take effect immediately.",
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  title,
+  message,
+  confirmLabel,
+  cancelLabel,
   isDestructive = false,
   onConfirm,
   onCancel,
 }) {
+  const { tr } = useLanguage();
   const cancelBtnRef = useRef(null);
+  const resolvedTitle = title ?? tr("Are you sure?", "Sind Sie sicher?");
+  const resolvedMessage = message ?? tr("This action will take effect immediately.", "Diese Aktion wird sofort wirksam.");
+  const resolvedConfirmLabel = confirmLabel ?? tr("Confirm", "Bestätigen");
+  const resolvedCancelLabel = cancelLabel ?? tr("Cancel", "Abbrechen");
 
   useEffect(() => {
     if (!isOpen) return;
@@ -60,10 +66,10 @@ export default function ConfirmModal({
               id="confirm-modal-title"
               className="text-sm font-extrabold text-forest"
             >
-              {title}
+              {resolvedTitle}
             </h3>
             <p className="text-xs text-forest/75 mt-1 leading-relaxed">
-              {message}
+              {resolvedMessage}
             </p>
           </div>
         </div>
@@ -76,7 +82,7 @@ export default function ConfirmModal({
             onClick={onCancel}
             className="px-4 py-2 rounded-xl bg-sand/20 hover:bg-sand/35 text-forest font-bold text-xs transition-colors cursor-pointer"
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </button>
 
           <button
@@ -88,7 +94,7 @@ export default function ConfirmModal({
                 : "bg-forest hover:bg-forest/90 text-cream"
             }`}
           >
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </button>
         </div>
       </div>

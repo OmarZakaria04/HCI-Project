@@ -1,0 +1,1011 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zinger School Portal — QA Testing Checklist (S1–S9, P1–P8, T1–T15)</title>
+  <style>
+    :root {
+      --cream: #f8f5ef;
+      --forest: #1e3b2f;
+      --forest-dark: #183126;
+      --sand: #c8b48a;
+      --sage: #6d8f7b;
+      --border: #dcd4c3;
+      --muted: #4b6157;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--cream);
+      color: var(--forest);
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+    }
+
+    .hero {
+      background: var(--forest-dark);
+      color: var(--cream);
+      border-radius: 16px;
+      padding: 24px 28px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+    .hero h1 {
+      margin: 0 0 6px;
+      font-size: 26px;
+      line-height: 1.2;
+    }
+    .hero p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--sand);
+      background: var(--white);
+      color: var(--forest);
+      font: inherit;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--sand);
+      border-color: var(--sand);
+      color: var(--forest-dark);
+    }
+    .btn:hover { opacity: 0.92; }
+
+    .credentials-card, .toolbar, .section-card {
+      margin-top: 20px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+    }
+
+    .credentials-card h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+    .cred-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .cred-box {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      font-size: 13.5px;
+    }
+    .cred-box strong { display: block; font-size: 15px; margin-bottom: 4px; }
+    code {
+      background: #ece6d9;
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-family: Consolas, monospace;
+      font-size: 12.5px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      position: sticky;
+      top: 10px;
+      z-index: 20;
+      box-shadow: 0 4px 16px rgb(30 59 47 / 8%);
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tab {
+      min-height: 36px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--cream);
+      color: var(--forest);
+      font: inherit;
+      font-weight: 600;
+      font-size: 13.5px;
+      cursor: pointer;
+    }
+    .tab.active {
+      background: var(--forest);
+      border-color: var(--forest);
+      color: var(--cream);
+    }
+
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 220px;
+    }
+    .progress-bar {
+      width: 140px;
+      height: 10px;
+      background: var(--cream);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .progress-bar > span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--forest);
+      transition: width 150ms ease;
+    }
+    .progress-label { font-weight: 700; font-size: 14px; white-space: nowrap; }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-header h2 { margin: 0; font-size: 20px; }
+    .section-header span { color: var(--muted); font-size: 13.5px; font-weight: 600; }
+
+    .check-list {
+      display: grid;
+      gap: 14px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .check-item {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr);
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fdfcf9;
+      break-inside: avoid;
+    }
+    .check-item.done {
+      background: #eef5f0;
+      border-color: #9cb9a6;
+    }
+    .check-box {
+      width: 22px;
+      height: 22px;
+      margin-top: 2px;
+      accent-color: var(--forest);
+      cursor: pointer;
+    }
+    .item-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .item-title {
+      font-weight: 700;
+      font-size: 15.5px;
+    }
+    .route-pill {
+      font-family: Consolas, monospace;
+      font-size: 12px;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: var(--forest);
+    }
+    .steps {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: #243e33;
+      font-size: 14px;
+    }
+    .steps li + li { margin-top: 3px; }
+    .expected {
+      margin: 8px 0 0;
+      padding: 8px 12px;
+      background: var(--white);
+      border-left: 3px solid var(--sand);
+      border-radius: 6px;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+    .expected strong { color: var(--forest); }
+    .note-input {
+      margin-top: 8px;
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      font: inherit;
+      font-size: 13px;
+      background: var(--white);
+      color: var(--forest);
+    }
+    .hidden { display: none !important; }
+
+    @media print {
+      body { background: white; font-size: 12px; }
+      .container { max-width: none; padding: 0; }
+      .hero { background: white; color: #1e3b2f; border: 1px solid #ccc; padding: 14px 16px; }
+      .hero-actions, .toolbar .tabs, #resetBtn { display: none !important; }
+      .toolbar { position: static; box-shadow: none; padding: 10px 14px; margin-top: 12px; }
+      .section-card { border: 1px solid #ccc; padding: 14px 16px; margin-top: 14px; }
+      .check-item { background: white !important; padding: 10px 12px; }
+      .note-input { border-style: solid; border-color: #ddd; }
+      .section-card.hidden { display: block !important; }
+      .check-item.hidden { display: grid !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <div>
+        <h1>Zinger School Portal — Feature &amp; HCI Rules QA Checklist</h1>
+        <p>Step-by-step verification guide for Student (S1–S9), Parent (P1–P8), Teacher (T1–T15), EN/DE switching, and Academic HCI Rules.</p>
+      </div>
+      <div class="hero-actions">
+        <button type="button" class="btn btn-primary" onclick="window.print()">Print / Save as PDF</button>
+        <button type="button" id="resetBtn" class="btn" onclick="resetAll()">Reset checks</button>
+      </div>
+    </header>
+
+    <section class="credentials-card" aria-label="Demo login credentials">
+      <h2>1. Sign-In Accounts &amp; Start Setup</h2>
+      <p style="margin:0 0 12px;font-size:14px;color:var(--muted);">Run <code>npm run dev</code> and open the Login page (<code>/</code>). Use one account at a time or test cross-portal flows in sequence (e.g., Teacher approves &rarr; Student/Parent sees update in the same browser).</p>
+      <div class="cred-grid">
+        <div class="cred-box">
+          <strong>Student Portal — Ahmed Ehab</strong>
+          Email: <code>ahmed@zinger.edu</code><br />
+          Password: <code>student123</code><br />
+          Home: <code>/student</code>
+        </div>
+        <div class="cred-box">
+          <strong>Parent Portal — Mr. Ehab Tawfeek</strong>
+          Email: <code>ehab@zinger.edu</code><br />
+          Password: <code>parent123</code><br />
+          Home: <code>/parent</code>
+        </div>
+        <div class="cred-box">
+          <strong>Teacher Portal — Mrs. Radwa</strong>
+          Email: <code>radwa@zinger.edu</code><br />
+          Password: <code>teacher123</code><br />
+          Home: <code>/teacher</code>
+        </div>
+      </div>
+    </section>
+
+    <div class="toolbar">
+      <div class="tabs" role="tablist" aria-label="Filter role checklist">
+        <button type="button" class="tab active" data-filter="all">All Checks (50)</button>
+        <button type="button" class="tab" data-filter="global">Global (2)</button>
+        <button type="button" class="tab" data-filter="student">Student (S1–S9)</button>
+        <button type="button" class="tab" data-filter="parent">Parent (P1–P8)</button>
+        <button type="button" class="tab" data-filter="teacher">Teacher (T1–T15)</button>
+        <button type="button" class="tab" data-filter="hci">HCI Rules (16)</button>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar" aria-hidden="true"><span id="progressFill"></span></div>
+        <span class="progress-label" id="progressText">0 / 50 checked</span>
+      </div>
+    </div>
+
+    <div id="sectionsRoot"></div>
+  </div>
+
+  <script>
+    const CHECKLIST = [
+      {
+        id: "global",
+        title: "Global Checks — Bilingual Toggle & IT Support",
+        subtitle: "Test on Login & inside every portal",
+        items: [
+          {
+            code: "EN/DE",
+            title: "Bilingual switching across full website",
+            route: "/ · Any Portal Header",
+            steps: [
+              "Open the Login page (/) and click the EN / DE language toggle.",
+              "Sign in to Teacher, Student, and Parent portals and toggle between EN and DE from the top-right header switcher.",
+            ],
+            expected: "Navigation labels, headings, cards, data fixtures, statuses (e.g. Pending -> Ausstehend), and dialogs switch cleanly between English and German.",
+          },
+          {
+            code: "IT1",
+            title: "Global IT Support chat bubble (all roles, non-overlapping)",
+            route: "/ · /student · /parent · /teacher",
+            steps: [
+              "Locate the compact 'IT Support' bubble at the bottom-right on Login, Student, Parent, and Teacher pages.",
+              "Scroll to the bottom of a long page (e.g. /teacher/papers or /student) and verify buttons remain uncovered, or click '›' to tuck it into the right edge tab.",
+              "Click 'IT Support', tap a quick topic chip or type a technical question + Send, verify ticket reply and Esc-to-close.",
+            ],
+            expected: "Present across all routes for all roles, adapts quick topics by active role, persists messages, and never obscures underlying UI.",
+          },
+        ],
+      },
+      {
+        id: "student",
+        title: "Student Portal Checklist (S1–S9)",
+        subtitle: "Sign in as ahmed@zinger.edu / student123",
+        items: [
+          {
+            code: "S1",
+            title: "Grades & downloadable/printable report cards (teacher confirmed)",
+            route: "/student/grades",
+            steps: [
+              "Click Grades in the top navigation bar.",
+              "Check the 'Confirmed by teachers' pill on Report cards and Subject grades, and click 'View grades ->' on Math to inspect subject history.",
+              "Click 'View & download report' to open the Term 1 report card modal.",
+              "Click 'Download report card' and also click 'Print report'.",
+            ],
+            expected: "Only teacher-confirmed subjects/scores appear (plus any paper newly confirmed in Teacher Grading). Download saves an HTML report file and Print opens the print dialog.",
+          },
+          {
+            code: "S2",
+            title: "Assignment tracker (pending & submitted status)",
+            route: "/student",
+            steps: [
+              "On Student Dashboard, scroll to 'Your schoolwork'.",
+              "Note the pending count and statuses for quizzes, exams, and homework.",
+              "Complete an upload (S3) or quiz (S4), navigate to another page, then return to /student.",
+            ],
+            expected: "Completed items show 'Uploaded' or 'Submitted' + 'View summary' / 'Replace upload', and the pending task count updates and persists.",
+          },
+          {
+            code: "S3",
+            title: "Assignment upload vs. online-only quizzes/exams",
+            route: "/student",
+            steps: [
+              "Click 'Upload homework' on 'Plant life cycles worksheet' and review 'Review assignment details' (Instructions, Due date, Submission requirements).",
+              "Click 'Upload file' to choose a .pdf/.docx/.png/.jpg file (or click 'Select sample scan'), check 'Confirm selected file', and click 'Submit assignment'.",
+              "Notice that Quiz ('Fractions and multiples') and Exam ('Reading and grammar') have 'Start quiz' / 'Start exam' instead of file upload.",
+            ],
+            expected: "Homework uses review + file selection + file confirmation + submit; quizzes and exams open only in the online solving workspace.",
+          },
+          {
+            code: "S4",
+            title: "Online solving workspace with tools & per-question timer",
+            route: "/student/workspace/assess-1",
+            steps: [
+              "Click 'Start quiz' on 'Fractions and multiples'.",
+              "Watch the 'Time on this question' counter tick up.",
+              "Click 'Open tools', test the Calculator and Scratchpad notes, then close tools.",
+              "Answer Questions 1–3 (multiple choice) and Question 4 (written text answer), then click 'Submit quiz' and confirm.",
+            ],
+            expected: "Submission summary shows all answers alongside exact seconds spent per question and saves to browser storage.",
+          },
+          {
+            code: "S5",
+            title: "Personalized balanced feedback (only after teacher review)",
+            route: "/student/teachers/mrs-radwa",
+            steps: [
+              "Go to Teachers -> click 'Feedback & messages ->' for Mrs. Radwa.",
+              "Use the 'Assessment' selector to switch between Homework 1 and Quiz 1, checking marks per question and the 'Teacher reviewed & confirmed' pill.",
+              "Click 'Needs practice' and expand 'Inspect correction & suggested practice' on Question 2 to view Your answer, Correction, and run the quick practice.",
+            ],
+            expected: "Confirmed feedback displays balanced positive + constructive comments, per-question marks, corrections, and interactive quick practice.",
+          },
+          {
+            code: "S6",
+            title: "Student-friendly Grades 1–5 progress view",
+            route: "/student",
+            steps: [
+              "Inspect 'Your progress' and 'Topics to practice' on Student Dashboard.",
+              "Verify 'Confirmed standing' banner, 'Your progress across quizzes & exams' (e.g., 'You improved in multiplication!'), and 'Key takeaways'.",
+              "On 'Topics to practice', click 'Practise topic' to answer the quick practice question, or click 'Ask Help'.",
+            ],
+            expected: "Zero 'red flag' wording or dense error analysis; quick practice gives friendly feedback and 'Ask Help' opens teacher chat.",
+          },
+          {
+            code: "S7",
+            title: "Notifications & announcements",
+            route: "/student · /student/announcements",
+            steps: [
+              "Click the bell icon in the header and verify alerts for feedback, assignment, quiz, and announcements.",
+              "Click 'Announcements' in the top nav to view /student/announcements and filter by 'Important Notices Only'.",
+              "Click 'Mark all read' inside the notification bell dropdown.",
+            ],
+            expected: "Unread notifications clear the dot badge, and any new student announcements posted by the teacher appear in both the bell and Announcements feed.",
+          },
+          {
+            code: "S8",
+            title: "Hard-question marking (homework & online quizzes)",
+            route: "/student · /student/workspace/assess-1 · /student/teachers",
+            steps: [
+              "When uploading homework in HomeworkUploadModal, toggle 'Q2' / 'Q4' under 'Mark hard questions' and enter an optional note.",
+              "Inside Online Solving Workspace, click 'Mark as hard' on a question before submitting.",
+              "Open Teachers -> Mr. Ahmed or Mrs. Radwa.",
+            ],
+            expected: "Hard-marked questions appear under 'Questions you marked as hard' on the matching teacher's page (plus 'Marked as hard' badges).",
+          },
+          {
+            code: "S9",
+            title: "Teacher messaging attached to quiz review or specific question",
+            route: "/student/teachers/mrs-radwa",
+            steps: [
+              "On Mrs. Radwa's page, click 'Ask for a review' OR 'Ask about this question' OR 'Attach & ask' on a hard-marked item.",
+              "Verify the attachment preview box appears above the message input, edit/send the message.",
+            ],
+            expected: "Sent message bubble displays the attached quiz/question context card and persists across page refreshes.",
+          },
+        ],
+      },
+      {
+        id: "parent",
+        title: "Parent Portal Checklist (P1–P8)",
+        subtitle: "Sign in as ehab@zinger.edu / parent123",
+        items: [
+          {
+            code: "P1",
+            title: "Child progress metrics (individual only, teacher-reviewed)",
+            route: "/parent",
+            steps: [
+              "Open Parent Dashboard and check the verification line under 'Child progress' ('Verified by Mr. Hosam...').",
+              "Inspect 'Overall standing', Radar chart, 'Teacher key takeaways', 'Individual strengths', and 'Topics to work on'.",
+            ],
+            expected: "Only individual student metrics and strengths/focus areas appear—no class averages, class weaknesses, or peer rankings.",
+          },
+          {
+            code: "P2",
+            title: "Grades & downloadable/printable report cards",
+            route: "/parent/grades",
+            steps: [
+              "Go to Grades & Exams -> stay on 'Report card & subjects' tab.",
+              "Verify status badge ('Confirmed by Faculty').",
+              "Click 'Download' and click 'Print', or open 'View report card' modal.",
+            ],
+            expected: "Confirmed grades and Term 1 report card open cleanly; Download saves a printable HTML report and Print triggers browser print.",
+          },
+          {
+            code: "P3",
+            title: "Progress history comparison",
+            route: "/parent/grades",
+            steps: [
+              "Click the 'Progress history' tab on Grades & Exams.",
+              "Inspect the comparison table (Previous year -> Midterm -> Current term) and the 'What has improved' / 'What still needs work' cards below.",
+            ],
+            expected: "Shows clear multi-term progression, percentage changes, teacher notes, improvements, and remaining focus areas.",
+          },
+          {
+            code: "P4",
+            title: "Graded exam/quiz details & ticket request flow",
+            route: "/parent/grades",
+            steps: [
+              "Click the 'Exam access tickets' tab.",
+              "On an 'Approved' ticket (e.g., Calculus Midterm), click 'View graded paper' to inspect each question, student answer, mistake, and feedback.",
+              "On a 'Not Requested' ticket (World History Test), click 'Request view ticket', enter a reason, and submit.",
+            ],
+            expected: "Approved exams show full question-by-question mistakes/feedback; submitting a ticket moves status to 'Pending Approval' and sends it to the Teacher's inbox.",
+          },
+          {
+            code: "P5",
+            title: "Parent–teacher general communication channel",
+            route: "/parent/chat",
+            steps: [
+              "Click 'Messages' in the top nav.",
+              "Switch teachers in the left sidebar directory, click a message starter or type a question, and click 'Send message'.",
+              "Refresh the page to verify persistence.",
+            ],
+            expected: "Message stays saved in the conversation log per child and teacher.",
+          },
+          {
+            code: "P6",
+            title: "Meeting booking & cancellation",
+            route: "/parent/teachers",
+            steps: [
+              "Go to 'Teachers & Meetings' -> click 'Book meeting' next to a teacher.",
+              "Pick a time slot, choose a format (In-person / Virtual / Phone), enter an agenda, and confirm.",
+              "Check 'Scheduled conferences' below and optionally test 'Cancel conference' + 'Undo cancel'.",
+            ],
+            expected: "New conference persists in the scheduled list and syncs with the Teacher's Meetings tab.",
+          },
+          {
+            code: "P7",
+            title: "Separate emergency channel & alert routing",
+            route: "/parent · /parent/emergency",
+            steps: [
+              "On Parent Dashboard, observe the red urgent clinic banner at the top and click 'Open emergency channel'.",
+              "Click the header notification bell to verify the clinic alert route.",
+              "On /parent/emergency, choose a template (e.g., 'Food allergy notice'), click 'Review & send urgent alert', and confirm in the dialog.",
+            ],
+            expected: "Emergency alerts remain isolated from regular teacher chat, add immediately to the health/safety log, and update the dashboard banner/bell.",
+          },
+          {
+            code: "P8",
+            title: "Teacher-shared behavioral concerns & home support",
+            route: "/parent/behavior",
+            steps: [
+              "Click 'Behavior' in the top nav.",
+              "Review shared observation(s) and 'Recommended home action plan' steps.",
+              "Select or type a home practice update and click 'Save home update', then refresh.",
+            ],
+            expected: "Only concerns flagged as shared by the teacher appear; parent home-practice updates save and persist.",
+          },
+        ],
+      },
+      {
+        id: "teacher",
+        title: "Teacher Portal Checklist (T1–T15)",
+        subtitle: "Sign in as radwa@zinger.edu / teacher123",
+        items: [
+          {
+            code: "T1",
+            title: "Class student list, feedback, messaging & parent contact",
+            route: "/teacher/classes",
+            steps: [
+              "Open Classes -> pick Class 5A -> search for 'Omar' or 'Ahmed'.",
+              "Click 'View student' on Omar Zakaria (5A).",
+              "Test sending a private student message AND click 'Contact parent' to open ParentMessageModal.",
+            ],
+            expected: "Roster filters cleanly; student detail view lets teacher inspect analytics, send student messages, and contact parents.",
+          },
+          {
+            code: "T2",
+            title: "Teacher dashboard (class summary, highest/lowest, strengths/weaknesses)",
+            route: "/teacher",
+            steps: [
+              "On Teacher Dashboard, scroll to 'Class analytics'.",
+              "Switch between classes (5A, 4A, 3B) and test the search box ('fractions').",
+              "Compare class metrics (Average, Highest, Lowest, Strengths, Topics needing practice, Topic scores) with individual student Topic scores in Classes -> View student.",
+            ],
+            expected: "Class-level and student-level evaluation metrics both exist and display clearly.",
+          },
+          {
+            code: "T3",
+            title: "Quiz & assignment creation (Online or Paper)",
+            route: "/teacher/schedule",
+            steps: [
+              "Go to Schedule -> click 'Schedule activity'.",
+              "Choose Type = Quiz or Assignment, pick Format = 'Online' or 'Paper', click '+ Add question' to add prompts & answer key notes, and save.",
+            ],
+            expected: "New card appears under 'Upcoming & scheduled activities' showing the chosen Online/Paper format and attached question/answer-key list.",
+          },
+          {
+            code: "T4",
+            title: "Ready-to-grade queue",
+            route: "/teacher",
+            steps: [
+              "Check 'Papers awaiting review' on Teacher Dashboard (shows pending count, oldest first).",
+              "Click 'Review paper ->' on any pending submission.",
+            ],
+            expected: "Opens the 3-stage grading flow (/teacher/papers/:paperId); completing supervisor confirmation decreases the pending count.",
+          },
+          {
+            code: "T5",
+            title: "Editable OCR answer extraction before grading",
+            route: "/teacher/papers/2",
+            steps: [
+              "Open Omar Zakaria's pending HW1 (/teacher/papers/2, Stage 1: 'Check extracted answers').",
+              "Compare 'Submitted paper' handwriting on the left (48) with 'Extracted answers' Question 1 input on the right (46).",
+              "Edit Question 1's extracted text to '48', then click 'Confirm answers and grade'.",
+            ],
+            expected: "Edited text triggers recalculation after the grading transition so corrected extraction updates AI-suggested grades.",
+          },
+          {
+            code: "T6",
+            title: "AI grading, balanced feedback, editable metrics & auto-upload",
+            route: "/teacher/papers/2",
+            steps: [
+              "In Stage 3 ('Review suggested grades'), toggle 'View question details' to inspect/edit individual question grades (0–1) and comments.",
+              "Edit Feedback (starts with positive opening + constructive tips), Learning gaps, Repeated mistakes, Overall score, and 'Student evaluation metrics' (%).",
+              "Complete Supervisor review (T8).",
+            ],
+            expected: "Every AI item is editable before confirmation; after supervisor confirmation, grades upload automatically.",
+          },
+          {
+            code: "T7",
+            title: "Mark scheme upload & grading reference",
+            route: "/teacher/papers/2",
+            steps: [
+              "In Stage 1, click 'Attach mark scheme' (or expand existing 'Mark scheme: ...') and edit the rubric criteria notes.",
+              "Proceed to Stage 3 and expand 'Reference mark scheme'.",
+            ],
+            expected: "Attached file name and rubric criteria persist in browser storage and remain viewable/editable during Stage 3 grading.",
+          },
+          {
+            code: "T8",
+            title: "Supervisor review & confirmed grade publication",
+            route: "/teacher/papers/2",
+            steps: [
+              "At the bottom of Stage 3, click 'Save teacher review' -> confirm 'Save review' (notice 'Publish confirmed results' stays disabled until supervisor approval).",
+              "Click 'Submit to supervisor', enter an optional note in 'Supervisor review queue', and test 'Supervisor: Confirm assessment' (or 'Request teacher revision').",
+              "Once supervisor confirms, click 'Publish confirmed results' (or test '← Back to extracted answers' to repeat verification/grading edits first).",
+            ],
+            expected: "Publishing is gated until supervisor approval; once published, grades/status update across TeacherHome, TeacherPapers, Student, and Parent views.",
+          },
+          {
+            code: "T9",
+            title: "Learning gaps, recurring mistakes & red flag confirmation/dismissal",
+            route: "/teacher/papers/2 · /teacher/classes/5A/students/2",
+            steps: [
+              "In Paper Review (Stage 3) and Student Details (Omar Zakaria), confirm or dismiss red flags / support flags.",
+              "Verify class-level weaknesses appear only in Teacher views (/teacher, /teacher/classes), never on Student or Parent dashboards.",
+            ],
+            expected: "Teacher can confirm or dismiss flags (with Undo on Student Details), gating student-level findings cleanly.",
+          },
+          {
+            code: "T10",
+            title: "Struggle Signals (erasing noise on scans & time spent on online quizzes)",
+            route: "/teacher/papers/2 · /teacher/papers/4 · /teacher/classes/5A/students/2",
+            steps: [
+              "On scanned paper (/teacher/papers/2 Stage 1 & 3) and online quiz (/teacher/papers/4 or Omar's Quiz 1 in Student Details), locate highlighted 'Struggle signals' (erasing noise % vs. time spent).",
+              "Notice score and flags remain unchanged until teacher acts.",
+              "Choose a Teacher interpretation ('Concept struggle' / 'Hesitation' / 'Benign') and optionally click 'Add note to feedback'.",
+            ],
+            expected: "Signals remain advisory/teacher-private only, never auto-creating grades or red flags, and only enter feedback if teacher chooses.",
+          },
+          {
+            code: "T11",
+            title: "Records archive (open & update older assessments)",
+            route: "/teacher/papers",
+            steps: [
+              "Open Papers -> click the 'Records archive' tab.",
+              "Filter by term, type (Quiz / Assignment / Exam / Gradebook), or search.",
+              "Click 'Open & update' on an archived row, change average score or notes, and click 'Save changes' (also test '+ Archive record').",
+            ],
+            expected: "Archived record updates and persists across refreshes.",
+          },
+          {
+            code: "T12",
+            title: "Student announcements & private 1-on-1 messaging",
+            route: "/teacher/messages · /teacher/classes/5A/students/2",
+            steps: [
+              "Go to Messages -> click the 'Student announcements' tab.",
+              "Publish a new announcement (select class, priority, title, message) -> open Student Portal (/student/announcements or bell) in the same browser.",
+              "Also click 'Open student details ->' to verify private 1-on-1 student messaging.",
+            ],
+            expected: "Published student announcement immediately appears in the Student Announcements feed and Student notification bell.",
+          },
+          {
+            code: "T13",
+            title: "Daily parent announcements",
+            route: "/teacher/messages",
+            steps: [
+              "Go to Messages -> click 'Parent daily updates' tab.",
+              "Fill in Class, Date, 'What students worked on today', and 'Upcoming quizzes & exams', then click 'Publish update to parents'.",
+              "Switch to Parent Dashboard (/parent) and check 'Daily class updates'.",
+            ],
+            expected: "Newly published daily summary & upcoming quiz notice appears on the Parent Dashboard.",
+          },
+          {
+            code: "T14",
+            title: "Parent questions/tickets, meetings & behavioral concerns",
+            route: "/teacher/messages",
+            steps: [
+              "In 'Parent inbox & tickets': approve/decline an exam ticket (including any ticket submitted in P4) and send a reply to a parent question.",
+              "In 'Meetings & behavior': confirm/reschedule a meeting, schedule a new meeting, and log a new behavioral note with 'Share this concern with the parent' toggled on.",
+              "Switch to Parent Portal (/parent/grades, /parent/teachers, /parent/behavior) to verify cross-portal sync.",
+            ],
+            expected: "Ticket approvals, meetings, and shared behavioral notes update in Teacher Messages and reflect immediately in the Parent portal.",
+          },
+          {
+            code: "T15",
+            title: "View Papers page (pending & previously graded)",
+            route: "/teacher/papers",
+            steps: [
+              "Open Papers ('Current submissions' tab).",
+              "Verify both 'Pending' and 'Graded' submissions appear, test Status / Class / Search filters, and click 'Review' on a paper.",
+            ],
+            expected: "Shows full pending and graded assessment history with live filter counts and review links.",
+          },
+        ],
+      },
+      {
+        id: "hci",
+        title: "HCI Rules — Nielsen's 10 Heuristics, Gestalt, Color & Efficiency",
+        subtitle: "16 academic HCI checks confirming usability & visual principles across portals",
+        items: [
+          {
+            code: "H1",
+            title: "Nielsen #1 — Visibility of system status",
+            route: "/teacher/papers/2 · /student",
+            steps: [
+              "Open Paper Review (/teacher/papers/2) and inspect the 3-step workflow bar ('1. Verify extracted answers -> 2. AI grading -> 3. Review & publish').",
+              "Upload homework on /student or save/publish a paper review on /teacher/papers/2 and observe live pending counts, badges, and toast notices.",
+            ],
+            expected: "Users always see which stage they are in, updated status counts, and immediate confirmation notices.",
+          },
+          {
+            code: "H2",
+            title: "Nielsen #2 — Match between system and the real world",
+            route: "/student · /teacher/papers/2",
+            steps: [
+              "Inspect Grade 1–5 student labels ('Topics to practice', 'Let's practice this') and teacher controls ('Back to extracted answers', 'Supervisor review queue').",
+              "Confirm no scary technical error codes or internal developer terms appear on main workflows.",
+            ],
+            expected: "Language matches everyday school terms tailored cleanly to children, parents, and teachers.",
+          },
+          {
+            code: "H3",
+            title: "Nielsen #3 — User control and freedom (undo & emergency exits)",
+            route: "/teacher/papers/2 · /parent/teachers · /bad-url",
+            steps: [
+              "On Stage 3 of /teacher/papers/2, edit scores/feedback then click 'Reset AI defaults' to undo edits, or click '<- Back to extracted answers'.",
+              "Press Esc to close any open modal or header menu, cancel a scheduled parent meeting, or visit /nonexistent-page.",
+            ],
+            expected: "Users can undo edits, navigate back without losing context, close modals with Esc, and exit a 404 page back to any portal.",
+          },
+          {
+            code: "H4",
+            title: "Nielsen #4 — Consistency and standards",
+            route: "All Portals · EN/DE",
+            steps: [
+              "Compare primary/secondary buttons, forest/cream/sand cards, active header nav highlights (aria-current='page'), and EN/DE switching across all 3 portals.",
+            ],
+            expected: "Consistent visual grammar, predictable navigation structure, and uniform terminology across every page.",
+          },
+          {
+            code: "H5",
+            title: "Nielsen #5 — Error prevention",
+            route: "/student · /teacher/papers/2",
+            steps: [
+              "In Homework Upload Modal, select a file and observe 'Submit assignment' remains disabled until 'Confirm selected file' is checked.",
+              "On /teacher/papers/2 with an active red flag set to 'Needs review', click 'Submit to supervisor'.",
+            ],
+            expected: "Disabled invalid actions, confirmation checkboxes, and the unreviewed red-flag guard prevent accidental submissions.",
+          },
+          {
+            code: "H6",
+            title: "Nielsen #6 — Recognition rather than recall",
+            route: "/ · /student · /teacher/papers/2",
+            steps: [
+              "Check Quick Demo role buttons on Login (/), 'Review assignment details' inside Homework Upload Modal, and 'Reference mark scheme' during grading.",
+            ],
+            expected: "Instructions, due dates, requirements, criteria, and demo sign-in options stay visible right at the point of action.",
+          },
+          {
+            code: "H7",
+            title: "Nielsen #7 — Flexibility and efficiency of use",
+            route: "/teacher/papers · /student/teachers/mrs-radwa",
+            steps: [
+              "Use one-click quick status pills ('Pending assessments', 'Graded') on /teacher/papers.",
+              "Click 'Ask about this question' or starter buttons in /student/teachers/mrs-radwa to pre-fill and attach context in one click.",
+            ],
+            expected: "Frequent actions take a single click while full filter/manual options remain available.",
+          },
+          {
+            code: "H8",
+            title: "Nielsen #8 — Aesthetic and minimalist design",
+            route: "/student · /teacher/papers/2",
+            steps: [
+              "Check whitespace, font pairing (Bree Serif + Source Sans 3), <= 2 practice topics on Student Dashboard, and collapsible details panels during grading.",
+            ],
+            expected: "Only relevant details appear upfront; secondary details stay neatly tucked into expandable sections without clutter.",
+          },
+          {
+            code: "H9",
+            title: "Nielsen #9 — Help users recognize, diagnose, and recover from errors",
+            route: "/ · /teacher/papers/2 · /unknown",
+            steps: [
+              "Enter a wrong password on Login (/), upload an invalid extension in HomeworkUploadModal, enter >1 on a question grade, or open /unknown.",
+            ],
+            expected: "Plain-language red alerts explain what failed and tell the user exactly how to fix or recover from it.",
+          },
+          {
+            code: "H10",
+            title: "Nielsen #10 — Help and documentation",
+            route: "/ · Any Portal Header",
+            steps: [
+              "Click the '?' Quick Help & Guide button in the top header of Student, Parent, or Teacher portals, and test 'Forgot password?' / 'Account help' on Login.",
+            ],
+            expected: "Role-specific quick instructions and keyboard shortcuts open cleanly on demand and close via 'Got it' or Esc.",
+          },
+          {
+            code: "G1",
+            title: "Gestalt — Proximity & Similarity",
+            route: "All Portals",
+            steps: [
+              "Inspect assessment rows (title, due date, instructions, action grouped inside one row), metric cards, and matching pill/button families.",
+            ],
+            expected: "Related data and controls sit closely together; controls with similar behavior share identical shape and palette.",
+          },
+          {
+            code: "G2",
+            title: "Gestalt — Continuity, Symmetry & Figure/Ground",
+            route: "/teacher/papers/2 · Modals",
+            steps: [
+              "Inspect the horizontal 3-step bar, symmetric side-by-side paper scan vs. extracted answers on Stage 1, and open any modal dialog.",
+            ],
+            expected: "Aligned columns guide eye flow cleanly; dimmed modal backdrops establish strong foreground/background separation.",
+          },
+          {
+            code: "C1",
+            title: "Color Theory — Desaturated theme vs. saturated CTAs/alerts",
+            route: "All Portals",
+            steps: [
+              "Review cream (#F5F0E6), muted sage (#7F8C6A), sand (#C8B48A), and calm forest (#1E3B2F) surfaces alongside primary CTAs and red error/emergency alerts.",
+            ],
+            expected: "Backgrounds and navigation remain calm and low-fatigue while CTAs and alerts draw immediate attention.",
+          },
+          {
+            code: "C2",
+            title: "Color Physiology — Avoid pure blue on small text or thin lines",
+            route: "All Portals",
+            steps: [
+              "Inspect text links, borders, focus rings, charts, and nav badges across portals to verify none use pure blue (#0000FF) for small text or thin lines.",
+            ],
+            expected: "All UI text and lines use high-contrast forest/cream/sand tones (only dark navy #173c78 is used on large cursive paper handwriting).",
+          },
+          {
+            code: "C3",
+            title: "Color & Tone — Emotional alignment",
+            route: "/student · /parent/emergency",
+            steps: [
+              "Compare the warm, encouraging Grades 1–5 student dashboard tone against the high-urgency Parent Emergency route.",
+            ],
+            expected: "Visual tone supports child calm/confidence while emergency reporting communicates clear seriousness.",
+          },
+          {
+            code: "E1",
+            title: "Human Model Processor — Top-down scanning & responsive feedback",
+            route: "All Portals",
+            steps: [
+              "Scan the top hero banner, pending task badge, quick pills, and click any toggle/filter/practice option to check UI response speed.",
+            ],
+            expected: "Top-down visual hierarchy lets users spot priorities at a glance with instant zero-lag UI feedback.",
+          },
+        ],
+      },
+    ];
+
+    const STORAGE_KEY = "zinger_qa_checklist_v1";
+    let state = (() => {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    })();
+    if (!state.checked) state.checked = {};
+    if (!state.notes) state.notes = {};
+
+    let activeFilter = "all";
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch {}
+    }
+
+    function updateProgress() {
+      const total = CHECKLIST.reduce((sum, s) => sum + s.items.length, 0);
+      const count = CHECKLIST.reduce(
+        (sum, s) => sum + s.items.filter((item) => state.checked[item.code]).length,
+        0
+      );
+      document.getElementById("progressText").textContent = `${count} / ${total} checked`;
+      document.getElementById("progressFill").style.width = `${Math.round((count / total) * 100)}%`;
+    }
+
+    function applyFilter() {
+      document.querySelectorAll(".section-card").forEach((sec) => {
+        const show = activeFilter === "all" || sec.dataset.section === activeFilter;
+        sec.classList.toggle("hidden", !show);
+      });
+    }
+
+    function render() {
+      const root = document.getElementById("sectionsRoot");
+      root.innerHTML = "";
+      CHECKLIST.forEach((sec) => {
+        const card = document.createElement("section");
+        card.className = "section-card";
+        card.dataset.section = sec.id;
+
+        const header = document.createElement("div");
+        header.className = "section-header";
+        header.innerHTML = `<h2>${sec.title}</h2><span>${sec.subtitle}</span>`;
+        card.appendChild(header);
+
+        const ul = document.createElement("ul");
+        ul.className = "check-list";
+
+        sec.items.forEach((item) => {
+          const isDone = Boolean(state.checked[item.code]);
+          const li = document.createElement("li");
+          li.className = `check-item${isDone ? " done" : ""}`;
+
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.className = "check-box";
+          cb.checked = isDone;
+          cb.id = `cb-${item.code}`;
+          cb.setAttribute("aria-label", `${item.code}: ${item.title}`);
+          cb.addEventListener("change", () => {
+            state.checked[item.code] = cb.checked;
+            li.classList.toggle("done", cb.checked);
+            saveState();
+            updateProgress();
+          });
+
+          const body = document.createElement("div");
+          body.innerHTML = `
+            <div class="item-head">
+              <label class="item-title" for="cb-${item.code}">${item.code}. ${item.title}</label>
+              <span class="route-pill">${item.route}</span>
+            </div>
+            <ol class="steps">${item.steps.map((s) => `<li>${s}</li>`).join("")}</ol>
+            <div class="expected"><strong>Expected:</strong> ${item.expected}</div>
+          `;
+
+          const note = document.createElement("input");
+          note.type = "text";
+          note.className = "note-input";
+          note.placeholder = "Tester notes (optional)...";
+          note.value = state.notes[item.code] || "";
+          note.addEventListener("input", () => {
+            state.notes[item.code] = note.value;
+            saveState();
+          });
+          body.appendChild(note);
+
+          li.appendChild(cb);
+          li.appendChild(body);
+          ul.appendChild(li);
+        });
+
+        card.appendChild(ul);
+        root.appendChild(card);
+      });
+
+      updateProgress();
+      applyFilter();
+    }
+
+    document.querySelectorAll(".tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeFilter = btn.dataset.filter;
+        document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b === btn));
+        applyFilter();
+      });
+    });
+
+    window.resetAll = () => {
+      state = { checked: {}, notes: {} };
+      saveState();
+      render();
+    };
+
+    render();
+  </script>
+</body>
+</html>

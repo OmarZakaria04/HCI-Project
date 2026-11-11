@@ -21,6 +21,13 @@
 .teacher-grading .review-metadata dt::after { content: ":"; }
 .teacher-grading .review-metadata dd { font-weight: 600; overflow-wrap: anywhere; }
 .teacher-grading .review-submitted { margin-top: 4px; color: #40584e; font-size: 1rem; }
+.teacher-grading .review-steps { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 16px; padding: 0; list-style: none; }
+.teacher-grading .review-steps li { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border: 1px solid var(--color-sand); border-radius: 999px; background: white; color: #40584e; font-size: 0.95rem; font-weight: 600; }
+.teacher-grading .review-steps li span { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--color-cream); color: var(--color-forest); font-size: 0.85rem; font-weight: 700; }
+.teacher-grading .review-steps li.is-active { background: var(--color-forest); border-color: var(--color-forest); color: var(--color-cream); }
+.teacher-grading .review-steps li.is-active span { background: var(--color-sand); color: var(--color-forest); }
+.teacher-grading .review-steps li.is-done { background: var(--color-cream); color: var(--color-forest); }
+.teacher-grading .review-flag-error { margin-top: 8px; padding: 8px 12px; border-radius: 8px; background: #fff4f2; color: #8a1f17; font-size: 0.9375rem; font-weight: 600; }
 
 .teacher-grading .grade-board { display: flex; flex-direction: column; gap: 24px; margin-top: 24px; padding: 24px; border: 1px solid rgb(200 180 138 / 60%); border-radius: 14px; background: #183126; color: var(--color-cream); box-shadow: 0 1px 2px rgb(30 59 47 / 3%); }
 .teacher-grading .grade-board > * { margin-block: 0; }
@@ -52,6 +59,33 @@
 .teacher-grading .review-answer-field label strong { display: block; font-size: 1.25rem; line-height: 1.4; font-weight: 600; overflow-wrap: anywhere; }
 .teacher-grading .review-answer-field input { display: block; width: 100%; min-height: 48px; padding: 8px 16px; border: 1px solid var(--color-sand); border-radius: 12px; background: var(--color-cream); color: var(--color-forest); font-size: 1.125rem; }
 .teacher-grading .review-answer-field .review-confidence { margin-top: 8px; font-size: 1rem; color: var(--color-sand); }
+.teacher-grading .review-signal-inline { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; padding: 4px 10px; border: 1px solid rgb(200 180 138 / 55%); border-radius: 999px; background: rgb(245 240 230 / 10%); color: var(--color-cream); font-size: 0.9375rem; }
+.teacher-grading .review-signal-inline-highlight { border-color: var(--color-sand); background: rgb(200 180 138 / 20%); font-weight: 600; }
+.teacher-grading .review-struggle-section { padding: 20px; border: 1px solid rgb(200 180 138 / 55%); border-radius: 12px; background: rgb(245 240 230 / 7%); }
+.teacher-grading .review-struggle-header h3 { font-size: 1.25rem; font-weight: 700; color: var(--color-cream); }
+.teacher-grading .review-struggle-header p { margin-top: 4px; color: #d2d7cb; font-size: 0.9375rem; }
+.teacher-grading .review-struggle-list { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; list-style: none; padding: 0; }
+.teacher-grading .review-struggle-item { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid rgb(200 180 138 / 45%); border-radius: 12px; background: rgb(24 49 38 / 90%); }
+.teacher-grading .review-struggle-item-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+.teacher-grading .review-struggle-item-top strong { color: var(--color-cream); font-size: 1.0625rem; }
+.teacher-grading .review-struggle-metric { display: inline-block; padding: 2px 10px; border: 1px solid var(--color-sand); border-radius: 999px; background: var(--color-cream); color: var(--color-forest); font-size: 0.875rem; font-weight: 700; }
+.teacher-grading .review-struggle-context { color: #d2d7cb; font-size: 0.9375rem; }
+.teacher-grading .review-struggle-controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; }
+.teacher-grading .review-struggle-controls label { display: flex; flex-direction: column; gap: 6px; flex: 1 1 260px; min-width: 0; font-size: 0.9375rem; font-weight: 600; }
+.teacher-grading .review-struggle-controls select { min-height: 44px; padding: 6px 12px; border: 1px solid var(--color-sand); border-radius: 12px; background: var(--color-cream); color: var(--color-forest); font: inherit; font-weight: 400; cursor: pointer; }
+.teacher-grading .review-struggle-privacy { color: var(--color-sand); font-size: 0.875rem; font-weight: 600; }
+.teacher-grading .review-scheme-panel { padding: 16px 20px; border: 1px solid rgb(200 180 138 / 50%); border-radius: 12px; background: rgb(245 240 230 / 8%); }
+.teacher-grading .review-scheme-panel summary { cursor: pointer; font-weight: 700; color: var(--color-cream); list-style-position: inside; }
+.teacher-grading .review-scheme-body { display: grid; gap: 10px; margin-top: 12px; font-size: 0.9375rem; color: #d2d7cb; }
+.teacher-grading .review-scheme-body textarea { width: 100%; min-height: 76px; padding: 8px 12px; border: 1px solid var(--color-sand); border-radius: 12px; background: var(--color-cream); color: var(--color-forest); }
+.teacher-grading .review-metrics-box { padding: 20px; border: 1px solid rgb(200 180 138 / 50%); border-radius: 12px; background: rgb(245 240 230 / 7%); }
+.teacher-grading .review-metrics-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 12px; }
+.teacher-grading .review-metrics-grid label { display: grid; gap: 6px; font-size: 0.9375rem; font-weight: 600; }
+.teacher-grading .review-metrics-grid input { width: 100%; min-height: 44px; padding: 6px 12px; border: 1px solid var(--color-sand); border-radius: 12px; background: var(--color-cream); color: var(--color-forest); font-weight: 600; }
+.teacher-grading .review-supervisor-box { display: grid; gap: 12px; padding: 20px; border: 1px solid var(--color-sand); border-radius: 12px; background: rgb(200 180 138 / 14%); }
+.teacher-grading .review-supervisor-box h3 { font-size: 1.125rem; color: var(--color-cream); }
+.teacher-grading .review-supervisor-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.teacher-grading .review-release-note { font-size: 0.9375rem; color: var(--color-sand); font-weight: 600; }
 .teacher-grading .review-no-answers { margin-top: 16px; }
 .teacher-grading .review-workspace-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; margin-top: 24px; padding-top: 20px; border-top: 1px solid rgb(245 240 230 / 25%); }
 .teacher-grading .review-workspace-footer p { color: #d2d7cb; font-size: 1rem; }
@@ -126,6 +160,7 @@
 }
 @media (max-width: 899px) {
   .teacher-grading .review-columns { grid-template-columns: minmax(0, 1fr); }
+  .teacher-grading .review-metrics-grid { grid-template-columns: minmax(0, 1fr); }
   .teacher-grading .review-demo-paper { max-width: 560px; }
   .teacher-grading :is(.grade-review, .review-question-reference) { grid-template-columns: minmax(0, 1fr); }
   .teacher-grading :is(.review-report-fields, .review-report-decisions) { display: flex; flex-direction: column; }
