@@ -173,84 +173,84 @@ export default function ParentBehavior() {
                     <div className="parent-divider-section">
                       <h4>{tr("Home feedback & response", "Rückmeldung von zu Hause")}</h4>
 
-                      {item.parentNote ? (
+                      {item.parentNote && (
                         <p>
                           <strong>{tr("Your note:", "Ihre Notiz:")}</strong>{" "}
                           {item.parentNote}{" "}
                           <span className="parent-meta">
-                            ({tr("Saved on this page", "Auf dieser Seite gespeichert")})
+                            ({tr("Saved and available after refresh", "Gespeichert und nach dem Neuladen verfügbar")})
                           </span>
                         </p>
-                      ) : (
-                        <form
-                          onSubmit={(event) =>
-                            handleSendParentReply(item.id, event)
-                          }
-                          className="parent-composer-form"
-                        >
-                          <div
-                            className="parent-starter-group"
-                            role="group"
-                            aria-label={tr("Suggested home updates", "Vorgeschlagene Rückmeldungen")}
-                          >
-                            {presets.map((preset) => (
-                              <button
-                                key={preset}
-                                type="button"
-                                aria-pressed={draftValue === preset}
-                                onClick={() =>
-                                  setReplyTextMap((prev) => ({
-                                    ...prev,
-                                    [item.id]: preset,
-                                  }))
-                                }
-                                className="parent-button parent-button-quiet"
-                              >
-                                {preset}
-                              </button>
-                            ))}
-                          </div>
-
-                          <div className="parent-field">
-                            <label htmlFor={inputId}>
-                              {tr("Home progress update for", "Rückmeldung für")} {item.teacher}
-                            </label>
-                            <div className="parent-inline-reply">
-                              <input
-                                id={inputId}
-                                type="text"
-                                className="parent-input"
-                                value={draftValue}
-                                onChange={(event) =>
-                                  setReplyTextMap((prev) => ({
-                                    ...prev,
-                                    [item.id]: event.target.value,
-                                  }))
-                                }
-                                placeholder={tr(
-                                  "Write a brief update on home practice",
-                                  "Kurze Rückmeldung zum Üben zu Hause schreiben"
-                                )}
-                              />
-                              <button
-                                type="submit"
-                                disabled={isItemLoading || !draftValue.trim()}
-                                className="parent-button parent-button-primary"
-                              >
-                                {isItemLoading
-                                  ? tr("Saving...", "Speichert...")
-                                  : tr("Save home update", "Rückmeldung speichern")}
-                              </button>
-                            </div>
-                          </div>
-                          <p className="parent-meta">
-                            {tr(
-                              "Demo note. Updates stay on this page and are not delivered to the teacher.",
-                              "Demo-Hinweis. Rückmeldungen bleiben auf dieser Seite und werden nicht an die Lehrkraft gesendet."
-                            )}
-                          </p>
-                        </form>
                       )}
+
+                      <form
+                        onSubmit={(event) =>
+                          handleSendParentReply(item.id, event)
+                        }
+                        className="parent-composer-form"
+                      >
+                        <div
+                          className="parent-starter-group"
+                          role="group"
+                          aria-label={tr("Suggested home updates", "Vorgeschlagene Rückmeldungen")}
+                        >
+                          {presets.map((preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              aria-pressed={draftValue === preset}
+                              onClick={() =>
+                                setReplyTextMap((prev) => ({
+                                  ...prev,
+                                  [item.id]: preset,
+                                }))
+                              }
+                              className="parent-button parent-button-quiet"
+                            >
+                              {preset}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="parent-field">
+                          <label htmlFor={inputId}>
+                            {tr("Home progress update for", "Rückmeldung für")} {item.teacher}
+                          </label>
+                          <div className="parent-inline-reply">
+                            <input
+                              id={inputId}
+                              type="text"
+                              className="parent-input"
+                              value={draftValue}
+                              onChange={(event) =>
+                                setReplyTextMap((prev) => ({
+                                  ...prev,
+                                  [item.id]: event.target.value,
+                                }))
+                              }
+                              placeholder={tr(
+                                "Select a suggestion above or type a home practice update",
+                                "Oben einen Vorschlag auswählen oder eine Rückmeldung zum Üben eingeben"
+                              )}
+                            />
+                            <button
+                              type="submit"
+                              disabled={isItemLoading || !draftValue.trim()}
+                              className="parent-button parent-button-primary"
+                            >
+                              {isItemLoading
+                                ? tr("Saving...", "Speichert...")
+                                : tr("Save home update", "Rückmeldung speichern")}
+                            </button>
+                          </div>
+                        </div>
+                        <p className="parent-meta">
+                          {tr(
+                            "Saving replaces the previous home update and keeps the new update after refresh.",
+                            "Beim Speichern wird die vorherige Rückmeldung ersetzt und die neue bleibt nach dem Neuladen erhalten."
+                          )}
+                        </p>
+                      </form>
                     </div>
                   </li>
                 );

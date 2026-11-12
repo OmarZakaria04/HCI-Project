@@ -27,6 +27,7 @@ export default function TeacherPapers() {
   const searchRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ grade: "", classId: "", paper: "", status: "" });
+  const [sortOrder, setSortOrder] = useState("newest");
 
   // Archive state (T11)
   const [archiveEdits, setArchiveEdits] = useState(() => getArchiveEdits());
@@ -55,6 +56,7 @@ export default function TeacherPapers() {
   const resetFilters = () => {
     setSearchQuery("");
     setFilters({ grade: "", classId: "", paper: "", status: "" });
+    setSortOrder("newest");
     searchRef.current?.focus();
   };
 
@@ -62,16 +64,25 @@ export default function TeacherPapers() {
   const classIds = [...new Set(papers.map((paper) => paper.classId))].sort();
   const paperNames = [...new Set(papers.map((paper) => paper.paper))].sort();
   const query = searchQuery.trim().toLowerCase();
-  const visible = papers.filter((paper) => (
-    (!query || paper.student.toLowerCase().includes(query) || paper.classId.toLowerCase().includes(query)) &&
-    (!filters.grade || String(paper.grade) === filters.grade) &&
-    (!filters.classId || paper.classId === filters.classId) &&
-    (!filters.paper || paper.paper === filters.paper) &&
-    (!filters.status || paper.status === filters.status)
-  ));
+  const visible = papers
+    .filter((paper) => (
+      (!query || paper.student.toLowerCase().includes(query) || paper.classId.toLowerCase().includes(query)) &&
+      (!filters.grade || String(paper.grade) === filters.grade) &&
+      (!filters.classId || paper.classId === filters.classId) &&
+      (!filters.paper || paper.paper === filters.paper) &&
+      (!filters.status || paper.status === filters.status)
+    ))
+    .sort((a, b) => {
+      const aOrder = submissionDate(a.submitted, lang)?.order;
+      const bOrder = submissionDate(b.submitted, lang)?.order;
+      if (aOrder == null && bOrder == null) return String(a.id).localeCompare(String(b.id));
+      if (aOrder == null) return 1;
+      if (bOrder == null) return -1;
+      return sortOrder === "oldest" ? aOrder - bOrder : bOrder - aOrder;
+    });
   const pendingCount = papers.filter((paper) => paper.status === "Pending").length;
   const gradedCount = papers.filter((paper) => paper.status === "Graded").length;
-  const isFiltered = searchQuery !== "" || Object.values(filters).some(Boolean);
+  const isFiltered = searchQuery !== "" || Object.values(filters).some(Boolean) || sortOrder !== "newest";
 
   // Archive filtering
   const archiveTerms = [...new Set(archiveList.map((r) => r.term))];
@@ -192,6 +203,13 @@ export default function TeacherPapers() {
               <option value="">{tr("All statuses", "Alle Status")}</option>
               <option value="Pending">{translateValue("Pending", lang)}</option>
               <option value="Graded">{translateValue("Graded", lang)}</option>
+            </select>
+          </label>
+          <label>
+            <span>{tr("Sort by", "Sortieren nach")}</span>
+            <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value)}>
+              <option value="newest">{tr("Newest first", "Neueste zuerst")}</option>
+              <option value="oldest">{tr("Oldest first", "Älteste zuerst")}</option>
             </select>
           </label>
         </div>

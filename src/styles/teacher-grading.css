@@ -27,7 +27,7 @@
 .teacher-grading .review-steps li.is-active { background: var(--color-forest); border-color: var(--color-forest); color: var(--color-cream); }
 .teacher-grading .review-steps li.is-active span { background: var(--color-sand); color: var(--color-forest); }
 .teacher-grading .review-steps li.is-done { background: var(--color-cream); color: var(--color-forest); }
-.teacher-grading .review-flag-error { margin-top: 8px; padding: 8px 12px; border-radius: 8px; background: #fff4f2; color: #8a1f17; font-size: 0.9375rem; font-weight: 600; }
+.teacher-grading .review-flag-error { position: static; display: block; margin: 0; padding: 8px 12px; border: 1px solid #d8867f; border-radius: 8px; background: #fff4f2; color: #8a1f17; font-size: 0.9375rem; font-weight: 600; line-height: 1.4; }
 
 .teacher-grading .grade-board { display: flex; flex-direction: column; gap: 24px; margin-top: 24px; padding: 24px; border: 1px solid rgb(200 180 138 / 60%); border-radius: 14px; background: #183126; color: var(--color-cream); box-shadow: 0 1px 2px rgb(30 59 47 / 3%); }
 .teacher-grading .grade-board > * { margin-block: 0; }
@@ -111,7 +111,7 @@
 .teacher-grading .review-report-field textarea { resize: vertical; }
 .teacher-grading .review-report-field textarea::placeholder { color: #40584e; opacity: 1; }
 .teacher-grading .review-report-decisions { display: grid; grid-row: span 3; grid-template-rows: subgrid; min-width: 0; gap: 24px; padding-left: 24px; border-left: 1px solid rgb(245 240 230 / 25%); }
-.teacher-grading .review-report-decisions .review-flags-field { display: contents; }
+.teacher-grading .review-report-decisions .review-flags-field { display: flex; min-width: 0; flex-direction: column; gap: 12px; }
 .teacher-grading .review-report-decisions .review-flags-field > .review-report-field { display: flex; min-width: 0; flex-direction: column; }
 .teacher-grading .review-report-decisions .review-flags-field textarea { flex: 1; }
 .teacher-grading .review-score-summary { display: grid; grid-template-columns: minmax(0, 1fr) 96px; align-items: center; gap: 12px 16px; padding: 16px; border-radius: 12px; background: var(--color-cream); color: var(--color-forest); }
