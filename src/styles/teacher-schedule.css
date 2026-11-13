@@ -88,6 +88,70 @@
 .teacher-schedule .schedule-dialog .schedule-meta { color: #40584e; }
 .teacher-schedule .schedule-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .teacher-schedule .schedule-form-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.teacher-schedule .schedule-field-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff8f0;
+  border: 1.5px solid #f97316;
+  color: #7c2d12;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  box-shadow: 0 2px 8px rgb(249 115 22 / 12%);
+}
+.teacher-schedule .schedule-field-warning svg {
+  flex-shrink: 0;
+  color: #c2410c;
+  margin-top: 2px;
+}
+.teacher-schedule .schedule-warning-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.teacher-schedule .schedule-warning-content strong {
+  font-weight: 700;
+  color: #9a3412;
+  font-size: 0.9375rem;
+}
+.teacher-schedule .schedule-warning-content span {
+  color: #7c2d12;
+  font-size: 0.875rem;
+}
+.teacher-schedule .schedule-warning-action {
+  align-self: center;
+  flex-shrink: 0;
+  min-height: 38px;
+  padding: 6px 14px;
+  background: #ea580c;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 15%);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.teacher-schedule .schedule-warning-action:hover {
+  background: #c2410c;
+}
+.teacher-schedule .schedule-warning-action:active {
+  transform: translateY(1px);
+}
+.teacher-schedule .schedule-warning-action:focus-visible {
+  outline: 2px solid #9a3412;
+  outline-offset: 2px;
+}
+.teacher-schedule input[aria-invalid="true"] {
+  border-color: #ea580c !important;
+  background-color: #fffaf5;
+}
 .teacher-schedule .schedule-builder { display: grid; gap: 12px; padding: 16px; border: 1px solid color-mix(in srgb, var(--color-sand) 60%, white); border-radius: 12px; background: var(--color-cream); }
 .teacher-schedule .schedule-builder-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
 .teacher-schedule .schedule-builder-head h3 { font-size: 1.0625rem; }

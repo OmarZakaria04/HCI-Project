@@ -6,6 +6,19 @@ import "../../styles/teacher-schedule.css";
 
 const activityTypes = ["Assignment", "Quiz", "Exam", "Lesson"];
 
+function getTodayIso() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function isPastDate(dateStr) {
+  if (!dateStr) return false;
+  return dateStr < getTodayIso();
+}
+
 export default function TeacherSchedule() {
   const { lang, tr } = useLanguage();
   const {
@@ -65,9 +78,10 @@ export default function TeacherSchedule() {
   function openCreate(slot) {
     const selectedClass = classes.find((item) => item.id === slot?.classId) ??
       classes.find((item) => item.id === classFilter) ?? classes[0];
+    const today = getTodayIso();
     setModal({ kind: "create", draft: {
       title: "", classId: selectedClass?.id ?? "", grade: selectedClass?.grade ?? "",
-      type: "Assignment", deliveryMode: "Online", date: "", time: tr("11:59 PM", "23:59 Uhr"),
+      type: "Assignment", deliveryMode: "Online", date: today, time: tr("11:59 PM", "23:59 Uhr"),
       description: "", status: "Upcoming", questions: [],
     } });
   }
@@ -76,11 +90,32 @@ export default function TeacherSchedule() {
     event.preventDefault();
     const form = event.currentTarget;
     const titleInput = form.elements.namedItem("title");
+    const dateInput = form.elements.namedItem("date");
+
     if (!modal.draft.title.trim()) {
       titleInput.setCustomValidity(tr("Enter an activity title.", "Geben Sie einen Aktivitätstitel ein."));
       titleInput.reportValidity();
       return;
     }
+
+    if (!modal.draft.date) {
+      dateInput?.setCustomValidity(tr("Please select a date.", "Bitte wählen Sie ein Datum aus."));
+      dateInput?.reportValidity();
+      return;
+    }
+
+    if (isPastDate(modal.draft.date)) {
+      dateInput?.setCustomValidity(
+        tr(
+          "Activities cannot be scheduled in the past. Please select today or an upcoming date.",
+          "Aktivitäten können nicht in der Vergangenheit geplant werden. Bitte wählen Sie heute oder ein zukünftiges Datum."
+        )
+      );
+      dateInput?.reportValidity();
+      dateInput?.focus();
+      return;
+    }
+
     const saved = { ...modal.draft, title: modal.draft.title.trim(), description: modal.draft.description.trim() };
     if (modal.kind === "edit") {
       if (addedEvents.some((item) => item.id === saved.id)) {
@@ -307,9 +342,72 @@ export default function TeacherSchedule() {
             <label><span>{tr("Activity title (required)", "Aktivitätstitel (erforderlich)")}</span><input name="title" type="text" value={modal.draft.title} required data-initial-focus
               onChange={(event) => { event.target.setCustomValidity(""); updateDraft({ title: event.target.value }); }} /></label>
             <div className="schedule-form-grid schedule-form-pair">
-              <label><span>{tr("Scheduled / due date (required)", "Geplantes / Fälligkeitsdatum (erforderlich)")}</span><input type="date" value={modal.draft.date} required max="9999-12-31" onChange={(event) => updateDraft({ date: event.target.value })} /></label>
-              <label><span>{tr("Time / notes", "Uhrzeit / Hinweise")}</span><input type="text" value={modal.draft.time} placeholder={tr("e.g. 9:00 AM", "z. B. 09:00 Uhr")} onChange={(event) => updateDraft({ time: event.target.value })} /></label>
+              <label>
+                <span>{tr("Scheduled / due date (required)", "Geplantes / Fälligkeitsdatum (erforderlich)")}</span>
+                <input
+                  name="date"
+                  type="date"
+                  value={modal.draft.date}
+                  required
+                  min={getTodayIso()}
+                  max="9999-12-31"
+                  aria-invalid={isPastDate(modal.draft.date)}
+                  aria-describedby={isPastDate(modal.draft.date) ? "schedule-date-warning" : undefined}
+                  onChange={(event) => {
+                    event.target.setCustomValidity("");
+                    updateDraft({ date: event.target.value });
+                  }}
+                />
+              </label>
+              <label>
+                <span>{tr("Time / notes", "Uhrzeit / Hinweise")}</span>
+                <input
+                  type="text"
+                  value={modal.draft.time}
+                  placeholder={tr("e.g. 9:00 AM", "z. B. 09:00 Uhr")}
+                  onChange={(event) => updateDraft({ time: event.target.value })}
+                />
+              </label>
             </div>
+            {isPastDate(modal.draft.date) && (
+              <div
+                className="schedule-field-warning"
+                role="alert"
+                id="schedule-date-warning"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                <div className="schedule-warning-content">
+                  <strong>{tr("Cannot schedule activity on a past date", "Aktivität kann nicht in der Vergangenheit geplant werden")}</strong>
+                  <span>
+                    {tr(
+                      `Activities cannot be scheduled before today (${dateLabel(getTodayIso())}). Please choose today or an upcoming date so students have adequate preparation time.`,
+                      `Aktivitäten können nicht vor dem heutigen Tag (${dateLabel(getTodayIso())}) geplant werden. Bitte wählen Sie heute oder ein zukünftiges Datum.`
+                    )}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="schedule-warning-action"
+                  onClick={() => updateDraft({ date: getTodayIso() })}
+                >
+                  {tr("Set to today", "Auf heute setzen")}
+                </button>
+              </div>
+            )}
             <label><span>{tr("Instructions (optional)", "Anweisungen (optional)")}</span><textarea rows={2} value={modal.draft.description} onChange={(event) => updateDraft({ description: event.target.value })} /></label>
             {modal.draft.type !== "Lesson" && (
               <div className="schedule-builder">
@@ -382,7 +480,14 @@ export default function TeacherSchedule() {
           </div>
           <footer className="schedule-dialog-footer"><p className="schedule-meta">{tr("Saved on this page only in this demo.", "Wird in dieser Demo nur auf dieser Seite gespeichert.")}</p><div>
             <button type="button" className="schedule-button" onClick={() => setModal(null)}>{tr("Cancel", "Abbrechen")}</button>
-            <button type="submit" className="schedule-button schedule-primary">{modal.kind === "edit" ? tr("Save changes", "Änderungen speichern") : tr("Create activity", "Aktivität erstellen")}</button>
+            <button
+              type="submit"
+              className="schedule-button schedule-primary"
+              disabled={isPastDate(modal.draft.date)}
+              title={isPastDate(modal.draft.date) ? tr("Please pick a valid current or future date", "Bitte wählen Sie ein gültiges aktuelles oder zukünftiges Datum") : undefined}
+            >
+              {modal.kind === "edit" ? tr("Save changes", "Änderungen speichern") : tr("Create activity", "Aktivität erstellen")}
+            </button>
           </div></footer>
         </form> : modal.kind === "slot" ? <>
           <div className="schedule-dialog-body">

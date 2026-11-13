@@ -591,13 +591,15 @@
           },
           {
             code: "T3",
-            title: "Quiz & assignment creation (Online or Paper)",
+            title: "Quiz & assignment creation (Online or Paper) + Date Heuristic Check",
             route: "/teacher/schedule",
             steps: [
               "Go to Schedule -> click 'Schedule activity'.",
-              "Choose Type = Quiz or Assignment, pick Format = 'Online' or 'Paper', click '+ Add question' to add prompts & answer key notes, and save.",
+              "Choose Type = Quiz or Assignment, pick Format = 'Online' or 'Paper', click '+ Add question' to add prompts & answer key notes.",
+              "Try selecting an older past date: verify that a prominent warning banner appears (Nielsen #9) explaining past dates are not permitted, the 'Create activity' button is disabled (Nielsen #5 Error Prevention), and clicking 'Set to today' instantly recovers.",
+              "Choose today or an upcoming date and save.",
             ],
-            expected: "New card appears under 'Upcoming & scheduled activities' showing the chosen Online/Paper format and attached question/answer-key list.",
+            expected: "New card appears under 'Upcoming & scheduled activities' showing the chosen Online/Paper format and question key. Activities cannot be scheduled on past dates, with inline heuristic guidance and a one-click recovery shortcut.",
           },
           {
             code: "T4",
@@ -776,12 +778,13 @@
           {
             code: "H5",
             title: "Nielsen #5 — Error prevention",
-            route: "/student · /teacher/papers/2",
+            route: "/student · /teacher/schedule · /teacher/papers/2",
             steps: [
               "In Homework Upload Modal, select a file and observe 'Submit assignment' remains disabled until 'Confirm selected file' is checked.",
+              "In /teacher/schedule, click 'Schedule activity' and try picking a past date: calendar restricts selection (min=today), submit button disables, and past dates cannot be saved.",
               "On /teacher/papers/2 with an active red flag set to 'Needs review', click 'Submit to supervisor'.",
             ],
-            expected: "Disabled invalid actions, confirmation checkboxes, and the unreviewed red-flag guard prevent accidental submissions.",
+            expected: "Disabled invalid actions, past-date guards, confirmation checkboxes, and the unreviewed red-flag guard prevent accidental errors before they happen.",
           },
           {
             code: "H6",
@@ -814,11 +817,11 @@
           {
             code: "H9",
             title: "Nielsen #9 — Help users recognize, diagnose, and recover from errors",
-            route: "/ · /teacher/papers/2 · /unknown",
+            route: "/ · /teacher/schedule · /teacher/papers/2 · /unknown",
             steps: [
-              "Enter a wrong password on Login (/), upload an invalid extension in HomeworkUploadModal, enter >1 on a question grade, or open /unknown.",
+              "Enter a wrong password on Login (/), upload an invalid extension in HomeworkUploadModal, select a past date in Teacher Schedule, enter >1 on a question grade, or open /unknown.",
             ],
-            expected: "Plain-language red alerts explain what failed and tell the user exactly how to fix or recover from it.",
+            expected: "Plain-language alerts explain what failed and provide immediate constructive recovery (e.g., 'Set to today' shortcut on past schedule dates, recovery links on 404).",
           },
           {
             code: "H10",
