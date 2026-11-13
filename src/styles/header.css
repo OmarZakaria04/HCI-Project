@@ -193,6 +193,7 @@
 .notification-time { display: block; margin-top: 4px; font-size: 0.875rem; color: color-mix(in srgb, var(--color-forest) 85%, white); }
 .site-header :is(button, .dropdown-link, .notification-entry) { transition: background-color 160ms ease; }
 .site-header :is(button, .dropdown-link, a.notification-entry):hover { background: color-mix(in srgb, var(--color-sand) 20%, transparent); }
+.site-header .lang-switcher-btn.is-active:hover { background: color-mix(in srgb, var(--color-forest) 90%, black); }
 .site-header :is(button, a):focus-visible { outline: 2px solid var(--color-forest); outline-offset: 4px; }
 .site-header :is(.dropdown-link, .dropdown-logout-btn, .notification-entry):focus-visible { outline-offset: -4px; }
 /* Retain the existing mobile menu; a mobile redesign is deferred. */
