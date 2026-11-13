@@ -337,11 +337,12 @@ export default function StudentHome() {
             </div>
           </section>
 
+          <div className="student-practice-column">
           <section className="student-card student-practice" aria-labelledby="student-practice-title">
             <div className="student-card-header">
               <h2 id="student-practice-title" className="student-card-title">{tr("Topics to practice", "Themen zum Üben")}</h2>
             </div>
-            <ul className="student-practice-topics">
+            <ul className="student-practice-topics" tabIndex={0} aria-labelledby="student-practice-title">
               {(studentData.progressView?.practiceTopics || []).slice(0, 2).map((topic) => (
                 <li key={topic.id}>
                   <p className="student-practice-subject">{topic.subject}</p>
@@ -375,6 +376,7 @@ export default function StudentHome() {
               ))}
             </ul>
           </section>
+          </div>
         </div>
       </main>
 

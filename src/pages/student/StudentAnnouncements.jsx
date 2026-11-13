@@ -1,115 +1,112 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
 import Header from "../../components/Header";
 import { getStudentData } from "../../i18n/studentDataDe";
 import { useLanguage } from "../../i18n/useLanguage";
 import { getTeacherCommState } from "../../utils/teacherStore";
-import { AnnouncementIcon, NewspaperIcon } from "../../components/StudentIcons";
-import "../../styles/student.css";
+import { announcementDate } from "../../utils/announcementDate";
+import "../../styles/student-announcements.css";
 
 export default function StudentAnnouncements() {
-  const navigate = useNavigate();
   const { lang, tr } = useLanguage();
   const studentData = getStudentData(lang);
-  const [dateFilter, setDateFilter] = useState("all");
+  const [filter, setFilter] = useState("all");
+  const filterRef = useRef(null);
+  const dateFormatter = new Intl.DateTimeFormat(lang === "de" ? "de-DE" : "en-GB", {
+    day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
+  });
 
   const teacherPosts = (getTeacherCommState().addedStudentAnnouncements || []).map((post) => ({
     id: post.id,
     title: post.title,
     date: post.date,
-    category: post.classId === "all" ? tr("Class Notice", "Klassenhinweis") : `${tr("Class", "Klasse")} ${post.classId}`,
+    category: post.classId?.toLowerCase() === "all"
+      ? tr("All classes", "Alle Klassen")
+      : `${tr("Class", "Klasse")} ${post.classId}`,
     content: post.body,
     author: studentData.profile.teacher,
     isImportant: post.priority === "Important",
   }));
 
-  const allAnnouncements = [...teacherPosts, ...studentData.announcements];
-
-  const filteredAnnouncements = allAnnouncements.filter((ann) => {
-    if (dateFilter === "important") return ann.isImportant;
-    return true;
-  });
+  const announcements = [...teacherPosts, ...studentData.announcements]
+    .map((ann) => ({ ...ann, isoDate: announcementDate(ann.date) }))
+    .sort((a, b) => b.isoDate.localeCompare(a.isoDate));
+  const visibleAnnouncements = announcements.filter((ann) => filter !== "important" || ann.isImportant);
 
   return (
-    <div className="student-page-wrapper">
+    <div className="student-announcements-page">
       <Header role="student" />
+      <main className="student-announcements">
+        <div className="announcements-container">
+          <header className="announcements-intro">
+            <h1>{tr("Announcements", "Ankündigungen")}</h1>
+            <p>{tr("School news, class notices, and important updates.", "Schulnachrichten, Klassenmitteilungen und wichtige Neuigkeiten.")}</p>
+          </header>
 
-      <main className="student-container">
-        <div className="wireframe-hero-card">
-          <div className="w-12 h-12 rounded-2xl bg-forest/10 text-forest flex items-center justify-center mx-auto mb-2 shadow-2xs">
-            <AnnouncementIcon className="w-6 h-6 text-forest" />
-          </div>
-          <h1 className="wireframe-hero-title">{tr("Announcements", "Ankündigungen")}</h1>
-          <p className="wireframe-hero-subtitle">
-            {tr(
-              "Official school circulars, schedule changes & administrative notices",
-              "Offizielle Schulmitteilungen, Stundenplanänderungen & Hinweise der Verwaltung"
-            )}
-          </p>
-        </div>
-
-        <div className="student-card space-y-4">
-          <div className="student-card-header">
-            <h2 className="student-card-title">
-              <NewspaperIcon className="w-5 h-5 text-forest" /> {tr("Broadcast Feed", "Mitteilungsfeed")}
-            </h2>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => navigate("/student")}
-                className="btn-ghost text-xs mr-2"
-              >
-                ← {tr("Back to Dashboard", "Zurück zur Übersicht")}
-              </button>
-
-              <label htmlFor="annFilter" className="text-xs font-bold text-forest/70 hidden sm:inline">
-                {tr("View By:", "Anzeigen:")}
-              </label>
-              <select
-                id="annFilter"
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="bg-cream/70 border border-sand/50 rounded-lg px-2.5 py-1 text-xs text-forest font-semibold focus:outline-none focus:ring-2 focus:ring-sand"
-              >
-                <option value="all">{tr("All Announcements", "Alle Ankündigungen")}</option>
-                <option value="important">{tr("Important Notices Only", "Nur wichtige Hinweise")}</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {filteredAnnouncements.map((ann) => (
-              <div
-                key={ann.id}
-                className="p-5 rounded-2xl bg-cream/30 border border-sand/40 space-y-2 hover:bg-cream/50 transition-colors"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <div className="flex items-center gap-2">
-                    {ann.isImportant && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-sand" title={tr("Important notice", "Wichtiger Hinweis")}></span>
-                    )}
-                    <h3 className="text-base font-bold text-forest">{ann.title}</h3>
-                    <span className="text-[10px] font-bold text-cream bg-forest px-2 py-0.5 rounded-full">
-                      {ann.category}
-                    </span>
-                  </div>
-                  <span className="text-xs text-forest/60">{tr("Date:", "Datum:")} {ann.date}</span>
-                </div>
-
-                <p className="text-xs sm:text-sm text-forest/80 leading-relaxed pt-1">
-                  {ann.content}
+          <section className="announcements-panel" aria-labelledby="announcements-title">
+            <div className="announcements-toolbar">
+              <div>
+                <h2 id="announcements-title">{tr("Latest announcements", "Neueste Ankündigungen")}</h2>
+                <p className="announcements-meta announcements-count" role="status" aria-live="polite" aria-atomic="true">
+                  {tr(
+                    `${visibleAnnouncements.length} of ${announcements.length} announcements · Newest first`,
+                    `${visibleAnnouncements.length} von ${announcements.length} Ankündigungen · Neueste zuerst`
+                  )}
                 </p>
-
-                <div className="pt-2 text-[11px] text-forest/60 flex items-center justify-between border-t border-sand/20">
-                  <span>
-                    {tr("Posted by:", "Veröffentlicht von:")} <strong className="text-forest">{ann.author}</strong>
-                  </span>
-                  <span className="text-sand font-semibold">{tr("Verified Broadcast", "Bestätigte Meldung")}</span>
-                </div>
               </div>
-            ))}
-          </div>
+              <div className="announcements-filter">
+                <label htmlFor="announcement-filter">{tr("Show", "Anzeigen")}</label>
+                <select ref={filterRef} id="announcement-filter" value={filter} onChange={(event) => setFilter(event.target.value)}>
+                  <option value="all">{tr("All announcements", "Alle Ankündigungen")}</option>
+                  <option value="important">{tr("Important only", "Nur wichtige")}</option>
+                </select>
+              </div>
+            </div>
+
+            {visibleAnnouncements.length ? (
+              <ul className="announcements-list">
+                {visibleAnnouncements.map((ann) => (
+                  <li key={ann.id} className="announcement-row">
+                    <article className="announcement-item" aria-labelledby={`announcement-${ann.id}`}>
+                      <div className="announcement-header">
+                        <span className="announcement-marker" aria-hidden="true">
+                          {ann.author.replace(/^(?:Mrs|Mr|Ms|Miss|Dr|Prof)\.?\s+/i, "").trim().split(/\s+/).slice(0, 2).map((word) => word[0]).join("").toUpperCase()}
+                        </span>
+                        <div className="announcement-overview">
+                          <div className="announcement-title">
+                            <h3 id={`announcement-${ann.id}`}>{ann.title}</h3>
+                            {ann.isImportant && <span className="announcement-important">{tr("Important", "Wichtig")}</span>}
+                          </div>
+                          <p className="announcements-meta announcement-byline">
+                            {ann.category} · {tr("Posted by", "Veröffentlicht von")} <strong>{ann.author}</strong>
+                          </p>
+                        </div>
+                        {ann.isoDate ? (
+                          <time className="announcements-meta announcement-date" dateTime={ann.isoDate}>
+                            {dateFormatter.format(new Date(`${ann.isoDate}T00:00:00Z`))}
+                          </time>
+                        ) : <span className="announcements-meta announcement-date">{tr("Date unavailable", "Datum nicht verfügbar")}</span>}
+                      </div>
+                      <div className="announcement-body">
+                        <p className="announcement-content">{ann.content}</p>
+                      </div>
+                    </article>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="announcements-empty">
+                <h3>{filter === "important" ? tr("No important announcements", "Keine wichtigen Ankündigungen") : tr("No announcements yet", "Noch keine Ankündigungen")}</h3>
+                <p>{filter === "important"
+                  ? tr("There are no important notices to show. You can still view all school and class updates.", "Es gibt keine wichtigen Hinweise. Du kannst weiterhin alle Schul- und Klassenmitteilungen ansehen.")
+                  : tr("School and class updates will appear here when they are posted.", "Schul- und Klassenmitteilungen erscheinen hier, sobald sie veröffentlicht werden.")}</p>
+                {filter === "important" && (
+                  <button type="button" onClick={() => { setFilter("all"); filterRef.current?.focus(); }}>
+                    {tr("Show all announcements", "Alle Ankündigungen anzeigen")}
+                  </button>
+                )}
+              </div>
+            )}
+          </section>
         </div>
       </main>
     </div>

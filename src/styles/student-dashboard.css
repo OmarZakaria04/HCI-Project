@@ -188,6 +188,12 @@
   min-width: 0;
 }
 
+/* Let progress set the row height without stretching the practice card. */
+.student-practice-column { min-width: 0; min-height: 0; contain: size; }
+.student-practice { display: flex; flex-direction: column; max-height: 100%; }
+.student-practice > .student-card-header { flex-shrink: 0; }
+.student-practice .student-practice-topics { min-height: 0; overflow-y: auto; margin: -8px; padding: 8px; }
+
 .student-dashboard .student-dashboard-progress-layout h2 {
   font-size: 1.75rem;
 }
@@ -355,6 +361,8 @@
   .student-dashboard-progress-layout {
     grid-template-columns: minmax(0, 1fr);
   }
+  .student-practice-column { contain: none; }
+  .student-practice { max-height: none; }
 }
 
 @media (max-width: 639px) {
